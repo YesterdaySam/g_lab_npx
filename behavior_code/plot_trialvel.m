@@ -29,7 +29,7 @@ colormap("sky")
 colorbar; clim([0 inf]);
 xlabel('Position')
 ylabel('Trial #')
-set(gca,'FontSize',12,'FontName','Arial')
+set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 title([strtok(session.name,'_'), ' ', session.name(end-9:end-8)])
 
 end
