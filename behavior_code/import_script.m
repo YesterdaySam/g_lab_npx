@@ -1,6 +1,6 @@
 % Import behavior script
 
-bhvrdir = 'C:\Users\cornu\Documents\Research\Data\KW004\D3';
+bhvrdir = 'C:\Users\cornu\Documents\Research\Data\KW001\D7';
 
 sess = importBhvr(bhvrdir);
 sbase = sess.name(1:14);

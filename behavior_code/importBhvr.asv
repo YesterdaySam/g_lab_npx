@@ -1,17 +1,41 @@
-%%%
+function [sess] = importBhvr(datdir)
+%% Create a session variable for organizing neural and behavioral data
+% Requires ws.loadDataFile functions from https://wavesurfer.janelia.org/
+%%% Inputs
+% datdir = filepath to directory containing an '.h5' file from wavesurfer
+%%% Outputs
+% sess = struct containing the following information
+%   header      = wavesurfer header information
+%   samprate    = behavioral sampling rate (e.g. 2KHz)
+%   aidat       = Mx8 matrix of analog channel data, where M is all samples (see comments below)
+%   ind         = indices of all
+%   ts          = time stamps, spanning time of session
+%   vel         = speed information, in m/s (may be translated by fixed value
+%   pos         = position information, in m
+%   lck         = lick port state from ~0 to ~10
+%   lckind      = indices of lick onsets
+%   slx         = up and down states from Imec card at 1Hz, 500ms Pulse Width
+%   didat       = Mx1 array of multiplexed digital channel data, where M is all samples (see comments below)
+%   rwd         = Mx1 array of just the digital reset signal ('2's)
+%   rwdind      = indices of reward pulse onsets
+%   rst         = Mx1 array of just the digital reset signal ('1's)
+%   lapstt      = indices of lap starts
+%   lapend      = indices of lap ends
+%   nlaps       = number of laps (based on number of reset pulses)
+%
+% Created 5/15/24 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
 
-
-%%%
 clear sess dat datFields
 % Identify .h5 data file
-sess.bhvrDir = 'C:\Users\cornu\Documents\Research\Data\KW002\D5';
+sess.bhvrDir = datdir;
 cd(sess.bhvrDir)
 bhvrFile = dir("*.h5");
 sess.name = bhvrFile.name;
 
 % Load data from .h5 file
 dat             = ws.loadDataFile(sess.name);
-datFields       = fieldnames(dat);      %Use in case sweep number
+datFields       = fieldnames(dat);      % Use in case sweep number is not 001
 sess.header     = dat.header;
 sess.samprate   = sess.header.AcquisitionSampleRate;
 
@@ -19,46 +43,22 @@ sess.samprate   = sess.header.AcquisitionSampleRate;
 sess.aidat      = dat.(datFields{2}).analogScans;
 sess.ind        = 1:size(sess.aidat,1);
 sess.ts         = sess.ind/sess.samprate;
-sess.vel        = sess.aidat(:,1) - min(sess.aidat(:,1));
+sess.vel        = sess.aidat(:,1);
+sess.velshft    = sess.vel - 
 sess.pos        = sess.aidat(:,2);
 sess.lck        = sess.aidat(:,3);
+[~,sess.lckind] = findpeaks(double(sess.lck > 0.5));
 sess.slx        = sess.aidat(:,8);
 
 % Digital data; multiplexed from all digital channels; 1 = LapReset; 2 = Reward release
 sess.didat      = dat.(datFields{2}).digitalScans;
-sess.rwd        = double(sess.didat == 2); [~,sess.rwd] = findpeaks(sess.rwd);
+sess.rwd        = double(sess.didat == 2);
+[~,sess.rwdind] = findpeaks(sess.rwd);
 sess.rst        = double(sess.didat == 1);
-sess.lapend     = find(diff(sess.pos) < -0.3);
-sess.lapstt     = sess.lapend + 1;
+[~,sess.lapstt] = findpeaks(sess.rst); sess.lapstt = sess.lapstt + 1; % Account for position reset lagged by 1 index
+sess.lapend     = sess.lapstt - 1;
+% sess.posend     = find(diff(sess.pos) < -0.3);
+% sess.posstt     = sess.posend + 1;
 sess.nlaps      = size(sess.lapend,1);
 
-%% Create linearized velocity (binned by space)
-bnsz            = 1/100;    % m
-tracklen        = (max(sess.pos) - min(sess.pos)); % m
-trackedges      = 0:bnsz:tracklen;
-bnsz            = size(trackedges,2);
-clear bnvel
-
-for i = 1:sess.nlaps-1
-    bnocc = histcounts(sess.pos(sess.lapstt(i):sess.lapend(i+1)), trackedges);
-    for j = 1:bnsz-1
-        tmpind = sess.lapstt(i) + find(sess.pos(sess.lapstt(i):sess.lapend(i+1)) > trackedges(j) & sess.pos(sess.lapstt(i):sess.lapend(i+1)) < trackedges(j+1));
-        bnvel(i,j) = mean(sess.vel(tmpind));
-    end
 end
-figure; plot(bnvel(1,:))
-figure; imagesc(bnvel); colormap(parula)
-
-%% Temp Visualization 
-tmpmax = max(sess.aidat);
-tmpmax = repmat(tmpmax,[max(sess.ind),1]);
-figure; hold on;
-for i = 1:8
-    plot(sess.ts, i-1 + sess.aidat(:,i)./tmpmax(:,i))
-end
-
-for i = 1:sess.nlaps
-    
-end
-
-figure; imagesc(bnvel); colormap(pink)

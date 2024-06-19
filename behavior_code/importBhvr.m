@@ -1,5 +1,31 @@
 function [sess] = importBhvr(datdir)
-%%
+%% Create a session variable for organizing neural and behavioral data
+% Requires ws.loadDataFile functions from https://wavesurfer.janelia.org/
+%%% Inputs
+% datdir = filepath to directory containing an '.h5' file from wavesurfer
+%%% Outputs
+% sess = struct containing the following information
+%   header      = wavesurfer header information
+%   samprate    = behavioral sampling rate (e.g. 2KHz)
+%   aidat       = Mx8 matrix of analog channel data, where M is all samples (see comments below)
+%   ind         = indices of all
+%   ts          = time stamps, spanning time of session
+%   vel         = speed information, in m/s (may be translated by fixed value
+%   pos         = position information, in m
+%   lck         = lick port state from ~0 to ~10
+%   lckind      = indices of lick onsets
+%   slx         = up and down states from Imec card at 1Hz, 500ms Pulse Width
+%   didat       = Mx1 array of multiplexed digital channel data, where M is all samples (see comments below)
+%   rwd         = Mx1 array of just the digital reset signal ('2's)
+%   rwdind      = indices of reward pulse onsets
+%   rst         = Mx1 array of just the digital reset signal ('1's)
+%   lapstt      = indices of lap starts
+%   lapend      = indices of lap ends
+%   nlaps       = number of laps (based on number of reset pulses)
+%
+% Created 5/15/24 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
+
 clear sess dat datFields
 % Identify .h5 data file
 sess.bhvrDir = datdir;
@@ -17,7 +43,8 @@ sess.samprate   = sess.header.AcquisitionSampleRate;
 sess.aidat      = dat.(datFields{2}).analogScans;
 sess.ind        = 1:size(sess.aidat,1);
 sess.ts         = sess.ind/sess.samprate;
-sess.vel        = sess.aidat(:,1) - min(sess.aidat(:,1));
+sess.vel        = sess.aidat(:,1);
+sess.velshft    = sess.vel - mode(sess.vel); % Subtract off velocity offset, may leave negative values
 sess.pos        = sess.aidat(:,2);
 sess.lck        = sess.aidat(:,3);
 [~,sess.lckind] = findpeaks(double(sess.lck > 0.5));
@@ -34,10 +61,4 @@ sess.lapend     = sess.lapstt - 1;
 % sess.posstt     = sess.posend + 1;
 sess.nlaps      = size(sess.lapend,1);
 
-% %% Temp Visualization 
-% tmpmax = max(session.aidat);
-% tmpmax = repmat(tmpmax,[max(session.ind),1]);
-% figure; hold on;
-% for i = 1:8
-%     plot(session.ts, i-1 + session.aidat(:,i)./tmpmax(:,i))
-% end
+end

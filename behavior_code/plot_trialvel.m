@@ -6,7 +6,8 @@ function [fhandle] = plot_trialvel(session, bnsz)
 % Outputs
 % fhandle = handle to figure
 
-vel = session.vel - min(session.vel);
+% vel             = session.vel - min(session.vel);
+vel             = session.velshft;
 bnsz            = bnsz/100;    % translate to m
 tracklen        = (max(session.pos) - min(session.pos)); % m
 trackedges      = 0:bnsz:tracklen;
