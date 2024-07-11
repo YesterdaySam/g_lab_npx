@@ -1,4 +1,4 @@
-function [fhandle] = plot_lickpos(session)
+function [fhandle] = plot_lickpos2(session)
 %% Create linearized lick posiition (binned by space)
 % Warning - doesn't handle first-laps without rewards very well, offsets
 % actual reward delivery from licks by X number of laps where X =
