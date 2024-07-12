@@ -1,56 +1,49 @@
-function [fhandle] = plot_lickpos(session)
+function [fhandle, fhandle2, trackedges, lckmap, bnlck] = plot_lickpos(sess,bnsz)
 %% Create linearized lick posiition (binned by space)
-% Warning - doesn't handle first-laps without rewards very well, offsets
-% actual reward delivery from licks by X number of laps where X =
-% unrewarded laps
 % Inputs
-% session = struct from importBhvr.m
+%   session = struct from importBhvr.m
 % Outputs
-% fhandle = handle to figure
+%   fhandle = handle to figure
+%
+% Created 5/10/24 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
 
-lckmap  = [];
-
-% Use only rewarded laps
-for i = 1:session.nlaps-1
-    tmpind = session.rwdind > session.lapstt(i) & session.rwdind < session.lapend(i+1);
-    isrewarded(i) = logical(sum(tmpind));
+arguments
+    sess
+    bnsz = 0.03      % in m
 end
-session.lapstt = session.lapstt(isrewarded);
-session.lapend = session.lapend(isrewarded);
+
+% Only use valid trials
+sess.lapstt = sess.lapstt(sess.valTrials);
+sess.lapend = sess.lapend(sess.valTrials);
+sess.nlaps  = length(sess.lapstt);
+
+tracklen        = (max(sess.pos) - min(sess.pos)); % m
+trackedges      = 0:bnsz:tracklen;
+nbins           = size(trackedges,2);
 
 % Find licks
-for i = 1:session.nlaps-1
+lckmap  = [];
+bnlck = ones(sess.nlaps,nbins-1);
+
+for i = 1:sess.nlaps
     % Find index of licks for this lap
-    tmplck = session.lckind(find(session.lckind > session.lapstt(i) & session.lckind < session.lapend(i+1)));
+    tmplck = sess.lckind(find(sess.lckind > sess.lapstt(i) & sess.lckind < sess.lapend(i)));
     
     % Create Nx2 of [lick times, trial]
-    lckmap = [lckmap; session.pos(tmplck), i*ones(numel(tmplck),1)];
+    lckmap = [lckmap; sess.pos(tmplck), i*ones(numel(tmplck),1)];
+    
+    bnocc = histcounts(sess.pos(sess.ind(sess.lapstt(i):sess.lapend(i))),trackedges);
+    bnlck(i,:) = histcounts(sess.pos(tmplck),trackedges);
+    bnlck(i,:) = bnlck(i,:) ./ (bnocc / sess.samprate);  %Normalize to time in each bin
 end
 
-for i = 1:session.
-% Correct for any deliveries prior to first true lap start
-if session.ts(session.rwdind(1)) < session.ts(session.lapstt(1))
-    session.rwdind = session.rwdind(2:end);
+% Find rewards after valid lap starts
+rwdmap = [];
+for i = 1:sess.nlaps
+    tmprwd = sess.pos(sess.rwdind(find(sess.rwdind > sess.lapstt(i),1)));
+    rwdmap = [rwdmap; tmprwd, i];
 end
-
-% Correct for any unrewarded laps
-for i = 1:session.nlaps-1
-    tmpind = session.rwdind > session.lapstt(i) & session.rwdind < session.lapend(i+1);
-    isrewarded(i) = logical(sum(tmpind));
-end
-session.lapstt = session.lapstt(isrewarded);
-session.lapend = session.lapend(isrewarded);
-
-% Correct for any remaining differences between rwd delivery and lap #s
-if length(session.rwdind) ~= length(session.lapstt)
-    for i = 1:session.nlaps-1
-        tmpind(i) = find(session.rwdind > session.lapstt(i), 1);
-    end
-else
-    tmpind = 1:length(session.lapstt);
-end
-
-rwdmap = [session.pos(session.rwdind), tmpind'];
 
 fhandle = figure;      % Positional Lick Raster
 hold on
@@ -60,6 +53,17 @@ plot(rwdmap(:,1)*100,rwdmap(:,2),'r*')
 xlabel('Position (cm)')
 ylabel('Trial #')
 set(gca,'FontSize',12,'FontName','Arial')
-title([strtok(session.name,'_'), ' ', session.name(end-9:end-8)])
+
+sem = std(bnlck)/sqrt(sess.nlaps);
+ciup = rmmissing(mean(bnlck) + sem*1.96);
+cidn = rmmissing(mean(bnlck) - sem*1.96);
+
+fhandle2 = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
+plot(trackedges(1:end-1)*100,mean(bnlck),'b','LineWidth',2)
+patch(100*[trackedges(1:length(cidn)),fliplr(trackedges(1:length(cidn)))],[cidn,fliplr(ciup)],'b','FaceAlpha',0.5,'EdgeColor','none')
+xlabel('Position (cm)'); xlim([0 200])
+ylabel('Average Licks/s');
+set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
 end

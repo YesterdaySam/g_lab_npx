@@ -1,22 +1,25 @@
-function [binedges,binfr,mdlparams,fhandle] = plot_frXvel(spks,unit,sess,vbnsz,plotflag)
-%% Plots the 
-% Requires the npy-matlab package from kwikteam https://github.com/kwikteam/npy-matlab
-% Generates or loads a root file in the ksPath and saves it to the starting
-% directory
+function [binedges,binfr,mdlparams,fhandle] = plot_frXvel(root,unit,sess,vbnsz,plotflag)
+%% Plots the binned firing rate by velocity of a unit
 %
 % Inputs:
-% spks = time series in seconds of spikes. Must be synced to sess.ts
+% root = root object. Must have root.tssync and root.tsb fields
+% unit = cluster ID
 % sess = session struct from importBhvr
+% vbnsz = size of velocity bins, default 0.02m/s = 2cm/s
 % plotflag = binary of whether to plot the output
 %
 % Outputs:
-% fhandle = 
+% binedges = velocity bin edges
+% binfr = velocity-binned firing rate
+% mdlparams = R and p values of the correlation coefficient, slope and
+%   y-intercept of a linear model fit between velocity and firing rate
+% fhandle = handle to figure
 %
 % Created 7/10/24 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
 arguments
-    spks            %spike time series
+    root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
     vbnsz = 0.02    %m/s
@@ -46,7 +49,8 @@ b = mdl.Coefficients{2,1} / 100;
 mdlparams.r = r;
 mdlparams.p = p;
 mdlparams.b = b;
-mdlparams.
+mdlparams.yint = ys(1);
+
 if plotflag
     fhandle = figure; hold on
     plot([binedges(1:end-1)]*100,binfr, 'ko','MarkerFaceColor','k')

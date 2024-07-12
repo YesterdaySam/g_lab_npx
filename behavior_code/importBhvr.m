@@ -56,7 +56,8 @@ sess.rwd        = double(sess.didat == 2);
 [~,sess.rwdind] = findpeaks(sess.rwd);
 sess.rst        = double(sess.didat == 1);
 [~,sess.lapstt] = findpeaks(sess.rst); sess.lapstt = sess.lapstt + 1; % Account for position reset lagged by 1 index
-sess.lapend     = sess.lapstt - 1;
+sess.lapstt     = [sess.ind(1); sess.lapstt];   %use first ts as first lap start
+sess.lapend     = [sess.lapstt(2:end) - 1; sess.ind(end)];     %Use last ts as last lap end
 % sess.posend     = find(diff(sess.pos) < -0.3);
 % sess.posstt     = sess.posend + 1;
 sess.nlaps      = size(sess.lapend,1);

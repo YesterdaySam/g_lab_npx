@@ -25,10 +25,10 @@ for i = 1:length(dirlist)
     end
 
     sbase = sess.name(1:14);
-    save([sbase, '_session'], 'sess')
+    save([sbase, '_session'], 'sess','-v7.3')
     disp(['Session created and saved for ' sbase])
 
-    [fig_trialvel,fig_velavg] = plot_trialvel(sess,1);  % 1cm binsize
+    [fig_trialvel,fig_velavg, tmptrackedges, tmpbnvel] = plot_trialvel(sess,1);  % 1cm binsize
     saveas(fig_trialvel,[sbase, '_trialvelocity'],'png')
     saveas(fig_velavg,[sbase, '_avgvelocity'],'png')
 
@@ -37,8 +37,9 @@ for i = 1:length(dirlist)
     saveas(fig_lickavg,[sbase, '_lickaverage'],'png')
 
     if dirlist(i).name(end-1:end) ~= "D1"
-        fig_lickpos = plot_lickpos(sess);   % Don't run this for D1 - random acclimation (# laps ~= # rewards)
+        [fig_lickpos, fig_licktrialavg, tmptrackedges2, ~, tmpbnlck] = plot_lickpos(sess);   % Don't run this for D1 - random acclimation (# laps ~= # rewards)
         saveas(fig_lickpos,[sbase, '_lickraster'],'png')
+        saveas(fig_licktrialavg,[sbase, '_lickpos_average'],'png')
     end
 
     close all

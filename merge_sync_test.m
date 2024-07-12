@@ -32,7 +32,7 @@ figure; plot([1:length(sync.digArray)]/2500 + offset,sync.digArray)
 hold on; 
 plot([1:length(sess2.slx)]/2000,0.1+[sess2.slx>1])
 
-%% Plot velocity-binned firing rate
+%% Plot velocity-binned firing rate OLD -- use plot_frXvel.m instead
 
 cc = 50;
 
@@ -71,7 +71,7 @@ load("KW004_06272024_root.mat");
 
 sync = load("KW004_06272024_sync.mat");
 sync.digArray = double(sync.digArray);
-sync.ts = [1:length(digArray)]/2500;
+sync.ts = [1:length(sync.digArray)]/2500;
 
 if sess.samprate ~= 2500
     sess.dsslx = downsample(sess.slx,sess.samprate/2500);
@@ -84,12 +84,12 @@ end
 pk_lag = sync_lags(sync_ccg == max(sync_ccg));  %Index to offset sess.ts
 
 %% TShift sess to match sync
-%Find sync edge inds and ts
+%Find neural sync edge inds and ts
 [~, edges_sync] = findpeaks(sync.digArray);
 edges_sync_ts = [sync.ts(1) sync.ts(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
 tmp = diff(edges_sync_ts);
 
-%Find downsampled sess edge inds and ts
+%Find downsampled bhvr sess edge inds and ts
 [~, edges_sess] = findpeaks(sess.dsslx);
 % edges_sess = edges_sess+pk_lag;
 align_start = edges_sess+pk_lag > 0;
@@ -101,7 +101,7 @@ edges_sess_dsts = sess.dsts(edges_sess);
 % edges_sess = edges_sess(align_start);
 % edges_sess_ts = sess.ts(edges_sess);
 
-%Find full rate sess edge inds and ts
+%Find full rate bhvr sess edge inds and ts
 [~, edges_sess] = findpeaks(sess.slx);
 edges_sess_ts = sess.ts(edges_sess);
 edges_sess_ts = edges_sess_ts(edges_sess_ts - sess.dsts(abs(pk_lag)) > 0);
@@ -135,7 +135,7 @@ plot(sess.ts+pk_lag/2500,sess.slx/3)
 %% better spkind method from CMBHome
 
 % split spikes into bins with edges of sess.ts
-counts = histcounts(tprime,sess.ts);   %after aligning all spike ts use root.ts
+counts = histcounts(root.tssync,sess.ts);   %after aligning all spike ts use root.tssync
 inds = [];
 
 % find index of all bins >i spikes and concatenate to existing indices
@@ -148,29 +148,44 @@ inds = inds(:);
 
 root.tsb = inds;
 
-%% Plot velocity-binned firing rate
+%% Testing ground
 
-cc = 2;
+sem = std(tmpbnvel)/sqrt(sess.nlaps);
+ciup = rmmissing(mean(tmpbnvel) + sem*1.96);
+cidn = rmmissing(mean(tmpbnvel) - sem*1.96);
 
-vbnsz = 0.02; %m/s
+figure; hold on;
+set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
+plot(tmptrackedges(1:end-1)*100,mean(tmpbnvel),'k','LineWidth',2)
+patch(100*[tmptrackedges(1:length(cidn)),fliplr(tmptrackedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
+xlabel('Position'); xlim([0 200])
+ylabel('Average Velocity'); ylim([0 prctile(sess.velshft,99)*100])
+set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
-vedges = 0:vbnsz:max(sess.velshft);
+sem = std(tmpbnlck)/sqrt(sess.nlaps);
+ciup = rmmissing(mean(tmpbnlck) + sem*1.96);
+cidn = rmmissing(mean(tmpbnlck) - sem*1.96);
 
-for i = 1:length(tprime)
-    spkvel(i) = sess.velshft(find(sess.ts > tprime(i),1));
+yyaxis right
+set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
+plot(tmptrackedges2(1:end-1)*100,mean(tmpbnlck),'b','LineWidth',2)
+patch(100*[tmptrackedges2(1:length(cidn)),fliplr(tmptrackedges2(1:length(cidn)))],[cidn,fliplr(ciup)],'b','FaceAlpha',0.5,'EdgeColor','none')
+% xlabel('Position (cm)'); xlim([0 200])
+ylabel('Average Licks/s');
+set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+
+%% Plot and save some neural analyses
+cd('D:\Kelton\analyses\KW004\KW004_06272024')
+
+for i = 1:length(root.good)
+
+    cc = root.good(i);
+
+    tmpraster = plot_trialraster(root,cc,sess);
+    saveas(tmpraster, ['unit' num2str(cc) '_spkraster'],'png')
+
+    [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
+    saveas(tmpfrvel, ['unit' num2str(cc) '_velXFR'],'png')
+
+    close all
 end
-
-vspk = histcounts(spkvel,vedges);
-vocc = histcounts(sess.velshft,vedges)/sess.samprate;
-
-vfr = vspk./vocc;
-mdl = fitlm(vedges(1:end-1), vfr);
-ys = predict(mdl,[min(vedges); max(vedges)]);
-
-figure; hold on
-plot([vedges(1:end-1)]*100,vfr, 'ko','MarkerFaceColor','k')
-plot([min(vedges); max(vedges)]*100,ys,'r','LineWidth',2)
-xlabel('Velocity (cm/s)'); ylabel('Firing Rate')
-title(['Unit ' num2str(cc)])
-
-% saveas(gcf,['velXFR_unit' num2str(cc)],'png')

@@ -1,8 +1,8 @@
-function [binedges,binfr,mdlparams,fhandle] = plot_frXvel(spks,unit,sess,vbnsz,plotflag)
+function [binedges,binfr,mdlparams,fhandle] = plot_frXvel(root,unit,sess,vbnsz,plotflag)
 %% Plots the binned firing rate by velocity of a unit
 %
 % Inputs:
-% spks = time series in seconds of spikes. Must be synced to sess.ts
+% root = root object. Must have root.tssync and root.tsb fields
 % unit = cluster ID
 % sess = session struct from importBhvr
 % vbnsz = size of velocity bins, default 0.02m/s = 2cm/s
@@ -19,7 +19,7 @@ function [binedges,binfr,mdlparams,fhandle] = plot_frXvel(spks,unit,sess,vbnsz,p
 %--------------------------------------------------------------------------
 
 arguments
-    spks            %spike time series
+    root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
     vbnsz = 0.02    %m/s
@@ -34,7 +34,7 @@ binedges = 0:vbnsz:max(sess.velshft);
 %     spkvel(i) = sess.velshft(indtmp);
 % end
 
-spkvel = sess.velshft(spks);
+spkvel = sess.velshft(root.tsb(root.cl == unit));
 
 vspk = histcounts(spkvel,binedges);
 vocc = histcounts(sess.velshft,binedges)/sess.samprate;
@@ -57,7 +57,8 @@ if plotflag
     plot([binedges(1:end-1)]*100,ys,'r','LineWidth',2)
     xlabel('Velocity (cm/s)'); ylabel('Firing Rate')
     title(['Unit ' num2str(unit)])
-    
+    set(gca,'FontSize',12,'FontName','Arial')
+
     ylims = ylim;
     xlims = xlim;
 

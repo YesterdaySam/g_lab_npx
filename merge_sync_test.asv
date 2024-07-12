@@ -32,7 +32,7 @@ figure; plot([1:length(sync.digArray)]/2500 + offset,sync.digArray)
 hold on; 
 plot([1:length(sess2.slx)]/2000,0.1+[sess2.slx>1])
 
-%% Plot velocity-binned firing rate
+%% Plot velocity-binned firing rate OLD -- use plot_frXvel.m instead
 
 cc = 50;
 
@@ -71,7 +71,7 @@ load("KW004_06272024_root.mat");
 
 sync = load("KW004_06272024_sync.mat");
 sync.digArray = double(sync.digArray);
-sync.ts = [1:length(digArray)]/2500;
+sync.ts = [1:length(sync.digArray)]/2500;
 
 if sess.samprate ~= 2500
     sess.dsslx = downsample(sess.slx,sess.samprate/2500);
@@ -84,6 +84,12 @@ end
 pk_lag = sync_lags(sync_ccg == max(sync_ccg));  %Index to offset sess.ts
 
 %% TShift sess to match sync
+%Find neural sync edge inds and ts
+[~, edges_sync] = findpeaks(sync.digArray);
+edges_sync_ts = [sync.ts(1) sync.ts(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
+tmp = diff(edges_sync_ts);
+
+%Find downsampled bhvr sess edge inds and ts
 [~, edges_sess] = findpeaks(sess.dsslx);
 % edges_sess = edges_sess+pk_lag;
 align_start = edges_sess+pk_lag > 0;
@@ -95,29 +101,29 @@ edges_sess_dsts = sess.dsts(edges_sess);
 % edges_sess = edges_sess(align_start);
 % edges_sess_ts = sess.ts(edges_sess);
 
+%Find full rate bhvr sess edge inds and ts
 [~, edges_sess] = findpeaks(sess.slx);
 edges_sess_ts = sess.ts(edges_sess);
 edges_sess_ts = edges_sess_ts(edges_sess_ts - sess.dsts(abs(pk_lag)) > 0);
+edges_sess_ts = [edges_sess_ts(1)-tmp, edges_sess_ts];
 
-[~, edges_sync] = findpeaks(sync.digArray);
-edges_sync_ts = [sync.ts(1) sync.ts(edges_sync)];   %Start at 
-
-%% example alignment of 1 unit
+%% example alignment of all spike times to behavior
 % SA = EA + RA*(SB - EB)/RB
 % SA is scaled, bounded, timestamp of event from B mapped to stream A
 % SB is timestamp of event from B
 % E is TS of Nearest Edge in A or B
 % R is sampling rate of stream A or B
-exunit = root.ts;
-tprime = exunit;
 
-for i = 1:length(exunit)
-    eb = edges_sync_ts(find(edges_sync_ts < exunit(i),1,'first'));
+allts = root.ts;
+root.tssync = allts;
+
+for i = 1:length(allts)
+    eb = edges_sync_ts(find(edges_sync_ts < allts(i),1,'first'));
     ea = edges_sess_ts(find(edges_sess_ts > eb,1,'first'));
     try
-        tprime(i) = ea + 2500*(exunit(i) - eb)/2500;
+        root.tssync(i) = ea + 2500*(allts(i) - eb)/2500;
     catch
-        tprime(i) = exunit(i);
+        root.tssync(i) = allts(i);
     end
 end
 
@@ -129,40 +135,25 @@ plot(sess.ts+pk_lag/2500,sess.slx/3)
 %% better spkind method from CMBHome
 
 % split spikes into bins with edges of sess.ts
-tmp = histcounts(tprime,sess.ts);   %after aligning all spike ts use root.ts
+counts = histcounts(root.tssync,sess.ts);   %after aligning all spike ts use root.tssync
 inds = [];
 
 % find index of all bins >i spikes and concatenate to existing indices
-for i = 0:max(tmp)
-    inds = cat(2,inds,find(tmp>i));
+for i = 0:max(counts)
+    inds = cat(2,inds,find(counts>i));
 end
 % sort inds in case of repeats
 inds = sort(inds);
 inds = inds(:);
 
+root.tsb = inds;
+
 %% Plot velocity-binned firing rate
 
+
+%% Plot and save some neural analyses
+cd()
 cc = 2;
 
-vbnsz = 0.02; %m/s
-
-vedges = 0:vbnsz:max(sess.velshft);
-
-for i = 1:length(tprime)
-    spkvel(i) = sess.velshft(find(sess.ts > tprime(i),1));
-end
-
-vspk = histcounts(spkvel,vedges);
-vocc = histcounts(sess.velshft,vedges)/sess.samprate;
-
-vfr = vspk./vocc;
-mdl = fitlm(vedges(1:end-1), vfr);
-ys = predict(mdl,[min(vedges); max(vedges)]);
-
-figure; hold on
-plot([vedges(1:end-1)]*100,vfr, 'ko','MarkerFaceColor','k')
-plot([min(vedges); max(vedges)]*100,ys,'r','LineWidth',2)
-xlabel('Velocity (cm/s)'); ylabel('Firing Rate')
-title(['Unit ' num2str(cc)])
-
+plot_trialraster(root,unit,sess,dbnsz,plotflag)
 % saveas(gcf,['velXFR_unit' num2str(cc)],'png')
