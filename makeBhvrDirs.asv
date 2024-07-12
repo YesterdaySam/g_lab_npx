@@ -1,0 +1,48 @@
+function [] = makeBhvrDirs(mainDir)
+%% Creates subdirectories for each behavior day and move files a
+% Requires the npy-matlab package from kwikteam https://github.com/kwikteam/npy-matlab
+% Generates or loads a root file in the ksPath and saves it to the starting
+% directory
+%
+% Inputs:
+% ksPath    = string specifying the path to the kilosort output directory
+% overwrite = 0 or 1 to overwrite an existing '*_root' file in ksPath dir
+%
+% Outputs:
+% root = struct containing information about the spike times and labels
+%   fs      = sampling rate (30kHz default)
+%   ts      = Mx1 array of all spike times in seconds
+%   cl      = Mx1 array of cluster IDs per spike
+%   lb      = Nx2 matrix of cluster IDs and labels from rater 
+%   good    = Index of clusters assigned 'good' by rater
+%   mua     = Index of clusters assigned 'mua' (Multi-Unit Acitivty) by rater
+%   noise   = Index of clusters assigned 'noise' by rater
+%
+% Created 5/10/24 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
+parentDir = pwd;
+
+cd(mainDir)
+
+imlist = dir('*.png');
+wslist = dir('*.h5');
+
+for i = 1:length(wslist)
+    tmpfile = wslist(i).name;
+    splitstr = tmpfile(1:end-8);
+    mkdir(splitstr)
+    newpath = [mainDir '\' splitstr];
+    movefile(tmpfile, newpath)
+end
+
+dirlist = dir;
+
+for i = 1:length(imlist)
+    tmpim = imlist(i).name;
+    splitstr = split(tmpim,'_laps.png');
+    newpath = [mainDir '\' splitstr{1}];
+    movefile(tmpim, newpath)
+end
+
+cd(parentDir)
+end

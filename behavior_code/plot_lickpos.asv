@@ -15,10 +15,7 @@ for i = 1:session.nlaps-1
     tmpind = session.rwdind > session.lapstt(i) & session.rwdind < session.lapend(i+1);
     isrewarded(i) = logical(sum(tmpind));
 end
-session.lapstt = session.lapstt(isrewarded);
-session.lapend = session.lapend(isrewarded);
 
-% Find licks
 for i = 1:session.nlaps-1
     % Find index of licks for this lap
     tmplck = session.lckind(find(session.lckind > session.lapstt(i) & session.lckind < session.lapend(i+1)));
@@ -27,7 +24,6 @@ for i = 1:session.nlaps-1
     lckmap = [lckmap; session.pos(tmplck), i*ones(numel(tmplck),1)];
 end
 
-for i = 1:session.
 % Correct for any deliveries prior to first true lap start
 if session.ts(session.rwdind(1)) < session.ts(session.lapstt(1))
     session.rwdind = session.rwdind(2:end);
