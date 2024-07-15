@@ -26,13 +26,11 @@ arguments
     plotflag = 1    %binary
 end
 
-binedges = 0:vbnsz:max(sess.velshft);
+% Only use valid trials
+sess.lapstt = sess.lapstt(sess.valTrials);
+sess.lapend = sess.lapend(sess.valTrials);
 
-% for i = 1:length(spks)
-%     % spkvel(i) = sess.velshft(find(sess.ts > spks(i),1));
-%     [~,indtmp] = min(abs(sess.ts - spks(i)));   %Find nearest velocity ts
-%     spkvel(i) = sess.velshft(indtmp);
-% end
+binedges = 0:vbnsz:max(sess.velshft);
 
 spkvel = sess.velshft(root.tsb(root.cl == unit));
 
@@ -55,7 +53,7 @@ if plotflag
     fhandle = figure; hold on
     plot([binedges(1:end-1)]*100,binfr, 'ko','MarkerFaceColor','k')
     plot([binedges(1:end-1)]*100,ys,'r','LineWidth',2)
-    xlabel('Velocity (cm/s)'); ylabel('Firing Rate')
+    xlabel('Velocity (cm/s)'); ylabel('Firing Rate (spk/s)')
     title(['Unit ' num2str(unit)])
     set(gca,'FontSize',12,'FontName','Arial')
 
@@ -66,4 +64,6 @@ if plotflag
     text(xlims(2) - .9*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(p, 3)], 'FontSize', 12)
     text(xlims(2) - .9*diff(xlims), ylims(2)-.2*diff(ylims), ['slope = ' num2str(b, 3)], 'FontSize', 12)
     text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims), ['y-int = ' num2str(ys(1), 3)], 'FontSize', 12)
+end
+
 end

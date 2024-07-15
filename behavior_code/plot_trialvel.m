@@ -1,14 +1,17 @@
 function [fhandle,fhandle2, trackedges, bnvel] = plot_trialvel(sess, bnsz)
 %% Create linearized velocity (binned by space)
 % Inputs
-% session = struct from importBhvr.m
-% bnsz    = double in cm e.g. 1
+%   sess        = struct from importBhvr.m
+%   bnsz        = double in cm e.g. 1
 % Outputs
-% fhandle = handle to figure
+%   fhandle     = handle to figure 1
+%   fhandle2    = handle to figure 2
+%   trackedges  = velocity bin edges
+%   bnvel       = binned velocity
 
 arguments
     sess
-    bnsz = 1    % cm
+    bnsz = 1    % velocity bin size in cm
 end
 
 % Only use valid trials
@@ -40,16 +43,16 @@ imagesc(bnvel,[prctile(bnvel,1,'all'), prctile(bnvel,99,'all')]);
 colormap("sky")
 cbar = colorbar; clim([0 inf]);
 xlabel('Position'); xlim([0 200])
-ylabel('Trial #'); ylabel(cbar,'cm/s','FontSize',12,'Rotation',180)
+ylabel('Trial #'); ylabel(cbar,'cm/s','FontSize',12,'Rotation',90)
 set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
-sem = std(bnvel)/sqrt(sess.nlaps);
-ciup = rmmissing(mean(bnvel) + sem*1.96);
-cidn = rmmissing(mean(bnvel) - sem*1.96);
+sem = std(bnvel,'omitnan')/sqrt(sess.nlaps);
+ciup = rmmissing(mean(bnvel,1,'omitnan') + sem*1.96);
+cidn = rmmissing(mean(bnvel,1,'omitnan') - sem*1.96);
 
 fhandle2 = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
-plot(trackedges(1:end-1)*100,mean(bnvel),'k','LineWidth',2)
+plot(trackedges(1:end-1)*100,mean(bnvel,1,'omitnan'),'k','LineWidth',2)
 patch(100*[trackedges(1:length(cidn)),fliplr(trackedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
 % plot(bnvel','Color',[.5 .5 .5])
 xlabel('Position'); xlim([0 200])

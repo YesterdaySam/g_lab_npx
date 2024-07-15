@@ -64,19 +64,20 @@ saveas(gcf,['velXFR_unit' num2str(cc)],'png')
 
 %% Merge data streams #2 - flipper pulse
 
-load("KW004_06272024_session.mat");
+load("KW004_06282024_session.mat");
 sess.slx = double(sess.slx > 0.5);
 
-load("KW004_06272024_root.mat");
+load("KW004_06282024_root.mat");
 
-sync = load("KW004_06272024_sync.mat");
-sync.digArray = double(sync.digArray);
-sync.ts = [1:length(sync.digArray)]/2500;
+% sync = load("KW004_06272024_sync.mat");
+% sync.digArray = double(sync.digArray);
+% sync.ts = [1:length(sync.digArray)]/2500;
 
-if sess.samprate ~= 2500
+if sess.samprate ~= root.fspulse
     sess.dsslx = downsample(sess.slx,sess.samprate/2500);
     sess.dsts  = downsample(sess.ts,sess.samprate/2500);
-    [sync_ccg, sync_lags] = xcorr(sync.digArray, sess.dsslx);
+    % [sync_ccg, sync_lags] = xcorr(sync.digArray, sess.dsslx);
+    [sync_ccg, sync_lags] = xcorr(root.syncpulse, sess.dsslx);   
 else
     [sync_ccg, sync_lags] = xcorr(sync.digArray, sess.slx);
 end
@@ -85,8 +86,10 @@ pk_lag = sync_lags(sync_ccg == max(sync_ccg));  %Index to offset sess.ts
 
 %% TShift sess to match sync
 %Find neural sync edge inds and ts
-[~, edges_sync] = findpeaks(sync.digArray);
-edges_sync_ts = [sync.ts(1) sync.ts(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
+% [~, edges_sync] = findpeaks(sync.digArray);
+% edges_sync_ts = [sync.ts(1) sync.ts(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
+[~, edges_sync] = findpeaks(root.syncpulse);
+edges_sync_ts = [root.tspulse(1) root.tspulse(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
 tmp = diff(edges_sync_ts);
 
 %Find downsampled bhvr sess edge inds and ts
@@ -146,36 +149,32 @@ end
 inds = sort(inds);
 inds = inds(:);
 
-root.tsb = inds;
+root.tsb = inds;    %tsb = behavioral time series spikes
+
+save([root.name '_root'],'root');
 
 %% Testing ground
+% Plot all good units as a single mega raster
 
-sem = std(tmpbnvel)/sqrt(sess.nlaps);
-ciup = rmmissing(mean(tmpbnvel) + sem*1.96);
-cidn = rmmissing(mean(tmpbnvel) - sem*1.96);
+k = 1;
 
 figure; hold on;
-set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
-plot(tmptrackedges(1:end-1)*100,mean(tmpbnvel),'k','LineWidth',2)
-patch(100*[tmptrackedges(1:length(cidn)),fliplr(tmptrackedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
-xlabel('Position'); xlim([0 200])
-ylabel('Average Velocity'); ylim([0 prctile(sess.velshft,99)*100])
+for i = 1:length(root.good)
+    tmpspks = root.ts(root.cl == root.good(k));
+    plot(tmpspks,k*ones(length(tmpspks),1),'k.')
+    k = k+1;
+end
+
+xlabel('Time (s)')
+xlim([30 60]);
+ylim([0 length(root.good)+1])
+ylabel('Cluster ID')
 set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
-sem = std(tmpbnlck)/sqrt(sess.nlaps);
-ciup = rmmissing(mean(tmpbnlck) + sem*1.96);
-cidn = rmmissing(mean(tmpbnlck) - sem*1.96);
-
-yyaxis right
-set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
-plot(tmptrackedges2(1:end-1)*100,mean(tmpbnlck),'b','LineWidth',2)
-patch(100*[tmptrackedges2(1:length(cidn)),fliplr(tmptrackedges2(1:length(cidn)))],[cidn,fliplr(ciup)],'b','FaceAlpha',0.5,'EdgeColor','none')
-% xlabel('Position (cm)'); xlim([0 200])
-ylabel('Average Licks/s');
-set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+% saveas(gcf,[sbase, '_spkraster_good2'],'png')
 
 %% Plot and save some neural analyses
-cd('D:\Kelton\analyses\KW004\KW004_06272024')
+cd('D:\Kelton\analyses\KW004\KW004_06272024\good')
 
 for i = 1:length(root.good)
 
@@ -186,6 +185,9 @@ for i = 1:length(root.good)
 
     [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
     saveas(tmpfrvel, ['unit' num2str(cc) '_velXFR'],'png')
+
+    [~,~,tmpfrpos] = plot_frXpos(root,cc,sess);
+    saveas(tmpfrpos, ['unit' num2str(cc) '_posXFR'],'png')
 
     close all
 end

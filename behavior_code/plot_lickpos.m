@@ -16,7 +16,7 @@ end
 % Only use valid trials
 sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
-sess.nlaps  = length(sess.lapstt);
+nlaps       = length(sess.lapstt);
 
 tracklen        = (max(sess.pos) - min(sess.pos)); % m
 trackedges      = 0:bnsz:tracklen;
@@ -24,9 +24,9 @@ nbins           = size(trackedges,2);
 
 % Find licks
 lckmap  = [];
-bnlck = ones(sess.nlaps,nbins-1);
+bnlck = ones(nlaps,nbins-1);
 
-for i = 1:sess.nlaps
+for i = 1:nlaps
     % Find index of licks for this lap
     tmplck = sess.lckind(find(sess.lckind > sess.lapstt(i) & sess.lckind < sess.lapend(i)));
     
@@ -40,7 +40,7 @@ end
 
 % Find rewards after valid lap starts
 rwdmap = [];
-for i = 1:sess.nlaps
+for i = 1:nlaps
     tmprwd = sess.pos(sess.rwdind(find(sess.rwdind > sess.lapstt(i),1)));
     rwdmap = [rwdmap; tmprwd, i];
 end
@@ -54,13 +54,13 @@ xlabel('Position (cm)')
 ylabel('Trial #')
 set(gca,'FontSize',12,'FontName','Arial')
 
-sem = std(bnlck)/sqrt(sess.nlaps);
-ciup = rmmissing(mean(bnlck) + sem*1.96);
-cidn = rmmissing(mean(bnlck) - sem*1.96);
+sem = std(bnlck,'omitnan')/sqrt(nlaps);
+ciup = rmmissing(mean(bnlck,1,'omitnan') + sem*1.96);
+cidn = rmmissing(mean(bnlck,1,'omitnan') - sem*1.96);
 
 fhandle2 = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
-plot(trackedges(1:end-1)*100,mean(bnlck),'b','LineWidth',2)
+plot(trackedges(1:end-1)*100,mean(bnlck,1,'omitnan'),'b','LineWidth',2)
 patch(100*[trackedges(1:length(cidn)),fliplr(trackedges(1:length(cidn)))],[cidn,fliplr(ciup)],'b','FaceAlpha',0.5,'EdgeColor','none')
 xlabel('Position (cm)'); xlim([0 200])
 ylabel('Average Licks/s');

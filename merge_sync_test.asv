@@ -146,14 +146,40 @@ end
 inds = sort(inds);
 inds = inds(:);
 
-root.tsb = inds;
+root.tsb = inds;    %tsb = behavioral time series spikes
 
-%% Plot velocity-binned firing rate
+%% Testing ground
 
+k = 1;
+
+figure; hold on;
+% Plot all good units as a single mega raster
+for i = 1:length(root.good)
+    tmpspks = root.ts(root.cl == root.good(k));
+    plot(tmpspks,k*ones(length(tmpspks),1),'k.')
+    k = k+1;
+end
+
+xlabel('Time (s)')
+xlim([30 60]);
+ylim([0 length(root.good)+1])
+ylabel('Cluster ID')
+set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+
+saveas(gcf,[sbase, '_spkraster_good2'],'png')
 
 %% Plot and save some neural analyses
-cd()
-cc = 2;
+cd('D:\Kelton\analyses\KW004\KW004_06272024')
 
-plot_trialraster(root,unit,sess,dbnsz,plotflag)
-% saveas(gcf,['velXFR_unit' num2str(cc)],'png')
+for i = 1:length(root.good)
+
+    cc = root.good(i);
+
+    tmpraster = plot_trialraster(root,cc,sess);
+    saveas(tmpraster, ['unit' num2str(cc) '_spkraster'],'png')
+
+    [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
+    saveas(tmpfrvel, ['unit' num2str(cc) '_velXFR'],'png')
+
+    close all
+end

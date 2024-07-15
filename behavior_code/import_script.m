@@ -1,7 +1,9 @@
 % Batched Import behavior script
 
 % bhvrdir = 'C:\Users\cornu\Documents\Research\Data\test\test_02';
-mousedir = 'C:\Users\cornu\Documents\Research\Data\KW004';
+% mousedir = 'C:\Users\cornu\Documents\Research\Data\KW004';
+mousedir = 'D:\Kelton\ws_data\KW004';
+
 overwriteFlag = 0;
 
 cd(mousedir)
@@ -19,6 +21,7 @@ for i = 1:length(dirlist)
 
     try
         sess = importBhvr(fullfile(dirlist(i).folder,dirlist(i).name));
+        sess = getErrorTrials(sess);
     catch
         cd(mousedir)
         continue
@@ -42,6 +45,9 @@ for i = 1:length(dirlist)
         saveas(fig_licktrialavg,[sbase, '_lickpos_average'],'png')
     end
 
+    fig_vel_lick = plot_vel_lck(sess,tmpbnvel,tmpbnlck,tmptrackedges,tmptrackedges2);
+    saveas(fig_vel_lick,[sbase, '_vel_lck'],'png')
+    
     close all
     disp(['Finished basic import and visualization of ', sbase])
 

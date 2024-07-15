@@ -56,7 +56,7 @@ dLineList = 6;
 
 syncpulse = SGLX_readMeta.ExtractDigital(dataArray, meta, dw, dLineList);
 syncpulse = double(syncpulse);
-tspulse    = [1:length(syncpulse)] / SGLX_readMeta.SampRate(meta);
+tssync    = [1:length(syncpulse)] / SGLX_readMeta.SampRate(meta);
 
 % Get kilosort and Phy outputs
 kspath = dir('*kilosort*');
@@ -81,13 +81,12 @@ root.fs         = 30000;
 root.ts         = double(spkTimes)/root.fs;
 root.cl         = spkClusts;
 root.lb         = spkLabels;
-root.good       = root.lb.cluster_id(find(strcmp(root.lb.group,'good')));
-root.mua        = root.lb.cluster_id(find(strcmp(root.lb.group,'mua')));
-root.noise      = root.lb.cluster_id(find(strcmp(root.lb.group,'noise')));
+root.good       = find(strcmp(root.lb.group,'good'));
+root.mua        = find(strcmp(root.lb.group,'mua'));
+root.noise      = find(strcmp(root.lb.group,'noise'));
 root.syncpulse  = syncpulse;
-root.tspulse    = tspulse;
-root.fspulse     = SGLX_readMeta.SampRate(meta);
-
+root.tssync     = tssync;
+root.fssync     = 
 cd(spath)
 
 save([root.name, '_root'],'root')

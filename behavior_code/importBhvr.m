@@ -48,7 +48,7 @@ sess.velshft    = sess.vel - mode(sess.vel); % Subtract off velocity offset, may
 sess.pos        = sess.aidat(:,2);
 sess.lck        = sess.aidat(:,3);
 [~,sess.lckind] = findpeaks(double(sess.lck > 0.5));
-sess.slx        = sess.aidat(:,8);
+sess.slx        = double(sess.aidat(:,8) > 0.5);    % Translate to binary
 
 % Digital data; multiplexed from all digital channels; 1 = LapReset; 2 = Reward release
 sess.didat      = dat.(datFields{2}).digitalScans;
@@ -58,8 +58,17 @@ sess.rst        = double(sess.didat == 1);
 [~,sess.lapstt] = findpeaks(sess.rst); sess.lapstt = sess.lapstt + 1; % Account for position reset lagged by 1 index
 sess.lapstt     = [sess.ind(1); sess.lapstt];   %use first ts as first lap start
 sess.lapend     = [sess.lapstt(2:end) - 1; sess.ind(end)];     %Use last ts as last lap end
-% sess.posend     = find(diff(sess.pos) < -0.3);
-% sess.posstt     = sess.posend + 1;
 sess.nlaps      = size(sess.lapend,1);
+
+if sess.nlaps == 1      % In case of reset error
+    try
+        posrst = find(diff(sess.pos) < -0.3);
+        sess.lapstt = [sess.ind(1); posrst+1];
+        sess.lapend = [sess.lapstt(2:end) - 1; sess.ind(end)];
+        sess.nlaps  = size(sess.lapend,1);
+    catch
+        warning(['Only 1 lap found for session ' sess.name])
+    end
+end
 
 end

@@ -1,5 +1,5 @@
 function [fhandle] = plot_trialraster(root,unit,sess,dbnsz,plotflag)
-%% Plots the binned firing rate by velocity of a unit
+%% Plots the spatially linearized spike raster for each trial of one unit
 %
 % Inputs:
 %   root = root object. Must have root.tssync and root.tsb fields
