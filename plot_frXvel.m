@@ -36,10 +36,14 @@ spkvel = sess.velshft(root.tsb(root.cl == unit));
 
 vspk = histcounts(spkvel,binedges);
 vocc = histcounts(sess.velshft,binedges)/sess.samprate;
-binfr = vspk./vocc;
+binfr = vspk ./ vocc;
 
-mdl = fitlm(binedges(1:end-1), binfr);
-ys = predict(mdl,binedges(1:end-1)');
+usebins = binedges > prctile(binedges,5) & binedges < prctile (binedges, 95);
+binedges = binedges(usebins);
+binfr = binfr(usebins);
+
+mdl = fitlm(binedges(1:end-diff([length(binedges) length(binfr)])), binfr);
+ys = predict(mdl,binedges(1:end-diff([length(binedges) length(binfr)]))');
 [r,p] = corrcoef(binfr,ys);
 r = r(2,1);
 p = p(2,1);
@@ -47,12 +51,12 @@ b = mdl.Coefficients{2,1} / 100;
 mdlparams.r = r;
 mdlparams.p = p;
 mdlparams.b = b;
-mdlparams.yint = ys(1);
+mdlparams.yint = predict(mdl,0);
 
 if plotflag
     fhandle = figure; hold on
-    plot([binedges(1:end-1)]*100,binfr, 'ko','MarkerFaceColor','k')
-    plot([binedges(1:end-1)]*100,ys,'r','LineWidth',2)
+    plot([binedges(1:end-diff([length(binedges) length(binfr)]))]*100,binfr, 'ko','MarkerFaceColor','k')
+    plot([binedges(1:end-diff([length(binedges) length(binfr)]))]*100,ys,'r','LineWidth',2)
     xlabel('Velocity (cm/s)'); ylabel('Firing Rate (spk/s)')
     title(['Unit ' num2str(unit)])
     set(gca,'FontSize',12,'FontName','Arial')
@@ -63,7 +67,7 @@ if plotflag
     text(xlims(2) - .9*diff(xlims), ylims(2)-.1*diff(ylims), ['R = ' num2str(r, 3)], 'FontSize', 12)
     text(xlims(2) - .9*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(p, 3)], 'FontSize', 12)
     text(xlims(2) - .9*diff(xlims), ylims(2)-.2*diff(ylims), ['slope = ' num2str(b, 3)], 'FontSize', 12)
-    text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims), ['y-int = ' num2str(ys(1), 3)], 'FontSize', 12)
+    text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims), ['y-int = ' num2str(mdlparams.yint, 3)], 'FontSize', 12)
 end
 
 end

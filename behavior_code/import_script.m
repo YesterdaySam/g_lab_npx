@@ -1,15 +1,18 @@
 % Batched Import behavior script
 
 % bhvrdir = 'C:\Users\cornu\Documents\Research\Data\test\test_02';
-% mousedir = 'C:\Users\cornu\Documents\Research\Data\KW004';
-mousedir = 'D:\Kelton\ws_data\KW004';
+% mousedir = 'C:\Users\cornu\Documents\Research\Data\KW005';
+mousedir = 'D:\Kelton\ws_data\KW005';
 
 overwriteFlag = 0;
 
 cd(mousedir)
+
+makeBhvrDirs(mousedir)
+
 dirlist = dir;
 
-for i = 1:length(dirlist)
+for i = length(dirlist)-2:length(dirlist)
     cd(fullfile(dirlist(i).folder,dirlist(i).name));
 
     sessmade = dir('*session.mat');
@@ -30,6 +33,10 @@ for i = 1:length(dirlist)
     sbase = sess.name(1:14);
     save([sbase, '_session'], 'sess','-v7.3')
     disp(['Session created and saved for ' sbase])
+
+    if isempty(sess.valTrials)
+        continue
+    end
 
     [fig_trialvel,fig_velavg, tmptrackedges, tmpbnvel] = plot_trialvel(sess,1);  % 1cm binsize
     saveas(fig_trialvel,[sbase, '_trialvelocity'],'png')

@@ -79,12 +79,12 @@ if sess.samprate ~= root.fspulse
     % [sync_ccg, sync_lags] = xcorr(sync.digArray, sess.dsslx);
     [sync_ccg, sync_lags] = xcorr(root.syncpulse, sess.dsslx);   
 else
-    [sync_ccg, sync_lags] = xcorr(sync.digArray, sess.slx);
+    [sync_ccg, sync_lags] = xcorr(root.syncpulse, sess.slx);
 end
 
 pk_lag = sync_lags(sync_ccg == max(sync_ccg));  %Index to offset sess.ts
 
-%% TShift sess to match sync
+%% TShift sess to match sync 
 %Find neural sync edge inds and ts
 % [~, edges_sync] = findpeaks(sync.digArray);
 % edges_sync_ts = [sync.ts(1) sync.ts(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
@@ -110,6 +110,22 @@ edges_sess_ts = sess.ts(edges_sess);
 edges_sess_ts = edges_sess_ts(edges_sess_ts - sess.dsts(abs(pk_lag)) > 0);
 edges_sess_ts = [edges_sess_ts(1)-tmp, edges_sess_ts];
 
+%% Find full rate bhvr for equal sync/sess sampling rate
+[~, edges_sync] = findpeaks(root.syncpulse);
+edges_sync_ts = [root.tspulse(1) root.tspulse(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
+tmp = diff(edges_sync_ts);
+
+[~, edges_sess] = findpeaks(sess.slx);
+align_start = edges_sess + pk_lag > 0;
+edges_sess = edges_sess(align_start);
+edges_sess_ts = sess.ts(edges_sess);
+
+%% Visualize
+figure; hold on; 
+plot(root.tspulse,root.syncpulse)
+% plot(sess.dsts+pk_lag/2500,sess.dsslx/2)
+plot(sess.ts+pk_lag/2500,sess.slx/3)
+
 %% example alignment of all spike times to behavior
 % SA = EA + RA*(SB - EB)/RB
 % SA is scaled, bounded, timestamp of event from B mapped to stream A
@@ -129,11 +145,6 @@ for i = 1:length(allts)
         root.tssync(i) = allts(i);
     end
 end
-
-%% Visualize
-figure; hold on; plot(sync.ts,sync.digArray)
-plot(sess.dsts+pk_lag/2500,sess.dsslx/2)
-plot(sess.ts+pk_lag/2500,sess.slx/3)
 
 %% better spkind method from CMBHome
 
@@ -157,6 +168,14 @@ save([root.name '_root'],'root');
 % Plot all good units as a single mega raster
 
 k = 1;
+lap = 28;
+figure; hold on;
+plot(sess.ts(sess.lapstt(lap):sess.lapend(lap+1)),sess.pos(sess.lapstt(lap):sess.lapend(lap+1)))
+xlabel('Time (s)')
+ylabel('Position (cm)')
+set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+xlim([sess.ts(sess.lapstt(lap)), sess.ts(sess.lapend(lap+1))]);
+saveas(gcf,[sbase, '_bhvrzoom_good3'],'png')
 
 figure; hold on;
 for i = 1:length(root.good)
@@ -166,28 +185,28 @@ for i = 1:length(root.good)
 end
 
 xlabel('Time (s)')
-xlim([30 60]);
+xlim([sess.ts(sess.lapstt(lap)), sess.ts(sess.lapend(lap+1))]);
 ylim([0 length(root.good)+1])
 ylabel('Cluster ID')
 set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
-% saveas(gcf,[sbase, '_spkraster_good2'],'png')
+saveas(gcf,[sbase, '_spkraster_good3'],'png')
 
 %% Plot and save some neural analyses
-cd('D:\Kelton\analyses\KW004\KW004_06272024\good')
+cd('D:\Kelton\analyses\KW005\KW005_07182024_rec_D3_CA1\good')
 
 for i = 1:length(root.good)
 
     cc = root.good(i);
 
-    tmpraster = plot_trialraster(root,cc,sess);
-    saveas(tmpraster, ['unit' num2str(cc) '_spkraster'],'png')
+    % tmpraster = plot_trialraster(root,cc,sess);
+    % saveas(tmpraster, ['unit' num2str(cc) '_spkraster'],'png')
+    % 
+    % [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
+    % saveas(tmpfrvel, ['unit' num2str(cc) '_velXFR'],'png')
 
-    [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
-    saveas(tmpfrvel, ['unit' num2str(cc) '_velXFR'],'png')
-
-    [~,~,tmpfrpos] = plot_frXpos(root,cc,sess);
-    saveas(tmpfrpos, ['unit' num2str(cc) '_posXFR'],'png')
+    [~,~,tmpfrpos] = plot_frXpos(root,cc,sess,0.05);
+    saveas(tmpfrpos, ['unit' num2str(cc) '_posXFR_5cm'],'png')
 
     close all
 end

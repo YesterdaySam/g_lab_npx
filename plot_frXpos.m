@@ -34,9 +34,12 @@ nlaps = size(sess.lapstt,1);
 % binedges = 0:dbnsz:max(sess.pos);
 binedges = 0:dbnsz:1.9; %Hardcoded for known track length <190
 
+spkvel = sess.velshft(root.tsb(root.cl == unit));
+runspk = spkvel > 0.02; %Only use spikes greater than 2cm/s
+
 spkpos = sess.pos(root.tsb(root.cl == unit));
 
-dspk = histcounts(spkpos,binedges);
+dspk = histcounts(spkpos(runspk),binedges);
 docc = histcounts(sess.pos,binedges)/sess.samprate;
 binfr = dspk./docc;
 
