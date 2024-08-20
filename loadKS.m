@@ -1,12 +1,12 @@
-function [root] = loadKS(datpath, spath, sname, overwrite)
+function [root] = loadKS(datpath, spath, overwrite)
 %% Loads the main file outputs from Phy
 % Requires the npy-matlab package from kwikteam https://github.com/kwikteam/npy-matlab
 % Generates or loads a root file in the ksPath and saves it to the starting
 % directory
 %
 % Inputs:
-% ksPath    = string specifying the path to the kilosort output directory
-% sname     = string specifying name e.g. 'KW004_06282024'
+% datpath   = string specifying the path to the kilosort output directory
+% spath     = string specifying path where _root file will be saved
 % overwrite = 0 or 1 to overwrite an existing '*_root' file in ksPath dir
 %
 % Outputs:
@@ -25,7 +25,6 @@ function [root] = loadKS(datpath, spath, sname, overwrite)
 arguments
     datpath
     spath
-    sname
     overwrite = 0
 end
 
@@ -76,7 +75,9 @@ catch
 end
 
 % Organize root struct
-root.name = sname;  % Change later to use auto-generated filenames from parent dir
+[~, mname] = fileparts(meta.fileName);
+mname = strsplit(mname, '_g0');
+root.name = mname{1};
 root.fs         = 30000;
 root.ts         = double(spkTimes)/root.fs;
 root.cl         = spkClusts;

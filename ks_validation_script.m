@@ -116,3 +116,69 @@ histogram(root2.nspks(mapper2) - root4.nspks(mapper4),50)
 plot([0 0], [0 20], 'k--','LineWidth',1)
 xlabel('\Delta # Spikes KS2.5 - KS4')
 ylabel('Count')
+
+%% Test SI KS4 vs Raw KS4
+datpath2 = 'D:\Kelton\probe_data\KW005\KW005_07182024_rec_D3_CA1_g0\KW005_07182024_rec_D3_CA1_g0_imec0';
+datpath1 = 'D:\Kelton\probe_data\KW005\KW005_07182024_rec_D3_CA1_g0\preprocess';
+kssipath = 'D:\Kelton\probe_data\KW005\KW005_07182024_rec_D3_CA1_g0\preprocess\kilosort4_direct'; % Default batchsize is 2.000
+ksrawpath = 'D:\Kelton\probe_data\KW005\KW005_07182024_rec_D3_CA1_g0\KW005_07182024_rec_D3_CA1_g0_imec0\kilosort4'; % Default batchsize 2.1824
+root_si = loadKS(datpath1,kssipath);
+root_raw = loadKS(datpath2,ksrawpath);
+recLen = root_raw.tspulse(end);
+
+%% Add basic metrics to each unit
+nc_raw = size(unique(root_raw.cl),1);
+nc_si = size(unique(root_si.cl),1);
+root_raw.id = unique(root_raw.cl);
+root_si.id = unique(root_si.cl);
+
+for i = 1:nc_raw
+    root_raw.nspks(i) = size(root_raw.ts(root_raw.cl == root_raw.id(i)),1);
+end
+root_raw.fr = root_raw.nspks/recLen;
+
+for i = 1:nc_si
+    root_si.nspks(i) = size(root_si.ts(root_si.cl == root_si.id(i)),1);
+end
+root_si.fr = root_si.nspks/recLen;
+
+%% Compare well-matched units with different metrics
+matchT = readtable('D:\Kelton\probe_data\KW005\KW005_07182024_rec_D3_CA1_g0\preprocess\KS_compare_units.xlsx');
+matchT2 = rmmissing(matchT(:,1:4)); %Remove unmatched units
+
+rawunits = matchT2.KS4_raw;
+siunits = matchT2.KS4_SI_direct;
+
+for i = 1:length(rawunits)
+    mapper_raw(i) = find(root_raw.id == rawunits(i));
+    mapper_si(i) = find(root_si.id == siunits(i));
+end
+
+ps = struct;
+stats = struct;
+corrType = 'Spearman';
+
+
+[stats.fr_rho, ps.fr_corr] = corr(root_raw.fr(mapper_raw)',root_si.fr(mapper_si)',"Type",corrType);
+[stats.nspk_rho, ps.nspk_corr] = corr(root_raw.nspks(mapper_raw)',root_si.nspks(mapper_si)',"Type",corrType);
+
+figure; hold on
+scatter(root_si.fr(mapper_si),root_raw.fr(mapper_raw))
+plot([0 max(root_raw.fr)], [0 max(root_raw.fr)], 'k--')
+xlabel('KS SI FR')
+ylabel('KS Raw FR')
+
+figure; hold on
+scatter(root_si.nspks(mapper_si),root_raw.nspks(mapper_raw))
+plot([0 max(root_raw.nspks)], [0 max(root_raw.nspks)], 'k--')
+xlabel('KS SI # Spikes')
+ylabel('KS Raw # Spikes')
+
+%%
+[~,ps.fr_tt,~,stats.fr_tt] = ttest(root_si.nspks(mapper_si) - root_raw.nspks(mapper_raw));
+
+figure; hold on
+histogram(root_si.nspks(mapper_si) - root_raw.nspks(mapper_raw),50)
+plot([0 0], [0 50], 'k--','LineWidth',1)
+xlabel('\Delta # Spikes KS SI - Raw')
+ylabel('Count')
