@@ -1,7 +1,9 @@
 function [fhandle, fhandle2, trackedges, lckmap, bnlck] = plot_lickpos(sess,bnsz)
 %% Create linearized lick posiition (binned by space)
 % Inputs
-%   session = struct from importBhvr.m
+%   sess = struct from importBhvr.m
+%   bnsz    = double in meters (m)
+%
 % Outputs
 %   fhandle = handle to figure
 %

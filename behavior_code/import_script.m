@@ -2,7 +2,7 @@
 
 % bhvrdir = 'C:\Users\cornu\Documents\Research\Data\test\test_02';
 % mousedir = 'C:\Users\cornu\Documents\Research\Data\KW005';
-mousedir = 'D:\Kelton\ws_data\KW005';
+mousedir = 'D:\Data\Kelton\analyses\KW006';
 
 overwriteFlag = 0;
 
@@ -11,8 +11,9 @@ cd(mousedir)
 makeBhvrDirs(mousedir)
 
 dirlist = dir;
+dirlist = dirlist([dirlist.isdir]);
 
-for i = length(dirlist)-2:length(dirlist)
+for i = 1:length(dirlist)
     cd(fullfile(dirlist(i).folder,dirlist(i).name));
 
     sessmade = dir('*session.mat');
@@ -38,7 +39,7 @@ for i = length(dirlist)-2:length(dirlist)
         continue
     end
 
-    [fig_trialvel,fig_velavg, tmptrackedges, tmpbnvel] = plot_trialvel(sess,1);  % 1cm binsize
+    [fig_trialvel,fig_velavg, tmpedges1, tmpbnvel] = plot_trialvel(sess, 0.01);  % 1cm binsize
     saveas(fig_trialvel,[sbase, '_trialvelocity'],'png')
     saveas(fig_velavg,[sbase, '_avgvelocity'],'png')
 
@@ -47,12 +48,12 @@ for i = length(dirlist)-2:length(dirlist)
     saveas(fig_lickavg,[sbase, '_lickaverage'],'png')
 
     if dirlist(i).name(end-1:end) ~= "D1"
-        [fig_lickpos, fig_licktrialavg, tmptrackedges2, ~, tmpbnlck] = plot_lickpos(sess);   % Don't run this for D1 - random acclimation (# laps ~= # rewards)
+        [fig_lickpos, fig_licktrialavg, tmpedges2, ~, tmpbnlck] = plot_lickpos(sess);   % Don't run this for D1 - random acclimation (# laps ~= # rewards)
         saveas(fig_lickpos,[sbase, '_lickraster'],'png')
         saveas(fig_licktrialavg,[sbase, '_lickpos_average'],'png')
     end
 
-    fig_vel_lick = plot_vel_lck(sess,tmpbnvel,tmpbnlck,tmptrackedges,tmptrackedges2);
+    fig_vel_lick = plot_vel_lck(sess, tmpbnvel, 0.01, 0.03);
     saveas(fig_vel_lick,[sbase, '_vel_lck'],'png')
     
     close all

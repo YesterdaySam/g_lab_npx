@@ -1,4 +1,4 @@
-function [fhandle] = plot_trialraster(root,unit,sess,vthresh,plotflag)
+function [fhandle] = plot_trialHeatmap(root,unit,sess,dbnsz,vthresh,plotflag)
 %% Plots the spatially linearized spike raster for each trial of one unit
 %
 % Inputs:
@@ -18,7 +18,8 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
-    vthresh = 0.02  %meters/s; velocity threshold
+    dbnsz = 0.03    %meters
+    vthresh = 0.02  %meters/sec
     plotflag = 1    %binary
 end
 
@@ -27,30 +28,30 @@ sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
 
+binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
 spkinds = root.tsb(root.cl == unit);
 spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
-
-spkpos = [];
-rwdpos = [];
+spkmap = [];
 
 for i = 1:sess.nlaps
     tmpspks = sess.pos(spkinds(spkinds > sess.lapstt(i) & spkinds < sess.lapend(i)));
-    tmprwd  = sess.pos(sess.rwdind(sess.rwdind > sess.lapstt(i) & sess.rwdind < sess.lapend(i)));
-    spkpos  = [spkpos; tmpspks, i*ones(length(tmpspks),1)];
-    rwdpos  = [rwdpos; tmprwd, i];
+    spkct   = histcounts(tmpspks, binedges);
+    bnocc   = histcounts(sess.pos(sess.ind(sess.lapstt(i):sess.lapend(i))),binedges);
+    bnoccs  = bnocc / sess.samprate;
+    spkmap  = [spkmap; spkct ./ bnoccs];    % Normalize by time spent per bin for FR
 end
 
-% spkpos = sess.pos(root.tsb(root.cl == unit));
-
 if plotflag
-    fhandle = figure;      % Positional Lick Raster
-    hold on
+    fhandle = figure;
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
-    plot(spkpos(:,1)*100,spkpos(:,2),'k.')
-    plot(rwdpos(:,1)*100,rwdpos(:,2),'b*')
-    xlabel('Position (cm)')
-    ylabel('Trial #')
-    set(gca,'FontSize',12,'FontName','Arial')
+    imagesc(spkmap,[prctile(spkmap,1,'all'), prctile(spkmap,99,'all')]);
+    colormap("parula")
+    cbar = colorbar; clim([0 inf]);
+    xticks(1:10:length(binedges))
+    xticklabels(binedges(1:10:end)*100)
+    xlabel('Position (cm)');
+    ylabel('Trial #'); ylabel(cbar,'FR (Hz)','FontSize',12,'Rotation',90)
+    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 end
 
 end

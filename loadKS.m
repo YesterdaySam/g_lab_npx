@@ -40,6 +40,8 @@ end
 
 % Get sync pulse by reading in meta data
 cd(datpath)
+lfpath = dir("*rec*");
+cd(lfpath.name)
 
 lfpfile = dir('*lf.bin');
 meta = SGLX_readMeta.ReadMeta(lfpfile.name, lfpfile.folder);
@@ -58,19 +60,22 @@ syncpulse = double(syncpulse);
 tspulse    = [1:length(syncpulse)] / SGLX_readMeta.SampRate(meta);
 
 % Get kilosort and Phy outputs
+cd(datpath)
 kspath = dir('*kilosort*');
-cd(kspath.name)
+cd([kspath.name '\sorter_output'])
 
 fileClust = dir("spike_clusters.npy");
 fileTime  = dir("spike_times.npy");
-fileLabel = dir("cluster_group.tsv");
+fileLabel = dir("cluster_group.tsv");   % Contains post-manual curation labels
+fileInfo  = dir("cluster_info.tsv");    % Contains pre-manual curation labels and metadata like depth
 
 try
     spkClusts   = readNPY(fileClust.name);
     spkTimes    = readNPY(fileTime.name);
-    spkLabels   = readtable(fileLabel.name, "FileType", "text", 'delimiter', '\t');
+    spkLabels   = readtable(fileLabel.name, "FileType", "text", 'Delimiter', '\t');
+    spkInfo     = readtable(fileInfo.name, "FileType", "text", 'Delimiter', '\t');
 catch
-    disp("Missing critical file 'spike_clusters.npy', 'spike_times.npy', or 'spike_times.npy'. Aborting.")
+    disp("Missing critical file 'spike_clusters.npy', 'spike_times.npy', 'cluster_group.tsv', or 'cluster_info.tsv'. Aborting.")
     return
 end
 
@@ -82,12 +87,16 @@ root.fs         = 30000;
 root.ts         = double(spkTimes)/root.fs;
 root.cl         = spkClusts;
 root.lb         = spkLabels;
+root.info       = spkInfo(:,[1:3,5:8,10]);
 root.good       = root.lb.cluster_id(find(strcmp(root.lb.group,'good')));
 root.mua        = root.lb.cluster_id(find(strcmp(root.lb.group,'mua')));
 root.noise      = root.lb.cluster_id(find(strcmp(root.lb.group,'noise')));
+root.goodind    = strcmp(root.lb.group,'good');
+root.muaind     = strcmp(root.lb.group,'mua');
+root.noiseind   = strcmp(root.lb.group,'noise');
 root.syncpulse  = syncpulse;
 root.tspulse    = tspulse;
-root.fspulse     = SGLX_readMeta.SampRate(meta);
+root.fspulse    = SGLX_readMeta.SampRate(meta);
 
 cd(spath)
 

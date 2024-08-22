@@ -4,7 +4,7 @@ function [root] = alignBhvrTS(bhvrdir, rootdir, sdir)
 % (SGLX clock and Wavesurfer clock) to identify offset of the random signal
 % Then aligns all edges and updates spike timestamps to the nearest flipper
 % pulse edge in the behavior stream. Finally bins all newly aligned spikes
-% into the nearest behavior timestamp and saves a new root file
+% into the nearest behavior timestamp and 
 %
 % Inputs:
 %   bhvrdir    = path to directory containing *_sess.mat file

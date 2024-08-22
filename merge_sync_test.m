@@ -199,7 +199,7 @@ for i = 1:length(root.good)
 
     cc = root.good(i);
 
-    % tmpraster = plot_trialraster(root,cc,sess);
+    tmpraster = plot_trialraster(root,cc,sess);
     % saveas(tmpraster, ['unit' num2str(cc) '_spkraster'],'png')
     % 
     % [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);

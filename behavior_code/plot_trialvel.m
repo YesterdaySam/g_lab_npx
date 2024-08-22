@@ -2,7 +2,7 @@ function [fhandle,fhandle2, trackedges, bnvel] = plot_trialvel(sess, bnsz)
 %% Create linearized velocity (binned by space)
 % Inputs
 %   sess        = struct from importBhvr.m
-%   bnsz        = double in cm e.g. 1
+%   bnsz        = double in meters (m)
 % Outputs
 %   fhandle     = handle to figure 1
 %   fhandle2    = handle to figure 2
@@ -11,7 +11,7 @@ function [fhandle,fhandle2, trackedges, bnvel] = plot_trialvel(sess, bnsz)
 
 arguments
     sess
-    bnsz = 1    % velocity bin size in cm
+    bnsz = 0.01    % velocity bin size in cm
 end
 
 % Only use valid trials
@@ -21,7 +21,7 @@ sess.nlaps  = length(sess.lapstt);
 
 % vel             = session.vel - min(session.vel);
 vel             = sess.velshft;
-bnsz            = bnsz/100;    % translate to m
+% bnsz            = bnsz/100;    % translate to m
 tracklen        = (max(sess.pos) - min(sess.pos)); % m
 trackedges      = 0:bnsz:tracklen;
 nbins           = size(trackedges,2);
@@ -31,7 +31,7 @@ for i = 1:sess.nlaps
     bnocc = histcounts(sess.pos(sess.ind(sess.lapstt(i):sess.lapend(i))),trackedges);
     for j = 1:nbins-1
         tmpind = sess.lapstt(i) + find(sess.pos(sess.lapstt(i):sess.lapend(i)) > trackedges(j) & sess.pos(sess.lapstt(i):sess.lapend(i)) < trackedges(j+1));
-        bnvel(i,j) = mean(vel(tmpind))*100;
+            bnvel(i,j) = mean(vel(tmpind(1:end-1)))*100;    % Average everything up to the last time index which bleeds into next lap (or over recording length)
     end
     % bnvel(i,:) = bnvel(i,:) ./ (bnocc / sess.samprate);
 end

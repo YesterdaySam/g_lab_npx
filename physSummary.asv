@@ -1,0 +1,20 @@
+% Summarize ephys script
+
+datpath = 'D:\Data\Kelton\analyses\KW006\KW006_07312024_rec_D2_Sub';
+
+cd(datpath)
+
+rootfile = dir("*_root.mat");
+load(rootfile.name)
+
+% Plot Amp X Depth x FR
+adfr1 = plot_ampXdepthxFR(root);
+adfr2 = plot_ampXdepthxFR(root,1,1,0);
+adfr3 = plot_ampXdepthxFR(root,1,0,0);
+adfr4 = plot_ampXdepthxFR(root,0,1,0);
+
+saveas(adfr1,[root.name '_AmpDepthFR_all'])
+saveas(adfr2,[root.name '_AmpDepthFR_nonoise'])
+saveas(adfr3,[root.name '_AmpDepthFR_all'])
+saveas(adfr4,[root.name '_AmpDepthFR_all'])
+% Plot FR X Depth
