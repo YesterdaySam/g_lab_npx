@@ -5,7 +5,7 @@ function [binedges,binfr,mdlparams,fhandle] = plot_frXvel(root,unit,sess,vbnsz,p
 % root = root object. Must have root.tssync and root.tsb fields
 % unit = cluster ID
 % sess = session struct from importBhvr
-% vbnsz = size of velocity bins, default 0.02m/s = 2cm/s
+% vbnsz = size of velocity bins, default 2cm/s
 % plotflag = binary of whether to plot the output
 %
 % Outputs:
@@ -22,7 +22,7 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
-    vbnsz = 0.02    %m/s
+    vbnsz = 2       %cm/s
     plotflag = 1    %binary
 end
 

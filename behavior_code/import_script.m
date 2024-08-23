@@ -2,7 +2,7 @@
 
 % bhvrdir = 'C:\Users\cornu\Documents\Research\Data\test\test_02';
 % mousedir = 'C:\Users\cornu\Documents\Research\Data\KW005';
-mousedir = 'D:\Data\Kelton\analyses\KW006';
+mousedir = 'D:\Data\Kelton\analyses\KW008';
 
 overwriteFlag = 0;
 
@@ -39,7 +39,7 @@ for i = 1:length(dirlist)
         continue
     end
 
-    [fig_trialvel,fig_velavg, tmpedges1, tmpbnvel] = plot_trialvel(sess, 0.01);  % 1cm binsize
+    [fig_trialvel,fig_velavg, tmpedges1, tmpbnvel] = plot_trialvel(sess);  % default 0.01m binsize
     saveas(fig_trialvel,[sbase, '_trialvelocity'],'png')
     saveas(fig_velavg,[sbase, '_avgvelocity'],'png')
 

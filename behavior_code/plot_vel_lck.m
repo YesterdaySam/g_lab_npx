@@ -12,8 +12,12 @@ function [fhandle] = plot_vel_lck(sess,bnvel,bnszVel,bnszLck)
 % Created 8/21/2024 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
-nLaps = size(bnvel,1);   %Recalculate based on laps used in bnvel, don't use sess.nlaps
-tracklen    = (max(sess.pos) - min(sess.pos)); % m
+% Only use valid trials
+sess.lapstt = sess.lapstt(sess.valTrials);
+sess.lapend = sess.lapend(sess.valTrials);
+sess.nlaps  = length(sess.lapstt);
+
+tracklen    = max(sess.pos(sess.lapstt(1):sess.lapend(1))); % m
 edgesVel    = 0:bnszVel:tracklen;
 edgesLck    = 0:bnszLck:tracklen;
 % nBinVel     = length(edgesVel);
@@ -21,9 +25,9 @@ nBinlck     = length(edgesLck);
 
 % Find licks
 lckmap  = [];
-bnlck = ones(nLaps,nBinlck-1);
+bnlck = ones(sess.nlaps,nBinlck-1);
 
-for i = 1:nLaps
+for i = 1:sess.nlaps
     % Find index of licks for this lap
     tmplck = sess.lckind(find(sess.lckind > sess.lapstt(i) & sess.lckind < sess.lapend(i)));
     
@@ -36,7 +40,7 @@ for i = 1:nLaps
 end
 
 
-semvel = std(bnvel,'omitnan')/sqrt(nLaps);
+semvel = std(bnvel,'omitnan')/sqrt(sess.nlaps);
 ciupvel = rmmissing(mean(bnvel,1,'omitnan') + semvel*1.96);
 cidnvel = rmmissing(mean(bnvel,1,'omitnan') - semvel*1.96);
 
@@ -44,11 +48,11 @@ fhandle = figure; hold on;
 set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
 plot(edgesVel(1:end-1)*100,mean(bnvel,1,'omitnan'),'k','LineWidth',2)
 patch(100*[edgesVel(1:length(cidnvel)),fliplr(edgesVel(1:length(cidnvel)))],[cidnvel,fliplr(ciupvel)],'k','FaceAlpha',0.5,'EdgeColor','none')
-xlabel('Position'); xlim([0 200])
-ylabel('Average Velocity'); ylim([0 prctile(sess.velshft,99)*100])
+xlabel('Position'); % xlim([0 200])
+ylabel('Average Velocity'); ylim([0 prctile(sess.velshft,99)])
 set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
-semlck = std(bnlck,'omitnan')/sqrt(nLaps);
+semlck = std(bnlck,'omitnan')/sqrt(sess.nlaps);
 ciuplck = rmmissing(mean(bnlck,1,'omitnan') + semlck*1.96);
 cidnlck = rmmissing(mean(bnlck,1,'omitnan') - semlck*1.96);
 

@@ -38,8 +38,10 @@ for i = 1:length(dirlist)
     sumT.("Length(min)")(rowCt) = sess.ts(end)/60;
     sumT.nLaps(rowCt)           = sess.nlaps;
     sumT.uLicks(rowCt)          = length(sess.lckind) / sess.nlaps; %in licks/lap
-    sumT.uVelocity(rowCt)       = mean(sess.velshft)*100;    %in cm/s
-    sumT.totDay                 = rowCt;
+    sumT.uVelocity(rowCt)       = mean(sess.velshft);    %in cm/s
+    sumT.uVelStp(rowCt)         = mean(sess.velshft(sess.velshft > 0 & sess.velshft < 2)); %in cm/s, low run speed velocity
+    sumT.uVelRun(rowCt)         = mean(sess.velshft(sess.velshft > 2)); %in cm/s, high run speed velocity
+    sumT.totDay(rowCt)          = rowCt;
     rowCt = rowCt + 1;
 end
 
@@ -80,8 +82,10 @@ ylabel('Average Licks/lap')
 ylim([0 inf])
 
 subplot(2,2,4); hold on
-plot(sumT.Day(trnInds),sumT.uVelocity(trnInds),'k','LineWidth',2)
-plot(sumT.totDay(recInds),sumT.uVelocity(recInds),'b','LineWidth',2)
+% plot(sumT.Day(trnInds),sumT.uVelStp(trnInds),'k','LineWidth',2)
+plot(sumT.Day(trnInds),sumT.uVelRun(trnInds),'k','LineWidth',2)
+% plot(sumT.totDay(recInds),sumT.uVelStp(recInds),'b','LineWidth',2)
+plot(sumT.totDay(recInds),sumT.uVelRun(recInds),'b','LineWidth',2)
 xlabel('Behavior Day')
 ylabel('Average Velocity (cm/s)')
 ylim([0 inf])
