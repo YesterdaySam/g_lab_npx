@@ -47,7 +47,7 @@ ys = predict(mdl,binedges(1:end-diff([length(binedges) length(binfr)]))');
 [r,p] = corrcoef(binfr,ys);
 r = r(2,1);
 p = p(2,1);
-b = mdl.Coefficients{2,1} / 100; 
+b = mdl.Coefficients{2,1}; 
 mdlparams.r = r;
 mdlparams.p = p;
 mdlparams.b = b;
@@ -55,8 +55,8 @@ mdlparams.yint = predict(mdl,0);
 
 if plotflag
     fhandle = figure; hold on
-    plot([binedges(1:end-diff([length(binedges) length(binfr)]))]*100,binfr, 'ko','MarkerFaceColor','k')
-    plot([binedges(1:end-diff([length(binedges) length(binfr)]))]*100,ys,'r','LineWidth',2)
+    plot([binedges(1:end-diff([length(binedges) length(binfr)]))],binfr, 'ko','MarkerFaceColor','k')
+    plot([binedges(1:end-diff([length(binedges) length(binfr)]))],ys,'r','LineWidth',2)
     xlabel('Velocity (cm/s)'); ylabel('Firing Rate (spk/s)')
     title(['Unit ' num2str(unit)])
     set(gca,'FontSize',12,'FontName','Arial')

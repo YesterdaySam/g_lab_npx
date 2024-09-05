@@ -44,7 +44,7 @@ end
 if plotflag
     fhandle = figure;
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
-    imagesc(spkmap,[prctile(spkmap,1,'all'), prctile(spkmap,99,'all')]);
+    imagesc(spkmap,[prctile(spkmap,1,'all'), prctile(spkmap,98,'all')]);
     colormap("parula")
     cbar = colorbar; clim([0 inf]);
     xticks(1:10:length(binedges))

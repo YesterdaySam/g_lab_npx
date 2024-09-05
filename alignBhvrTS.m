@@ -53,12 +53,19 @@ allts = root.ts;
 root.tssync = allts;
 
 for i = 1:length(allts)
-    eb = edges_sync_ts(find(edges_sync_ts < allts(i),1,'first'));
-    ea = edges_sess_ts(find(edges_sess_ts > eb,1,'first'));
+    try
+        eb = edges_sync_ts(find(edges_sync_ts < allts(i),1,'first'));
+        ea = edges_sess_ts(find(edges_sess_ts > eb,1,'first'));
+    catch
+        eb = edges_sync_ts(1);
+        ea = edges_sess_ts(find(edges_sess_ts > eb,1,'first'));
+        disp(['During spike alignment used first sync ts edge to align spike ' num2str(i)])
+    end
     try
         root.tssync(i) = ea + 2500*(allts(i) - eb)/2500;
     catch
         root.tssync(i) = allts(i);
+        disp(['During spike alignment used raw ts for spike ' num2str(i)])
     end
 end
 

@@ -1,6 +1,6 @@
 % Summarize behavior script
 
-mousedir = 'D:\Data\Kelton\analyses\KW006';
+mousedir = 'D:\Data\Kelton\analyses\KW008';
 
 overwriteFlag = 0;
 
