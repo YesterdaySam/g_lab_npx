@@ -18,8 +18,8 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
-    dbnsz = 0.03    %meters
-    vthresh = 0.02  %meters/sec
+    dbnsz = 0.05    %meters
+    vthresh = 0.04  %meters/sec
     plotflag = 1    %binary
 end
 

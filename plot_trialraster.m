@@ -46,7 +46,7 @@ if plotflag
     fhandle = figure;      % Positional Lick Raster
     hold on
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
-    plot(spkpos(:,1)*100,spkpos(:,2),'k.')
+    plot(spkpos(:,1)*100,spkpos(:,2),'k|')
     plot(rwdpos(:,1)*100,rwdpos(:,2),'b*')
     xlabel('Position (cm)')
     ylabel('Trial #')

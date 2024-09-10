@@ -22,8 +22,8 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
-    dbnsz = 0.03    %m
-    vthresh = 0.02  %m/s; velocity threshold for spikes
+    dbnsz = 0.05    %m
+    vthresh = 0.04  %m/s; velocity threshold for spikes
     plotflag = 1    %binary
 end
 

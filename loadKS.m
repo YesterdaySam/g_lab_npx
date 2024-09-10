@@ -78,7 +78,7 @@ catch
     disp("Missing critical file 'spike_clusters.npy', 'spike_times.npy', 'cluster_group.tsv', or 'cluster_info.tsv'. Aborting.")
     return
 end
-tmp2
+
 % Organize root struct
 [~, mname] = fileparts(meta.fileName);
 mname = strsplit(mname, '_g0');

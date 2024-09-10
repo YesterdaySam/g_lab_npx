@@ -61,6 +61,7 @@ if plotflag
     title(['Unit ' num2str(unit)])
     set(gca,'FontSize',12,'FontName','Arial')
 
+    ylim([0 inf])
     ylims = ylim;
     xlims = xlim;
 
