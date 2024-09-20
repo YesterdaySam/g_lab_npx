@@ -17,7 +17,8 @@ import spikeinterface.sorters as ss
 # import spikeinterface.curation as scur
 # import spikeinterface.widgets as sw
 
-# import numpy as np
+import subprocess
+import numpy as np
 # import matplotlib.pyplot as plt
 from pathlib import Path
 import os
@@ -25,7 +26,7 @@ import os
 global_job_kwargs = dict(n_jobs=8, chunk_duration="1s")
 si.set_global_job_kwargs(**global_job_kwargs)
 
-base_folder = Path('D:\Kelton\probe_data\KW005')
+base_folder = Path('D:\Kelton\probe_data\KW007')
 
 for fold in os.listdir(base_folder):
     sglx_dir = base_folder / fold
@@ -51,9 +52,23 @@ for fold in os.listdir(base_folder):
     
     # Run KS4 within SpikeInterface
     # ss.get_default_sorter_params('kilosort4')
-    sorting = ss.run_sorter('kilosort4', rec, output_folder = base_folder / sglx_dir / 'kilosort4', verbose=True)
+    if np.size(np.unique(rec.get_channel_groups())) == 1:
+        # Handle 1-shank probes
+        sorting = ss.run_sorter('kilosort4', rec, output_folder = base_folder / sglx_dir / 'kilosort4', verbose=True)
+        paramsFile = base_folder / sglx_dir / 'kilosort4/sorter_output/params.py'
+    else:
+        # Handle multishank probes by saving extra sync binary file for later extraction by matlab without capping RAM
+        # sorting = ss.run_sorter_by_property('kilosort4', rec, grouping_property='group', folder=base_folder / sglx_dir / 'kilosort4', verbose=True)
+        sorting = ss.run_sorter('kilosort4', rec, output_folder = base_folder / sglx_dir / 'kilosort4', verbose=True)
+        sync_rec = se.read_spikeglx(sglx_dir, stream_name='imec0.ap', load_sync_channel = True)
+        sync_rec = sync_rec.remove_channels([sync_rec.channel_ids[:-1]]) #Get sync channel
+        job_kwargs = dict(n_jobs=-1, chunk_duration='1s', progress_bar=True)
+        sync_rec.save(folder=base_folder / sglx_dir / 'sync_out_NPX2', format='binary', **job_kwargs)
+        paramsFile = base_folder / sglx_dir / 'kilosort4/sorter_output/params.py'
+        # paramsFile = base_folder / sglx_dir / 'kilosort4/0/sorter_output/params.py'
+    
     # Load in created params file and change key values
-    paramsFile = base_folder / sglx_dir / 'kilosort4/sorter_output/params.py'
+    # paramsFile = base_folder / sglx_dir / 'kilosort4/sorter_output/params.py'
     execfile(paramsFile)
     n_channels_dat = rec.get_num_channels() + 1     # Account for Sync channel!
     rec_signals_dict = {e["stream_name"]: e for e in raw_rec.neo_reader.signals_info_list}
