@@ -9,10 +9,8 @@ function [binedges,binfr,fhandle] = plot_frXpos(root,unit,sess,dbnsz,vthresh,plo
 % plotflag = binary of whether to plot the output
 %
 % Outputs:
-% binedges = velocity bin edges
-% binfr = velocity-binned firing rate
-% mdlparams = R and p values of the correlation coefficient, slope and
-%   y-intercept of a linear model fit between velocity and firing rate
+% binedges = spatial bin edges
+% binfr = spatial-binned firing rate
 % fhandle = handle to figure
 %
 % Created 7/15/24 LKW; Grienberger Lab; Brandeis University

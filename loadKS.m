@@ -43,11 +43,24 @@ cd(datpath)
 lfpath = dir("*rec*");
 cd(lfpath.name)
 
-lfpfile = dir('*lf.bin');
-meta = SGLX_readMeta.ReadMeta(lfpfile.name, lfpfile.folder);
+try
+    syncfile = dir('*lf.bin');
+    meta = SGLX_readMeta.ReadMeta(syncfile.name, syncfile.folder);
+catch
+    syncfile = dir('*tcat.imec0.ap.bin');
+    meta = SGLX_readMeta.ReadMeta(syncfile.name, syncfile.folder); 
+end
+
+if contains(meta.imDatFx_pn, 'NP2_FLEX_0')
+    meta.prbType = 'NPX1.0';
+    root.prbType = 'NPX1.0';
+elseif contains(meta.imDatFx_pn, 'NPM_FLEX_01')
+    meta.prbType = 'NPX2.0';
+    root.prbType = 'NPX2.0';
+end
 
 nSamp = floor(str2double(meta.fileTimeSecs) * SGLX_readMeta.SampRate(meta));
-dataArray = SGLX_readMeta.ReadBin(0, nSamp, meta, lfpfile.name, lfpfile.folder);
+dataArray = SGLX_readMeta.ReadBin(0, nSamp, meta, syncfile.name, syncfile.folder);
 
 % For a digital channel: read this digital word dw in the saved file
 % (1-based). For imec data there is never more than one saved digital word.
@@ -57,12 +70,16 @@ dLineList = 6;
 
 syncpulse = SGLX_readMeta.ExtractDigital(dataArray, meta, dw, dLineList);
 syncpulse = double(syncpulse);
-tspulse    = [1:length(syncpulse)] / SGLX_readMeta.SampRate(meta);
+tspulse    = (1:length(syncpulse)) / SGLX_readMeta.SampRate(meta);
 
 % Get kilosort and Phy outputs
 cd(datpath)
 kspath = dir('*kilosort*');
-cd([kspath.name '\sorter_output'])
+try 
+    cd([kspath.name '\sorter_output'])
+catch
+    cd(kspath.name)
+end
 
 fileClust = dir("spike_clusters.npy");
 fileTime  = dir("spike_times.npy");
@@ -98,7 +115,15 @@ root.syncpulse  = syncpulse;
 root.tspulse    = tspulse;
 root.fspulse    = SGLX_readMeta.SampRate(meta);
 
+if meta.prbType == 2
+    root.info.shankID = floor(root.info.ch/96);
+    root.info.depth2 = root.info.depth - 720 .* root.info.shankID;
+else 
+    root.info.shankID = zeros(length(root.info.ch),0);
+end
+
 cd(spath)
 
 save([root.name, '_root'],'root')
+save([root.name, '_meta'],'meta')
 end
