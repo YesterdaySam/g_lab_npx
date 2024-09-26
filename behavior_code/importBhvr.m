@@ -47,6 +47,8 @@ sess.vel        = sess.aidat(:,1);
 sess.velshft    = (sess.vel - mode(sess.vel))*80; % Subtract off velocity offset and convert analog voltage to cm/s, may leave negative values
 sess.pos        = sess.aidat(:,2);
 sess.lck        = sess.aidat(:,3);
+sess.opto       = sess.aidat(:,4);
+[~,sess.optoind]= findpeaks(double(sess.opto > 0.5));
 [~,sess.lckind] = findpeaks(double(sess.lck > 0.5));
 sess.slx        = double(sess.aidat(:,8) > 0.5);    % Translate to binary
 

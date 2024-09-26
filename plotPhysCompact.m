@@ -1,4 +1,4 @@
-function [] = plotEphysBasics(root,sess,sdir,overwrite,dType,rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag)
+function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag)
 %% Plot and save some neural analyses
 %
 % Inputs:
@@ -17,11 +17,11 @@ arguments
     sdir                    % Directory to save subplots
     overwrite           = 0 % Overwrite old plots
     dType               = 'good' % Type of units to work with
-    rastFlag            = 0 % Include raster across trials
-    velFlag             = 0 % Include velocity binned firing rate
-    avgposFlag          = 0 % Include averaged spatial firing rate
-    trialheatmapFlag    = 0 % Include heatmap across trials
-    perioptoFlag        = 0 % Include peri-opto pulse spikes plot
+    rastFlag            = 1 % Include raster across trials
+    velFlag             = 1 % Include velocity binned firing rate
+    avgposFlag          = 1 % Include averaged spatial firing rate
+    trialheatmapFlag    = 1 % Include heatmap across trials
+    perioptoFlag        = 1 % Include peri-opto pulse spikes plot
 end
 
 cd(sdir)
@@ -40,7 +40,7 @@ elseif contains(dType,'mua')
     nUnits = length(root.mua);
 end
 
-nPlots = sum([rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag]);
+% nPlots = sum([rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag]);
 
 for i = 1:nUnits
 
@@ -50,45 +50,49 @@ for i = 1:nUnits
         cc = root.mua(i);
     end
 
-    if rastFlag
-        if isempty(dir(['unit' num2str(cc) '_spkraster.png'])) | overwrite == 1
+    if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
+
+        if rastFlag
             tmpraster = plot_trialraster(root,cc,sess);
-            saveas(tmpraster, ['unit' num2str(cc) '_spkraster'],'png')
         end
-    end
 
-    if velFlag
-        if isempty(dir(['unit' num2str(cc) '_velXFR.png'])) | overwrite == 1
+        if velFlag
             [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
-            saveas(tmpfrvel, ['unit' num2str(cc) '_velXFR'],'png')
+            title('');
         end
-    end
 
-    if avgposFlag
-        if isempty(dir(['unit' num2str(cc) '_posXFR_5cm.png'])) | overwrite == 1
+        if avgposFlag
             [~,~,tmpfrpos] = plot_frXpos(root,cc,sess);
-            saveas(tmpfrpos, ['unit' num2str(cc) '_posXFR_5cm'],'png')
+            title('');
         end
-    end
 
-    if trialheatmapFlag
-        if isempty(dir(['unit' num2str(cc) '_trialFRHeatmap_5cm.png'])) | overwrite == 1
+        if trialheatmapFlag
             try
-                tmphtmp = plot_trialHeatmap(root,cc,sess);
-                saveas(tmphtmp, ['unit' num2str(cc) '_trialFRHeatmap_5cm'],'png')
+                tmpheatmap = plot_trialHeatmap(root,cc,sess);
             catch
                 disp(['heatmap failed for unit ' num2str(cc)])
             end
         end
-    end
 
-    if perioptoFlag
-        if isempty(dir(['unit' num2str(cc) '_optoXFR.png'])) | overwrite == 1
-            [~,~,tmpfrpos] = plot_frXopto(root,cc,sess);
-            saveas(tmpfrpos, ['unit' num2str(cc) '_optoXFR'],'png')
+        if perioptoFlag
+            [~,~,tmpfropto] = plot_frXopto(root,cc,sess);
+            title('');
         end
+
+        figlist = get(groot, 'Children');
+        newfig = figure;
+        set(gcf,'units','normalized','position',[0.2 0.1 0.7 0.7])
+
+        tcl = tiledlayout(newfig, 'flow');
+
+        for j = 1:numel(figlist)
+            figure(figlist(j))
+            ax = gca;
+            ax.Parent = tcl;
+            ax.Layout.Tile = j;
+        end
+
+        saveas(newfig, ['unit' num2str(cc) '_summary'], 'png')
+        close all
     end
-
-
-    close all
 end

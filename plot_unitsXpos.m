@@ -33,7 +33,8 @@ sess2.lapstt = sess.lapstt(sess.valTrials);
 sess2.lapend = sess.lapend(sess.valTrials);
 
 nUnits = length(units);
-binedges = 0:dbnsz:max(sess2.pos(sess2.lapstt(1):sess2.lapend(1)));    % Base max binsize on first valid trial
+maxpos = max(sess2.pos(sess2.lapstt(1):sess2.lapend(1)));
+binedges = 0:dbnsz:maxpos;    % Base max binsize on first valid trial
 nBins = length(binedges)-1;
 frMapRaw = zeros(nUnits, nBins);
 
@@ -54,10 +55,11 @@ end
 frMapSort = frMapNorm(sortInd,:);
 
 if plotflag
-    fhandle = figure; hold on;
+    fhandle = figure; hold on; axis square
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
     imagesc(frMapSort,[prctile(frMapSort,1,'all'), prctile(frMapSort,98,'all')]);
     plot([2 2],[0 nUnits+1],'r--','LineWidth',2)
+    plot([0 nBins+1],[0 nUnits+1],'k--','LineWidth',2)
     colormap("parula")
     cbar = colorbar; clim([0 0.98]);
     xticks(1:10:nBins+1)

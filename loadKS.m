@@ -115,9 +115,20 @@ root.syncpulse  = syncpulse;
 root.tspulse    = tspulse;
 root.fspulse    = SGLX_readMeta.SampRate(meta);
 
-if meta.prbType == 2
-    root.info.shankID = floor(root.info.ch/96);
-    root.info.depth2 = root.info.depth - 720 .* root.info.shankID;
+if contains(meta.prbType,'NPX2.0')
+    for i = 1:height(root.info)
+        if root.info.ch(i) >= 0 && root.info.ch(i) < 48 || root.info.ch(i) >= 96 && root.info.ch(i) < 144
+            root.info.shankID(i) = 0;
+        elseif root.info.ch(i) >= 48 && root.info.ch(i) < 96 || root.info.ch(i) >= 144 && root.info.ch(i) < 192
+            root.info.shankID(i) = 1;
+        elseif root.info.ch(i) >= 192 && root.info.ch(i) < 240 || root.info.ch(i) >= 288 && root.info.ch(i) < 336
+            root.info.shankID(i) = 2;
+        elseif root.info.ch(i) >= 240 && root.info.ch(i) < 288 || root.info.ch(i) >= 336 && root.info.ch(i) < 384
+            root.info.shankID(i) = 3;
+        end
+    end
+    % root.info.shankID = floor(root.info.ch/96);
+    % root.info.depth2 = root.info.depth - 720 .* root.info.shankID;
 else 
     root.info.shankID = zeros(length(root.info.ch),0);
 end
