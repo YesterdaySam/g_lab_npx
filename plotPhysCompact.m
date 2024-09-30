@@ -40,7 +40,7 @@ elseif contains(dType,'mua')
     nUnits = length(root.mua);
 end
 
-% nPlots = sum([rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag]);
+nPlots = sum([rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag]);
 
 for i = 1:nUnits
 
@@ -81,7 +81,11 @@ for i = 1:nUnits
 
         figlist = get(groot, 'Children');
         newfig = figure;
-        set(gcf,'units','normalized','position',[0.2 0.1 0.7 0.7])
+        if nPlots < 5
+            set(gcf,'units','normalized','position',[0.2 0.1 0.4 0.7])
+        else
+            set(gcf,'units','normalized','position',[0.2 0.1 0.7 0.7])
+        end
 
         tcl = tiledlayout(newfig, 'flow');
 

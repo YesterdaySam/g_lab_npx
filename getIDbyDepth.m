@@ -1,4 +1,4 @@
-function [clIDs] = getIDbyDepth(root,dmin,dmax,clType)
+function [clIDs,clInds] = getIDbyDepth(root,dmin,dmax,clType)
 %% Returns the cluster IDs of units between depths
 %
 % Inputs:
@@ -31,6 +31,14 @@ elseif strcmp(clType,'mua')
 elseif strcmp(clType,'noise')
     subIDs = root.info.cluster_id(root.noiseind);
     clIDs  = subIDs(root.info.depth(root.noiseind) > dmin & root.info.depth(root.noiseind) < dmax);
+end
+
+if ~isempty(clIDs)
+    for i = 1:length(clIDs)
+        clInds(i) = find(root.info.cluster_id == clIDs(i));
+    end
+else
+    clInds = [];
 end
 
 end

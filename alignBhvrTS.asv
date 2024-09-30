@@ -69,19 +69,8 @@ for i = 1:length(allts)
     end
 end
 
-%% Account for alignment causing spikes to fall outside sess.ts(end)
-tsovershoot = find(root.tssync > sess.ts(end));
-if ~isempty(tsovershoot)
-    root.ts(tsovershoot) = [];
-    root.cl(tsovershoot) = [];
-    root.tssync(tsovershoot) = [];
-    disp(['During spike alignment ' num2str(length(tsovershoot)) ' spikes fell after sess.ts(end) and were removed'])
-    root.trunc_spks_n = length(tsovershoot);
-else
-    root.trunc_spks_n = 0;
-end
-
 %% split spikes into bins with edges of sess.ts
+tsovershoot = root.tssync > sess.ts(end);
 
 counts = histcounts(root.tssync,sess.ts);   %after aligning all spike ts use root.tssync
 inds = [];
