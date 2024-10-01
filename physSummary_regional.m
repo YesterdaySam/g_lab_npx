@@ -11,7 +11,7 @@ load(rootfile.name)
 
 sflag = 1;
 
-border1 = 200;
+border1 = 450;
 border2 = 1000;
 
 [root.ccs_g_ctx,root.ccinds_g_ctx] = getIDbyDepth(root,border2+1,max(root.info.depth));
@@ -49,5 +49,6 @@ end
 
 if sflag
     saveas(adfr1,[root.name '_regional_ADFR_good.png'])
+    saveRoot(root)
     disp(['Finished phys summary for ' root.name])
 end
