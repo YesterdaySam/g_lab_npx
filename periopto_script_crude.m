@@ -1,6 +1,6 @@
 %% Script to generate a crude peri-opto plot by units
 optoTS = sess.ts(sess.optoind);
-ctlTS = sess.ts(root.tsb(root.cl == 57));
+ctlTS = sess.ts(root.tsb(root.cl == 57)); %EC4= 57; EC3 = 125
 % dShift = ctlTS - optoTS(361:540);     %For EC D2 bank 3 / EC3
 dShift = ctlTS - optoTS(548:720);     %For EC D2 bank 4 / EC4
 disp(num2str(mode(dShift)))
