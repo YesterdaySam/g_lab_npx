@@ -56,17 +56,17 @@ spksmooth = smoothdata(spkct,'gaussian',5);
 occsmooth = smoothdata(occct,'gaussian',5);
 
 binfr = spksmooth ./ occsmooth;
-rawfr = rmmissing(spkct ./ occct);
+rawfr = spkct ./ occct;
 
-sem = rmmissing(std(spkmap ./ bnoccs,'omitnan')/sqrt(sess.nlaps));
-ciup = rawfr + sem*1.96;
-cidn = rawfr - sem*1.96;
+sem = std(rawfr,'omitnan')/sqrt(sess.nlaps);
+ciup = rmmissing(mean(spkmap ./ bnoccs,1,'omitnan') + sem*1.96);
+cidn = rmmissing(mean(spkmap ./ bnoccs,1,'omitnan') - sem*1.96);
 
 if plotflag
     fhandle = figure; hold on
-    plot([binedges(1:length(rawfr))]*100,rawfr, 'k')
+    plot([binedges(1:end-1)]*100,binfr, 'k')
     patch(100*[binedges(1:length(rawfr)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
-    plot([binedges(1:end-1)]*100,binfr, 'r')
+    plot([binedges(1:end-1)]*100,rawfr, 'r')
 
     xlabel('Position (cm)'); ylabel('Firing Rate (spk/s)')
 

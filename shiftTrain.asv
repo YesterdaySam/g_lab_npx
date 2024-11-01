@@ -1,0 +1,24 @@
+function [root2] = shiftTrain(root,sess)
+
+
+arguments
+    root
+    sess
+end
+
+dur = sess.ts(end) - sess.ts(1);
+nts = size(sess.ts,2);
+
+minShift = round(0.5 * sess.samprate);     %Minimum duration to shift spike trains (e.g. 500ms)
+rShift = minShift + randi(nts - minShift,1);    % Get # of tsb to shift all spike trains
+
+% for i = 1:size(root.lb,1)
+% 
+% end
+
+root2 = root;
+root2.tsb = root2.tsb + rShift;         % Shift spikes
+wrapSpks = root2.tsb > sess.ind(end);    % Find t-shifted spikes greater than session endpoint
+
+root2.tsb(wrapSpks) = root2.tsb(wrapSpks) - sess.ind(end)
+end
