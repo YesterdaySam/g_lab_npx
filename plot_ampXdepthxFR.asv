@@ -76,20 +76,14 @@ legend(legCell)
 set(gca,'FontSize',12,'FontName','Arial')
 
 xlim([0 max(normamp)+nshanks-1]);
-if min(root.info.depth) < 500
-    ylim([0 max(root.info.depth)]);
-else
-    ylim([min(root.info.depth) max(root.info.depth)+100]);
-end
+ylim([min(root.info.depth) max(root.info.depth)]);
 
 ax2 = axes(thandle); hold on;
 ax2.XAxisLocation = 'top';
 ax2.YTick = [];
 for i = 1:nshanks-1
-    plot(ax2,[i i], [min(root.info.depth) max(root.info.depth)], 'k--')
+    plot(ax2,[i i], [0 max(root.info.depth)], 'k--')
 end
-
-xlim([0 max(normamp)+nshanks-1]);
 
 ax2.Color = 'none';
 ax1.Box = 'off';
