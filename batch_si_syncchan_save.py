@@ -18,15 +18,15 @@ import os
 global_job_kwargs = dict(n_jobs=8, chunk_duration="1s")
 si.set_global_job_kwargs(**global_job_kwargs)
 
-base_folder = Path('D:\Fox\FG013')
+base_folder = Path('D:\Kelton\probe_data\KW012')
 
 for fold in os.listdir(base_folder):
     sglx_dir = base_folder / fold
     
     try:
         tmp = os.listdir(sglx_dir)
-        tmp.index('sync_out_NPX2')
-        print("binary sync output folder already found for", sglx_dir)
+        tmp.index('.lf.bin')
+        print("LFP output folder already found for", sglx_dir)
         continue
     except:
         print("Starting SI preprocessing for", sglx_dir)
