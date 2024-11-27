@@ -1,5 +1,5 @@
-root = root3;
-sess = sess3;
+% root = root4;
+% sess = sess4;
 
 SI = zeros(1,length(root.good));
 uFR = zeros(1,length(root.good));
@@ -10,19 +10,23 @@ nUnits = length(root.good);
 for i = 1:nUnits
     cc = root.good(i);
 
-    [SI(i),uFR(i),pkFR(i)] = get_SI(root,cc,sess);
+    % [SI(i),uFR(i),pkFR(i)] = get_SI(root,cc,sess);
+    [SI(i),pkFR(i),uFR(i)] = get_PF(root,cc,sess);
 end
 
 % Find good PFs and Plot waterfalls of place fields
-sithresh = 0.1;
+sithresh = 0.3;
 frthresh = 2;
+uThresh  = 10;
 
 hiSI = SI > sithresh;
 hiFR = pkFR > frthresh;
+lowuFR = uFR < uThresh;
 
-goodPFs = root.good(hiSI & hiFR);
+goodPFs = root.good(hiSI & hiFR & lowuFR);
 
-plot_unitsXpos(root,sess,goodPFs)
+tmpfig = plot_unitsXpos(root,sess,goodPFs);
+% saveas(tmpfig,'goodSIFR_waterfall','png');
 
 %% compare shifted spike trains for pfs
 cc = 28;

@@ -52,7 +52,7 @@ edges_sess_ts = sess.ts(edges_sess);
 allts = root.ts;
 root.tssync = allts;
 ra = sess.samprate;
-rb = root.fspulse;
+rb = 1/(root.tspulse(2) - root.tspulse(1));
 
 for i = 1:length(allts)
     try

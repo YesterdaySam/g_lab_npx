@@ -1,6 +1,6 @@
 % Summarize behavior script
 
-mousedir = 'D:\Data\Kelton\analyses\KW005';
+mousedir = 'D:\Data\Kelton\analyses\KW015';
 
 overwriteFlag = 0;
 
@@ -63,20 +63,20 @@ set(gcf,'units','normalized','position',[0.4 0.15 0.5 0.7])
 
 subplot(2,2,1); hold on
 plot(sumT.Day(trnInds), sumT.("Length(min)")(trnInds),'k','LineWidth',2)
-plot(sumT.totDay(recInds), sumT.("Length(min)")(recInds),'b','LineWidth',2)
+plot(sumT.totDay(recInds), sumT.("Length(min)")(recInds),'b*','LineWidth',2)
 legend({'training','recording'},'location','se')
 ylabel('Recording Length (min)')
 ylim([0 inf])
 
 subplot(2,2,2); hold on
 plot(sumT.Day(trnInds), sumT.nLaps(trnInds),'k','LineWidth',2)
-plot(sumT.totDay(recInds), sumT.nLaps(recInds),'b','LineWidth',2)
+plot(sumT.totDay(recInds), sumT.nLaps(recInds),'b*','LineWidth',2)
 ylabel('Number of Laps')
 ylim([0 inf])
 
 subplot(2,2,3); hold on
 plot(sumT.Day(trnInds),sumT.uLicks(trnInds),'k','LineWidth',2)
-plot(sumT.totDay(recInds),sumT.uLicks(recInds),'b','LineWidth',2)
+plot(sumT.totDay(recInds),sumT.uLicks(recInds),'b*','LineWidth',2)
 xlabel('Behavior Day')
 ylabel('Average Licks/lap')
 ylim([0 inf])
@@ -85,7 +85,7 @@ subplot(2,2,4); hold on
 % plot(sumT.Day(trnInds),sumT.uVelStp(trnInds),'k','LineWidth',2)
 plot(sumT.Day(trnInds),sumT.uVelRun(trnInds),'k','LineWidth',2)
 % plot(sumT.totDay(recInds),sumT.uVelStp(recInds),'b','LineWidth',2)
-plot(sumT.totDay(recInds),sumT.uVelRun(recInds),'b','LineWidth',2)
+plot(sumT.totDay(recInds),sumT.uVelRun(recInds),'b*','LineWidth',2)
 xlabel('Behavior Day')
 ylabel('Average Velocity (cm/s)')
 ylim([0 inf])

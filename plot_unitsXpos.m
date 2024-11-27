@@ -1,4 +1,4 @@
-function [fhandle] = plot_unitsXpos(root,sess,units,dbnsz,vthresh,plotflag)
+function [fhandle,sortInd] = plot_unitsXpos(root,sess,units,dbnsz,vthresh,plotflag)
 %% Plots the avg binned firing rate by position of a unit
 %
 % Inputs:
@@ -39,8 +39,10 @@ nBins = length(binedges)-1;
 frMapRaw = zeros(nUnits, nBins);
 
 for i = 1:nUnits
-    [~,tmpbnfr] = plot_frXpos(root,units(i),sess,dbnsz,vthresh,0);
-    frMapRaw(i,:) = mean(tmpbnfr,1,'omitnan');
+    % [~,tmpbnfr] = plot_frXpos(root,units(i),sess,dbnsz,vthresh,0);
+    [~,~,~,~,tmpbnfr] = get_PF(root,units(i),sess,dbnsz,vthresh);
+    % frMapRaw(i,:) = mean(tmpbnfr,1,'omitnan');
+    frMapRaw(i,:) = tmpbnfr;
 end
 
 unitMax = max(frMapRaw,[],2);

@@ -54,5 +54,6 @@ peakFR = max(binfr);
 
 pOcc = occct ./ sum(occct,'all','omitnan');
 uFR = sum(spksmooth,'all','omitnan') / sum(occsmooth,'all','omitnan');
-si = sum(pOcc .* binfr .* log2(binfr ./ uFR),'all','omitnan') ./ uFR;
+si = sum(pOcc .* binfr .* log2(binfr ./ uFR),'all','omitnan');
 
+end

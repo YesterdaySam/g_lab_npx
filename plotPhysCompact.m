@@ -95,7 +95,7 @@ for i = 1:nUnits
             ax.Parent = tcl;
             ax.Layout.Tile = j;
         end
-
+        title(tcl,['Unit ' num2str(cc)])
         saveas(newfig, ['unit' num2str(cc) '_summary'], 'png')
         close all
     end
