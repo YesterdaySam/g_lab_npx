@@ -56,14 +56,17 @@ rb = root.fspulse;
 
 for i = 1:length(allts)
     try
-        eb = edges_root_ts(find(edges_root_ts < allts(i),1,'first'));   % Root sync edge ts
-        eb_ind = find(edges_root_ts < allts(i),1,'first');
+        eb_ind = find(edges_root_ts < allts(i),1,'last');
+        eb = edges_root_ts(eb_ind);   % Root sync edge ts
         % ea = edges_sess_ts(find(edges_sess_ts > eb,1,'first'));         % First sess sync edge after eb
         ea = edges_sess_ts(eb_ind);
     catch
         eb = edges_root_ts(1);
         ea = edges_sess_ts(find(edges_sess_ts > eb,1,'first'));
         disp(['During spike alignment used first sync ts edge to align spike ' num2str(i)])
+    end
+    if eb_ind == 2
+        disp('yay')
     end
     try
         root.tssync(i) = ea + ra*(allts(i) - eb)/rb;

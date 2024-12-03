@@ -4,7 +4,7 @@
 % mousedir = 'C:\Users\cornu\Documents\Research\Data\KW005';
 mousedir = 'D:\Data\Kelton\analyses\KW021';
 
-overwriteFlag = 1;
+overwriteFlag = 0;
 
 cd(mousedir)
 
@@ -59,8 +59,8 @@ for i = 1:length(dirlist)
     
     close all
 
-    plotBhvrCompact(sess,fullfile(dirlist(i).folder,dirlist(i).name),1)
-
+    plotBhvrCompact(sess,spath,1)
+    
     disp(['Finished basic import and visualization of ', sbase])
 
 end

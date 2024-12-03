@@ -50,6 +50,11 @@ for i = 1:nUnits
         cc = root.mua(i);
     end
 
+    if sum(root.cl == cc) < 100
+        disp(['Unit ' num2str(cc) ' contains ' num2str(sum(root.cl == cc)) ' spikes, skipping.'])
+        continue
+    end
+
     if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
 
         if rastFlag
@@ -82,9 +87,9 @@ for i = 1:nUnits
         figlist = get(groot, 'Children');
         newfig = figure;
         if nPlots < 5
-            set(gcf,'units','normalized','position',[0.2 0.1 0.4 0.7])
+            set(gcf,'units','normalized','position',[0.1 0.1 0.4 0.7])
         else
-            set(gcf,'units','normalized','position',[0.2 0.1 0.7 0.7])
+            set(gcf,'units','normalized','position',[0.1 0.1 0.7 0.7])
         end
 
         tcl = tiledlayout(newfig, 'flow');
