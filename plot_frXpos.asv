@@ -30,10 +30,12 @@ end
 sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
+sess.pos    = sess.pos(sess.runInds);
 
 binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
 spkinds = root.tsb(root.cl == unit);
-spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+% spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+spkinds = spkinds(sess.runInds(spkinds));
 
 % dspk = histcounts(sess.pos(spkinds),binedges);
 % docc = histcounts(sess.pos,binedges)/sess.samprate;
@@ -44,6 +46,7 @@ bnoccs = [];
 for i = 1:sess.nlaps
     tmpspks = sess.pos(spkinds(spkinds > sess.lapstt(i) & spkinds < sess.lapend(i)));
     spkct   = histcounts(tmpspks, binedges);
+    tmpRun  = sess.runInds(sess.lapstt(i):sess.lapend(i));
     bnocc   = histcounts(sess.pos(sess.ind(sess.lapstt(i):sess.lapend(i))),binedges) / sess.samprate;
     bnoccs  = [bnoccs; bnocc];              % Save bin occupancy
     spkmap  = [spkmap; spkct];              % Save spike counts
@@ -56,17 +59,17 @@ spksmooth = smoothdata(spkct,'gaussian',5);
 occsmooth = smoothdata(occct,'gaussian',5);
 
 binfr = spksmooth ./ occsmooth;
-rawfr = spkct ./ occct;
+rawfr = rmmissing(spkct ./ occct);
 
-sem = std(rawfr,'omitnan')/sqrt(sess.nlaps);
-ciup = rmmissing(mean(spkmap ./ bnoccs,1,'omitnan') + sem*1.96);
-cidn = rmmissing(mean(spkmap ./ bnoccs,1,'omitnan') - sem*1.96);
+sem = rmmissing(std(spkmap ./ bnoccs,'omitnan')/sqrt(sess.nlaps));
+ciup = rawfr + sem*1.96;
+cidn = rawfr - sem*1.96;
 
 if plotflag
     fhandle = figure; hold on
-    plot([binedges(1:end-1)]*100,binfr, 'k')
+    plot([binedges(1:length(rawfr))]*100,rawfr, 'k')
     patch(100*[binedges(1:length(rawfr)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
-    plot([binedges(1:end-1)]*100,rawfr, 'r')
+    plot([binedges(1:end-1)]*100,binfr, 'r')
 
     xlabel('Position (cm)'); ylabel('Firing Rate (spk/s)')
 

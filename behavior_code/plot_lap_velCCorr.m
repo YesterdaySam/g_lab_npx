@@ -53,6 +53,7 @@ if plotflag
     xlabel('Linearized Position (cm)')
     cbar1 = colorbar; %clim([0 inf]);
     ylabel(cbar1,'Pearson Rho','FontSize',12,'Rotation',90)
+    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
     % figure;imagesc(pPos < 0.05)
 
@@ -60,7 +61,8 @@ if plotflag
     xlabel('Lap #')
     cbar2 = colorbar; %clim([0 inf]);
     ylabel(cbar2,'Pearson Rho','FontSize',12,'Rotation',90)
-
+    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    
     % figure;imagesc(pLap < 0.05)
 end
 end

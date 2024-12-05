@@ -14,8 +14,8 @@ for i = 1:nUnits
     [SI(i),pkFR(i),uFR(i)] = get_PF(root,cc,sess);
 end
 
-% Find good PFs and Plot waterfalls of place fields
-sithresh = 0.3;
+%% Find good PFs and Plot waterfalls of place fields
+sithresh = 0.2;
 frthresh = 2;
 uThresh  = 10;
 

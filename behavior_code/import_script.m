@@ -4,7 +4,7 @@
 % mousedir = 'C:\Users\cornu\Documents\Research\Data\KW005';
 mousedir = 'D:\Data\Kelton\analyses\KW021';
 
-overwriteFlag = 1;
+overwriteFlag = 0;
 
 cd(mousedir)
 

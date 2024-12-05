@@ -38,12 +38,15 @@ nValLaps = length(sess.valTrials);
 
 binedges = 0:dbnsz:max(sess.pos(sess.lapstt(2):sess.lapend(2)));    % Base max binsize on first valid trial
 spkinds = root.tsb(root.cl == unit);
-spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+% spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
 
 valspks = spkinds(lapInclude(spkinds));
+valoccs = lapInclude' & sess.runInds;
 
 bnspks  = histcounts(sess.pos(valspks), binedges);
-bnoccs  = histcounts(sess.pos(lapInclude),binedges) / sess.samprate;
+% bnoccs  = histcounts(sess.pos(lapInclude),binedges) / sess.samprate;
+bnoccs  = histcounts(sess.pos(valoccs),binedges) / sess.samprate;
 
 spksmooth = smoothdata(bnspks,'gaussian',5);
 occsmooth = smoothdata(bnoccs,'gaussian',5);
