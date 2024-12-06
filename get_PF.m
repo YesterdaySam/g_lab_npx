@@ -26,26 +26,18 @@ end
 
 pfsizethresh = 0.15;
 
-% Get binary of valid lap times
-lapInclude = zeros(1,length(sess.ts));
-for i = 1:sess.nlaps
-    if isempty(find(sess.errTrials == i,1))
-        lapInclude(sess.lapstt(i):sess.lapend(i)) = ones(1,diff([sess.lapstt(i) sess.lapend(i)])+1);
-    end
-end
-lapInclude = logical(lapInclude);
-nValLaps = length(sess.valTrials);
+% nValLaps = length(sess.valTrials);
 
 binedges = 0:dbnsz:max(sess.pos(sess.lapstt(2):sess.lapend(2)));    % Base max binsize on first valid trial
 spkinds = root.tsb(root.cl == unit);
 % spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
 spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
 
-valspks = spkinds(lapInclude(spkinds));
-valoccs = lapInclude' & sess.runInds;
+valspks = spkinds(sess.lapInclude(spkinds));
+valoccs = sess.lapInclude & sess.runInds;
 
 bnspks  = histcounts(sess.pos(valspks), binedges);
-% bnoccs  = histcounts(sess.pos(lapInclude),binedges) / sess.samprate;
+% bnoccs  = histcounts(sess.pos(sess.lapInclude),binedges) / sess.samprate;
 bnoccs  = histcounts(sess.pos(valoccs),binedges) / sess.samprate;
 
 spksmooth = smoothdata(bnspks,'gaussian',5);

@@ -28,22 +28,31 @@ goodPFs = root.good(hiSI & hiFR & lowuFR);
 tmpfig = plot_unitsXpos(root,sess,goodPFs);
 % saveas(tmpfig,'goodSIFR_waterfall','png');
 
+%% Find depth and shankID of good fields
+
+for i = 1:numel(goodPFs)
+    [goodDepth(i,1), goodDepth(i,2)] = getDepthByID(root,goodPFs(i));
+end
+
 %% compare shifted spike trains for pfs
-cc = 28;
+cc = 207;
+nShufs = 1000;
 
-[tmpedges, tmpfr] = plot_frXpos(root,cc,sess,0.05,0.04,0);
-[tmpSI] = get_SI(root,cc,sess);
+[tmpSI,tmppkFR,tmpuFR,~,tmpbinFR,tmpedges] = get_PF(root,cc,sess);
+shufSI = zeros(nShufs,1);
+shufuFR = zeros(nShufs,1);
+shufpkFR = zeros(nShufs,1);
+shufbinFR = zeros(nShufs,length(tmpedges)-1);
 
-for i = 1:1000
+for i = 1:nShufs
     shiftroot = shiftTrain(root,sess);
-    [~,shufFR(i,:)] = plot_frXpos(shiftroot,cc,sess,0.05,0.04,0);
-    [shufSI(i)] = get_SI(shiftroot,cc,sess);
-    
+    % [shufSI(i),shufpkFR(i),shufuFR(i),~,shufbinFR(i,:)] = get_PF(shiftroot,cc,sess); 
+    [shufSI(i),shufuFR(i),shufpkFR(i),~,~,shufbinFR(i,:)] = get_SI(shiftroot,cc,sess);
 end
 
 figure; hold on
-plot(tmpedges(1:end-1)*100,tmpfr,'b')
-plot(tmpedges(1:end-1)*100,mean(shufFR),'k')
+plot(tmpedges(1:end-1)*100,tmpbinFR,'b')
+plot(tmpedges(1:end-1)*100,mean(shufbinFR),'k')
 xlabel('Position (cm)')
 ylabel('Firing Rate')
 title(['Cell ' num2str(cc)])
@@ -64,3 +73,24 @@ legend({"Shuffle","True"})
 set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
 shufTest = tmpSI > prctile(shufSI,99)
+
+%% Batch shuffle all good units
+nShufs = 1000;
+
+shufTest = zeros(numel(root.good),1);
+
+for i = 1:numel(root.good)
+    cc = root.good(i);
+
+    tmpSI = get_SI(root,cc,sess);
+    shufSI = zeros(nShufs,1);
+
+    for j = 1:nShufs
+        shiftroot = shiftTrain(root,sess);
+        [shufSI(j)] = get_SI(shiftroot,cc,sess);
+    end
+
+    shufTest(i) = tmpSI > prctile(shufSI,99);
+end
+
+figure; imagesc(shufTest)

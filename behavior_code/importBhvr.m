@@ -61,6 +61,8 @@ sess.rst        = double(sess.didat == 1);
 sess.lapstt     = [sess.ind(1); sess.lapstt];   %use first ts as first lap start
 sess.lapend     = [sess.lapstt(2:end) - 1; sess.ind(end)];     %Use last ts as last lap end
 sess.nlaps      = size(sess.lapend,1);
+sess            = getErrorTrials(sess);     % Identify non-rewarded trials and trials >2m long
+sess            = get_RunInds(sess,0.04,2); % Add runInds variable with binary of running (1) or standing (0)
 
 if sess.nlaps == 1      % In case of reset error
     try
@@ -72,5 +74,14 @@ if sess.nlaps == 1      % In case of reset error
         warning(['Only 1 lap found for session ' sess.name])
     end
 end
+
+% Ge binary of indices for good laps
+lapInclude = zeros(1,length(sess.ts));
+for i = 1:sess.nlaps
+    if isempty(find(sess.errTrials == i,1))
+        lapInclude(sess.lapstt(i):sess.lapend(i)) = ones(1,diff([sess.lapstt(i) sess.lapend(i)])+1);
+    end
+end
+sess.lapInclude = logical(lapInclude)';
 
 end
