@@ -65,9 +65,7 @@ for i = 1:length(allts)
         ea = edges_sess_ts(find(edges_sess_ts > eb,1,'first'));
         disp(['During spike alignment used first sync ts edge to align spike ' num2str(i)])
     end
-    if eb_ind == 2
-        disp('yay')
-    end
+
     try
         root.tssync(i) = ea + ra*(allts(i) - eb)/rb;
     catch

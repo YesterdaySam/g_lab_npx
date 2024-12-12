@@ -2,9 +2,9 @@
 
 % bhvrdir = 'C:\Users\cornu\Documents\Research\Data\test\test_02';
 % mousedir = 'C:\Users\cornu\Documents\Research\Data\KW005';
-mousedir = 'D:\Data\Kelton\analyses\KW021';
+mousedir = 'D:\Data\Kelton\analyses\KW014';
 
-overwriteFlag = 0;
+overwriteFlag = 1;
 
 cd(mousedir)
 
@@ -26,7 +26,7 @@ for i = 1:length(dirlist)
 
     try
         sess = importBhvr(fullfile(dirlist(i).folder,dirlist(i).name));
-        sess = getErrorTrials(sess);
+        % sess = getErrorTrials(sess);
     catch
         cd(mousedir)
         continue
@@ -56,7 +56,7 @@ for i = 1:length(dirlist)
 
     fig_vel_lick = plot_vel_lck(sess, tmpbnvel, 0.01, 0.03);
     saveas(fig_vel_lick,[sbase, '_vel_lck'],'png')
-    
+
     close all
 
     plotBhvrCompact(sess,fullfile(dirlist(i).folder,dirlist(i).name),1)

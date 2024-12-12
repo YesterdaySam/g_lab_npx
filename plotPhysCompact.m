@@ -21,7 +21,7 @@ arguments
     velFlag             = 1 % Include velocity binned firing rate
     avgposFlag          = 1 % Include averaged spatial firing rate
     trialheatmapFlag    = 1 % Include heatmap across trials
-    perioptoFlag        = 1 % Include peri-opto pulse spikes plot
+    perioptoFlag        = 0 % Include peri-opto pulse spikes plot
 end
 
 cd(sdir)
@@ -80,7 +80,7 @@ for i = 1:nUnits
         end
 
         if perioptoFlag
-            [~,~,tmpfropto] = plot_frXopto(root,cc,sess);
+            [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.01,0.1);
             title('');
         end
 

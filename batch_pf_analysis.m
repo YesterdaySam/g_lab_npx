@@ -1,5 +1,7 @@
 % root = root4;
 % sess = sess4;
+cd('D:\Data\Kelton\analyses\KW018\KW018_12102024_rec_D1_lat')
+saveFlag = 1;
 
 SI = zeros(1,length(root.good));
 uFR = zeros(1,length(root.good));
@@ -26,16 +28,21 @@ lowuFR = uFR < uThresh;
 goodPFs = root.good(hiSI & hiFR & lowuFR);
 
 tmpfig = plot_unitsXpos(root,sess,goodPFs);
-% saveas(tmpfig,'goodSIFR_waterfall','png');
-
-%% Find depth and shankID of good fields
-
-for i = 1:numel(goodPFs)
-    [goodDepth(i,1), goodDepth(i,2)] = getDepthByID(root,goodPFs(i));
+if saveFlag
+    saveas(tmpfig,'goodSIFR_waterfall','png');
 end
 
+% Find depth and shankID of good fields
+
+for i = 1:numel(goodPFs)
+    [goodPFs(i,2), goodPFs(i,3)] = getDepthByID(root,goodPFs(i));
+end
+
+[~,goodPFsSort] = sort(goodPFs(:,3));
+goodPFsSort = goodPFs(goodPFsSort,:);
+
 %% compare shifted spike trains for pfs
-cc = 207;
+cc = 321;
 nShufs = 1000;
 
 [tmpSI,tmppkFR,tmpuFR,~,tmpbinFR,tmpedges] = get_PF(root,cc,sess);
@@ -50,8 +57,13 @@ for i = 1:nShufs
     [shufSI(i),shufuFR(i),shufpkFR(i),~,~,shufbinFR(i,:)] = get_SI(shiftroot,cc,sess);
 end
 
+sem = rmmissing(std(shufbinFR,'omitnan')/sqrt(nShufs));
+ciup = mean(shufbinFR,'omitnan') + sem*1.96;
+cidn = mean(shufbinFR,'omitnan') - sem*1.96;
+
 figure; hold on
 plot(tmpedges(1:end-1)*100,tmpbinFR,'b')
+patch(100*[tmpedges(1:length(tmpbinFR)),fliplr(tmpedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
 plot(tmpedges(1:end-1)*100,mean(shufbinFR),'k')
 xlabel('Position (cm)')
 ylabel('Firing Rate')
