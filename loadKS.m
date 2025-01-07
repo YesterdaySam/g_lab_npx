@@ -70,7 +70,9 @@ dLineList = 6;
 
 syncpulse = SGLX_readMeta.ExtractDigital(dataArray, meta, dw, dLineList);
 syncpulse = double(syncpulse);
-tspulse    = (1:length(syncpulse)) / SGLX_readMeta.SampRate(meta);
+tspulse   = (1:length(syncpulse)) / SGLX_readMeta.SampRate(meta);
+[~, b]    = SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
+dataArray  = SGLX_readMeta.GainCorrectIM(dataArray, 1:b, meta).*1000; %Outputs channels 1:b in mVolts
 
 % Get kilosort and Phy outputs
 cd(datpath)
@@ -114,6 +116,11 @@ root.noiseind   = strcmp(root.lb.group,'noise');
 root.syncpulse  = syncpulse;
 root.tspulse    = tspulse;
 root.fspulse    = SGLX_readMeta.SampRate(meta);
+
+% Process LFP with 3rd order Butterworth 300Hz lowpass zero phase lag filter
+root.fs_lfp = SGLX_readMeta.SampRate(meta);
+[filtb, filta] = butter(3, 300/(root.fs_lfp/2),'low');
+root.lfp       = filtfilt(filtb, filta, dataArray(1:b,:)')';
 
 if contains(meta.prbType,'NPX2.0')
     for i = 1:height(root.info)

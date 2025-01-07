@@ -1,6 +1,6 @@
 % Summarize ephys script
 
-datpath = 'D:\Data\Kelton\analyses\KW018\KW018_12102024_rec_D1_lat';
+datpath = 'D:\Data\Kelton\analyses\KW022\KW022_12202024_rec_D4_LMed1';
 
 cd(datpath)
 

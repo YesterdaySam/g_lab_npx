@@ -1,7 +1,7 @@
 % root = root4;
 % sess = sess4;
-cd('D:\Data\Kelton\analyses\KW022\KW022_12172024_rec_D2_RMed1')
-saveFlag = 0;
+cd('D:\Data\Kelton\analyses\KW022\KW022_12162024_rec_D1_RLat1')
+saveFlag = 1;
 
 metafile = dir('*_meta.mat');
 load(metafile.name)
@@ -28,30 +28,28 @@ hiSI = SI > sithresh;
 hiFR = pkFR > frthresh;
 lowuFR = uFR < uThresh;
 
-% Find depth and shankID of good fields
 goodPFs = root.good(hiSI & hiFR & lowuFR);
+
+tmpfig = plot_unitsXpos(root,sess,goodPFs);
+if saveFlag
+    saveas(tmpfig,'goodSIFR_waterfall','png');
+end
+
+% Find depth and shankID of good fields
 
 for i = 1:numel(goodPFs)
     [goodPFs(i,2), goodPFs(i,3)] = getDepthByID(root,goodPFs(i));
 end
+
 [~,goodPFsSort] = sort(goodPFs(:,3));
 goodPFsSort = goodPFs(goodPFsSort,:);
 
-tmpfig = plot_unitsXpos(root,sess,goodPFs);
 if meta.prbType == 'NPX2.0'
-    tmpfig2 = figure; histogram(goodPFs(:,3))
-    set(gcf,'units','normalized','position',[0.2 0.4 0.2 0.4])
+    figure; histogram(goodPFs(:,3))
     xlabel('Shank ID')
-    ylabel('"Good" PF count')
+    ylabel('"Good PF count"'
     set(gca,'FontSize',12,'FontName','Arial')
 end
-
-if saveFlag
-    saveas(tmpfig,'goodSIFR_waterfall','png');
-    saveas(tmpfig2,'goodSIFRxShank','png');
-    save([root.name '_goodPFs'],'goodPFs')
-end
-
 %% compare shifted spike trains for pfs
 cc = 321;
 nShufs = 1000;

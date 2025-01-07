@@ -50,7 +50,11 @@ sess.lck        = sess.aidat(:,3);
 sess.opto       = sess.aidat(:,4);
 [~,sess.optoind]= findpeaks(double(sess.opto > 0.5));
 [~,sess.lckind] = findpeaks(double(sess.lck > 0.5));
-sess.slx        = double(sess.aidat(:,8) > 0.5);    % Translate to binary
+try
+    sess.slx        = double(sess.aidat(:,8) > 0.5);    % Translate to binary
+catch
+    warning('Failed to import synch pulse (sess.slx)')
+end
 
 % Digital data; multiplexed from all digital channels; 1 = LapReset; 2 = Reward release
 sess.didat      = dat.(datFields{2}).digitalScans;
