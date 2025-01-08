@@ -18,7 +18,7 @@ import os
 global_job_kwargs = dict(n_jobs=8, chunk_duration="1s")
 si.set_global_job_kwargs(**global_job_kwargs)
 
-base_folder = Path('D:\Kelton\probe_data\KW007')
+base_folder = Path('D:\Fox\FG021')
 
 for fold in os.listdir(base_folder):
     sglx_dir = base_folder / fold
