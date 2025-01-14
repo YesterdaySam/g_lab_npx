@@ -104,6 +104,15 @@ inds = inds(:);
 
 root.tsb = inds;    %tsb = behavioral time series spikes
 
+% Naively align LFP to start of sess, using pk_lag only (unbounded error)
+root.lfp_tsb = sess.ind+pk_lag;
+root.lfp_tsb = sess.ind(root.lfp_tsb > 0);
+root.lfp_tsb = root.lfp_tsb(1:length(root.tspulse)); 
+if length(root.lfp_tsb) > length(sess.ind)
+    disp(['During LFP alignment, ' num2str(length(root.lfp_tsb) - length(sess.ind)) ' indices fell after sess.ind(end) and were removed'])
+    root.lfp_tsb = root.lfp_tsb(1:length(sess.ind));
+end
+
 save([root.name '_root'],'root');
 
 end

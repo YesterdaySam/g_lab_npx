@@ -37,6 +37,17 @@ valspks = spkinds(sess.lapInclude(spkinds));
 valoccs = sess.lapInclude & sess.runInds;
 
 bnspks  = histcounts(sess.pos(valspks), binedges);
+
+if sum(bnspks) < 100
+    disp(['Fewer than 100 spikes found for unit ' num2str(unit) ' during get_PF'])
+    si      = NaN;
+    peakFR  = NaN;
+    uFR     = NaN;
+    pfields = NaN;
+    binfr   = NaN;
+    return
+end
+
 % bnoccs  = histcounts(sess.pos(sess.lapInclude),binedges) / sess.samprate;
 bnoccs  = histcounts(sess.pos(valoccs),binedges) / sess.samprate;
 

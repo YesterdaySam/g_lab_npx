@@ -41,7 +41,8 @@ lowOcc = vocc < 1; % Ignore bins with <1sec occupancy
 binfr(lowOcc) = [];
 
 % usebins = binedges > prctile(binedges,5) & binedges < prctile (binedges, 95);
-usebins = logical([0 0 1-lowOcc(2:end)]);  %Drop first 2 bins (4cm/s) of standing periods and low occ bins
+usebins = binedges > prctile(binedges,8); %Drop the standing periods
+usebins = usebins(2:end) - lowOcc
 binedges = binedges(usebins);
 binfr = binfr(usebins);
 

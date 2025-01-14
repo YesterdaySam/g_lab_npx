@@ -45,22 +45,14 @@ cd(lfpath.name)
 
 try
     syncfile = dir('*lf.bin');
-    meta = SGLX_readMeta.ReadMeta(syncfile.name, syncfile.folder);
+    meta = SGLX_readMeta.ReadMeta(syncfile(1).name, syncfile(1).folder);
 catch
     syncfile = dir('*tcat.imec0.ap.bin');
-    meta = SGLX_readMeta.ReadMeta(syncfile.name, syncfile.folder); 
-end
-
-if contains(meta.imDatFx_pn, 'NP2_FLEX_0')
-    meta.prbType = 'NPX1.0';
-    root.prbType = 'NPX1.0';
-elseif contains(meta.imDatFx_pn, 'NPM_FLEX_01')
-    meta.prbType = 'NPX2.0';
-    root.prbType = 'NPX2.0';
+    meta = SGLX_readMeta.ReadMeta(syncfile(1).name, syncfile(1).folder); 
 end
 
 nSamp = floor(str2double(meta.fileTimeSecs) * SGLX_readMeta.SampRate(meta));
-dataArray = SGLX_readMeta.ReadBin(0, nSamp, meta, syncfile.name, syncfile.folder);
+dataArray = SGLX_readMeta.ReadBin(0, nSamp, meta, syncfile(1).name, syncfile(1).folder);
 
 % For a digital channel: read this digital word dw in the saved file
 % (1-based). For imec data there is never more than one saved digital word.
@@ -71,8 +63,25 @@ dLineList = 6;
 syncpulse = SGLX_readMeta.ExtractDigital(dataArray, meta, dw, dLineList);
 syncpulse = double(syncpulse);
 tspulse   = (1:length(syncpulse)) / SGLX_readMeta.SampRate(meta);
-[~, b]    = SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
-dataArray  = SGLX_readMeta.GainCorrectIM(dataArray, 1:b, meta).*1000; %Outputs channels 1:b in mVolts
+
+if length(syncfile) > 1
+    meta      = SGLX_readMeta.ReadMeta(syncfile(2).name, syncfile(2).folder);
+    chanCt    = SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
+    dataArray = SGLX_readMeta.ReadBin(0, nSamp, meta, syncfile(2).name, syncfile(2).folder);
+    dataArray = dataArray(1:8:chanCt,:); %Subsample
+    dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:size(dataArray,1), meta).*1000; %Outputs channels in mVolts
+else
+    dataArray = dataArray(1:8:size(dataArray,1),:); %Subsample
+    dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:length(dataArray), meta).*1000; %Outputs channels in mVolts    
+end
+
+if contains(meta.imDatFx_pn, 'NP2_FLEX_0')
+    meta.prbType = 'NPX1.0';
+    root.prbType = 'NPX1.0';
+elseif contains(meta.imDatFx_pn, 'NPM_FLEX_01')
+    meta.prbType = 'NPX2.0';
+    root.prbType = 'NPX2.0';
+end
 
 % Get kilosort and Phy outputs
 cd(datpath)
@@ -120,7 +129,7 @@ root.fspulse    = SGLX_readMeta.SampRate(meta);
 % Process LFP with 3rd order Butterworth 300Hz lowpass zero phase lag filter
 root.fs_lfp = SGLX_readMeta.SampRate(meta);
 [filtb, filta] = butter(3, 300/(root.fs_lfp/2),'low');
-root.lfp       = filtfilt(filtb, filta, dataArray(1:b,:)')';
+root.lfp       = filtfilt(filtb, filta, dataArray(1:size(dataArray,1),:)')';
 
 if contains(meta.prbType,'NPX2.0')
     for i = 1:height(root.info)
@@ -138,6 +147,28 @@ if contains(meta.prbType,'NPX2.0')
     % root.info.depth2 = root.info.depth - 720 .* root.info.shankID;
 else 
     root.info.shankID = zeros(length(root.info.ch),1);
+end
+
+ch = (1:8:chanCt)';
+lfpShank = zeros(size(root.lfp,1),1);
+root.lfpinfo = table(ch,lfpShank);
+
+if contains(meta.prbType,'NPX2.0')
+    for i = 1:height(root.lfpinfo)
+        if root.lfpinfo.ch(i) >= 0 && root.lfpinfo.ch(i) < 48 || root.lfpinfo.ch(i) >= 96 && root.lfpinfo.ch(i) < 144
+            root.lfpinfo.lfpShank(i) = 0;
+        elseif root.lfpinfo.ch(i) >= 48 && root.lfpinfo.ch(i) < 96 || root.lfpinfo.ch(i) >= 144 && root.lfpinfo.ch(i) < 192
+            root.lfpinfo.lfpShank(i) = 1;
+        elseif root.lfpinfo.ch(i) >= 192 && root.lfpinfo.ch(i) < 240 || root.lfpinfo.ch(i) >= 288 && root.lfpinfo.ch(i) < 336
+            root.lfpinfo.lfpShank(i) = 2;
+        elseif root.lfpinfo.ch(i) >= 240 && root.lfpinfo.ch(i) < 288 || root.lfpinfo.ch(i) >= 336 && root.lfpinfo.ch(i) < 384
+            root.lfpinfo.lfpShank(i) = 3;
+        end
+    end
+    % root.info.shankID = floor(root.info.ch/96);
+    % root.info.depth2 = root.info.depth - 720 .* root.info.shankID;
+else 
+    root.lfpinfo.lfpShank = zeros(length(root.lfpinfo.ch),1);
 end
 
 cd(spath)
