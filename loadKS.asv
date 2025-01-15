@@ -166,15 +166,15 @@ if contains(meta.prbType,'NPX2.0')
             root.lfpinfo.lfpShank(i) = 3;
         end
     end
-    tmpDepthMap = probeDepthMap(root);  %Create depth map with potential shifts due to recording bank hot swapping
-    root.lfpinfo.lfpDepth = tmpDepthMap(root.lfpinfo.lfpch+1);
+    root.lfpinfo.lfpDepth = repmat([repmat(root.lfpinfo.lfpch(1:6)*7.5,[2,1]); repmat(root.lfpinfo.lfpch(7:12)*7.5,[2,1])], [2,1]);
 else 
     root.lfpinfo.lfpShank = zeros(length(root.lfpinfo.lfpch),1);
 end
 
 cd(spath)
 
-save([root.name, '_root'],'root')
-save([root.name, '_meta'],'meta')
+% save([root.name, '_root'],'root')
+% save([root.name, '_meta'],'meta')
 end
 
+chanDepth = [0 0 15 15 30 30 45 45 60 60 75 75 90 90 105 105 120 120 135 135 150 150 165 165 180 180 195 195 210 210 ]

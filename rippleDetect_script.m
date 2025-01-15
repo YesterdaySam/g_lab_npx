@@ -230,8 +230,11 @@ for i = 1:nUnits
     % [SI(i),uFR(i),pkFR(i)] = get_SI(root,cc,sess);
     [SI(i),pkFR(i),uFR(i)] = get_PF(root,cc,sess);
     ripMod(i) = get_RipMod(root,cc,1000);
+    [~,~,vMdl] = plot_frXvel(root,cc,sess,2,0);
+    vCorr(i) = vMdl.r;
 end
 
+%% Plot SI vs RipMod
 mdl = fitlm(SI,ripMod);
 ys = predict(mdl,SI');
 [r,p] = corrcoef(SI',ys,'Rows','complete');
@@ -243,12 +246,133 @@ mdlparams.p = p;
 mdlparams.b = b;
 mdlparams.yint = predict(mdl,0);
 
-figure; hold on
+siVrmFig = figure; hold on
 plot(SI,ripMod,'k.')
 plot(SI,ys,'r','LineWidth',2)
 xlabel('Spatial Info. (bits/spike)'); ylabel('Ripple Modulation')
 % title(['Unit ' num2str(unit)])
 set(gca,'FontSize',12,'FontName','Arial')
 
+ylims = ylim;
+ylim([0 ylims(2)])
+ylims = ylim;
+xlims = xlim;
+xlim([0 xlims(2)])
+xlims = xlim;
 
-%% 
+% text(xlims(2) - .3*diff(xlims), ylims(2)-.1*diff(ylims), ['R = ' num2str(r, 3)], 'FontSize', 12)
+% text(xlims(2) - .3*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(p, 3)], 'FontSize', 12)
+text(xlims(2) - .3*diff(xlims), ylims(2)-.2*diff(ylims), ['slope = ' num2str(b, 3)], 'FontSize', 12)
+text(xlims(2) - .3*diff(xlims), ylims(2)-.25*diff(ylims), ['y-int = ' num2str(mdlparams.yint, 3)], 'FontSize', 12)
+
+%% Plot vCorrelation vs RipMod
+mdl = fitlm(vCorr,ripMod);
+ys = predict(mdl,vCorr');
+[r,p] = corrcoef(vCorr',ys,'Rows','complete');
+
+r = r(2,1);
+p = p(2,1);
+b = mdl.Coefficients{2,1};
+mdlparams.r = r;
+mdlparams.p = p;
+mdlparams.b = b;
+mdlparams.yint = predict(mdl,0);
+
+vcVrmFig = figure; hold on
+plot(vCorr,ripMod,'k.')
+plot(vCorr,ys,'r','LineWidth',2)
+xlabel('Spike-Velocity Tuning Corr'); ylabel('Ripple Modulation')
+% title(['Unit ' num2str(unit)])
+set(gca,'FontSize',12,'FontName','Arial')
+
+ylims = ylim;
+ylim([0 ylims(2)])
+ylims = ylim;
+xlims = xlim;
+xlim([0 xlims(2)])
+xlims = xlim;
+
+% text(xlims(2) - .3*diff(xlims), ylims(2)-.1*diff(ylims), ['R = ' num2str(r, 3)], 'FontSize', 12)
+% text(xlims(2) - .3*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(p, 3)], 'FontSize', 12)
+text(xlims(2) - .3*diff(xlims), ylims(2)-.2*diff(ylims), ['slope = ' num2str(b, 3)], 'FontSize', 12)
+text(xlims(2) - .3*diff(xlims), ylims(2)-.25*diff(ylims), ['y-int = ' num2str(mdlparams.yint, 3)], 'FontSize', 12)
+
+if saveFlag
+    saveas(siVrmFig,[root.name '_Shank' num2str(root.info.shankID(chan)) '_ripModVSI.png'])
+    saveas(vcVrmFig,[root.name '_Shank' num2str(root.info.shankID(chan)) '_ripModVvCorr.png'])
+end
+
+%% Plot many LFP traces
+
+nChans = height(root.lfpinfo);
+secs = [1441 1443];
+inds = secs.*root.fs_lfp - root.lfp_tsb(1);
+% lfpMax = prctile(root.lfp,99,'all');
+
+% figure; hold on
+% ct = 0;
+% for i = 1:6
+%     plot(sess.ts(root.lfp_tsb(inds(1):inds(2))), root.lfp(i, inds(1):inds(2)) ./ lfpMax + ct, 'k')
+%     ct = ct + 1;
+% end
+% for i = 13:18
+%     plot(sess.ts(root.lfp_tsb(inds(1):inds(2))), root.lfp(i, inds(1):inds(2)) ./ lfpMax + ct, 'k')
+%     ct = ct + 1;
+% end
+
+lfpMap = zeros(nChans, diff(inds));
+for i = 1:nChans
+    lfpMap(i,:) = root.lfp(i, inds(1):inds(2)-1) ./ lfpMax;
+end
+
+[~,sortInds] = sort(root.lfpinfo.lfpShank);
+lfpMap = lfpMap(sortInds,:);
+
+figure; 
+set(gcf,'units','normalized','position',[0.2 0.2 0.6 0.6])
+
+subplot(1,4,1)
+ct = 0;
+hold on
+for i = 1:12
+    plot(sess.ts(root.lfp_tsb(inds(1):inds(2)-1)), lfpMap(i,:) ./ lfpMax + ct, 'k')
+    ct = ct + 1;
+end
+title('Shank 0')
+yticklabels([])
+set(gca,'FontSize',12,'FontName','Arial')
+
+subplot(1,4,2)
+ct = 0;
+hold on
+for i = 13:24
+    plot(sess.ts(root.lfp_tsb(inds(1):inds(2)-1)), lfpMap(i,:) ./ lfpMax + ct, 'k')
+    ct = ct + 1;
+end
+title('Shank 1')
+yticklabels([])
+set(gca,'FontSize',12,'FontName','Arial')
+
+subplot(1,4,3)
+ct = 0;
+hold on
+for i = 25:36
+    plot(sess.ts(root.lfp_tsb(inds(1):inds(2)-1)), lfpMap(i,:) ./ lfpMax + ct, 'k')
+    ct = ct + 1;
+end
+title('Shank 2')
+yticklabels([])
+set(gca,'FontSize',12,'FontName','Arial')
+
+subplot(1,4,4)
+ct = 0;
+hold on
+for i = 37:nChans
+    plot(sess.ts(root.lfp_tsb(inds(1):inds(2)-1)), lfpMap(i,:) ./ lfpMax + ct, 'k')
+    ct = ct + 1;
+end
+title('Shank 3')
+yticklabels([])
+set(gca,'FontSize',12,'FontName','Arial')
+
+saveas(gcf,[root.name '_lfpExample.png'])

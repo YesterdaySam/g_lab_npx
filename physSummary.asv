@@ -29,8 +29,6 @@ saveas(frd2,[root.name '_FRDepth_noNoise.png'])
 saveas(frd3,[root.name '_FRDepth_good.png'])
 saveas(frd4,[root.name '_FRDepth_mua.png'])
 
-
-%%
 tmpCountFig = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.2 0.1 0.6])
 tmpedges = min(root.info.depth):20:max(root.info.depth);
@@ -54,9 +52,7 @@ xlim([-0.5 max(root.info.shankID)+0.5])
 xlabel('Shank ID')
 ylabel('Good Counts');
 set(gca,'FontSize',12,'FontName','Arial')
-text(tmpedges(1:end-1),binCounts,num2str(binCounts'),'vert','bottom','horiz','center','FontSize',12); 
-
-saveas(tmpCountShankFig,[root.name '_shankCount_good.png'])
+text(1:length(tmpedges),Y,num2str(Y'),'vert','bottom','horiz','center'); 
 
 disp(['Finished phys summary for ' root.name])
 
