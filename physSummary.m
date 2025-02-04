@@ -30,7 +30,7 @@ saveas(frd3,[root.name '_FRDepth_good.png'])
 saveas(frd4,[root.name '_FRDepth_mua.png'])
 
 
-%%
+%% Summarize counts by shank and depth
 tmpCountFig = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.2 0.1 0.6])
 tmpedges = min(root.info.depth):20:max(root.info.depth);
@@ -60,3 +60,57 @@ saveas(tmpCountShankFig,[root.name '_shankCount_good.png'])
 
 disp(['Finished phys summary for ' root.name])
 
+%% Summarize spike counts across session
+
+tmpSpikeDensityFig = plot_spikeDensity(root,60);
+
+saveas(tmpSpikeDensityFig,[root.name '_spikeDensity.png'])
+
+%% Raw LFP power by depth
+
+NFFT = 10000;
+[pxx,f] = pwelch(root.lfp',[],[],NFFT,root.fs_lfp);
+
+bands = [6 10; 150 250];    % Also [0.01 300]
+uPSD = zeros(size(bands,1),size(pxx,2));
+
+for band = 1:size(bands,1)
+    f_tmp = f > bands(band,1) & f < bands(band,2);  % Get frequencies in band
+    uPSD(band,:) = mean(10*log10(pxx(f_tmp,:)),1);    %Get mean per electrode within band
+end
+
+% Locate electrode with max spectral power for each band, for each shank
+root.bands = bands;
+for sh = 0:3
+    for band = 1:size(bands,1)
+        [tmpMax, tmpInd] = max(uPSD(band,root.lfpinfo.lfpShank == sh));
+        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh);
+        tmpD = tmpD(tmpInd);
+        root.uPSDMax(band,sh+1) = find(root.lfpinfo.lfpDepth == tmpD & root.lfpinfo.lfpShank == sh);
+    end
+end
+
+cmap(1).map = cool(4);
+cmap(2).map = hot(8);
+cmap(3).map = gray(5);
+
+tmpLFPDensityFig = figure; hold on
+legcell = {};
+nChXSh = height(root.lfpinfo)/numel(unique(root.lfpinfo.lfpShank));
+grid on
+for sh = 0:3
+    for band = 1:size(bands,1)
+        plot(uPSD(band,root.lfpinfo.lfpShank == sh),root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh),'Color',cmap(band).map(sh+1,:))
+        legcell(band) = {[num2str(bands(band,1)) '-' num2str(bands(band,2)) 'Hz']};
+    end
+    for band = 1:size(bands,1)
+        [tmpMax, tmpInd] = max(uPSD(band,root.lfpinfo.lfpShank == sh));
+        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh);
+        plot(tmpMax+1,tmpD(tmpInd),'<','Color',cmap(band).map(sh+1,:))
+    end
+end
+xlabel('PSD (dB/Hz)')
+ylabel('Distance from Probe tip (um)')
+legend(legcell)
+set(gca,'FontSize',12,'FontName','Arial')
+saveas(tmpLFPDensityFig,[root.name '_LFPPower.png'])

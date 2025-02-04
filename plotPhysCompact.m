@@ -100,8 +100,8 @@ for i = 1:nUnits
             ax.Parent = tcl;
             ax.Layout.Tile = j;
         end
-        title(tcl,['Unit ' num2str(cc)])
-        saveas(newfig, ['unit' num2str(cc) '_summary'], 'png')
+        title(tcl,['unit ' num2str(cc) ' Shank ' num2str(root.info.shankID(cc)), ' Depth ', num2str(root.info.depth(cc)) 'um'])
+        saveas(newfig, ['unit' num2str(cc) '_shank' num2str(root.info.shankID(cc)) '_depth' num2str(root.info.depth(cc)) '_summary'], 'png')
         close all
     end
 end

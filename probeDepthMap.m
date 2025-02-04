@@ -42,5 +42,13 @@ if root.prbType == 'NPX2.0'
     depthMap(bankMap3) = chanDepth(bankMap3) + minChan3;
 else
     % NPX1.0 assuming use tip bank
-    warning('Set up depth map for 1.0 data!')
+    chanDepth = (0:383/2)*20;
+    chanDepth = repmat(chanDepth,[2,1]);
+    chanDepth = reshape(chanDepth,[384,1]);
+    try
+        minChan0 = root.info.depth(find(root.info.ch == 0 | root.info.ch == 1, 1)); %Get depth of first channel on shank 0
+    catch
+        minChan0 = 0;
+    end
+    depthMap = chanDepth + minChan0;
 end

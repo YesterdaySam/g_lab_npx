@@ -70,7 +70,7 @@ if plotflag
     set(gca,'FontSize',12,'FontName','Arial')
 
     ylims = ylim;
-    ylim([0 ylims(2)])
+    ylim([0 ylims(2)+ylims(2)*0.3])
     ylims = ylim;
     xlims = xlim;
     xlim([0 xlims(2)])
@@ -82,10 +82,10 @@ if plotflag
         text(xlims(2) - .9*diff(xlims), ylims(2)-.2*diff(ylims), ['slope = ' num2str(b, 3)], 'FontSize', 12)
         text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims), ['y-int = ' num2str(mdlparams.yint, 3)], 'FontSize', 12)
     else
-        text(xlims(2) - .3*diff(xlims), ylims(2)-.1*diff(ylims), ['R = ' num2str(r, 3)], 'FontSize', 12)
-        text(xlims(2) - .3*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(p, 3)], 'FontSize', 12)
-        text(xlims(2) - .3*diff(xlims), ylims(2)-.2*diff(ylims), ['slope = ' num2str(b, 3)], 'FontSize', 12)
-        text(xlims(2) - .3*diff(xlims), ylims(2)-.25*diff(ylims), ['y-int = ' num2str(mdlparams.yint, 3)], 'FontSize', 12)        
+        text(xlims(2) - .5*diff(xlims), ylims(2)-.1*diff(ylims), ['R = ' num2str(r, 3)], 'FontSize', 12)
+        text(xlims(2) - .5*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(p, 3)], 'FontSize', 12)
+        text(xlims(2) - .5*diff(xlims), ylims(2)-.2*diff(ylims), ['slope = ' num2str(b, 3)], 'FontSize', 12)
+        text(xlims(2) - .5*diff(xlims), ylims(2)-.25*diff(ylims), ['y-int = ' num2str(mdlparams.yint, 3)], 'FontSize', 12)        
     end
 end
 

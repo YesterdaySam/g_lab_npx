@@ -18,7 +18,7 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
-    vthresh = 0.02  %meters/s; velocity threshold
+    vthresh = 0.04  %meters/s; velocity threshold
     plotflag = 1    %binary
 end
 

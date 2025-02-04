@@ -115,7 +115,7 @@ if size(root.lfp,2) > length(root.lfp_tsb2) % If SGLX rec overruns behavior rec
     % root.lfp_tsb = root.lfp_tsb(1:end-tmp);
     root.lfp = root.lfp(:,1:end-tmp);
 else
-    root.lfp_tsb2 = root.lfp_tsb2(1:length(root.syncpulse));    % Untested
+    root.lfp_tsb2 = root.lfp_tsb2(1:length(root.syncpulse));
 end
 if length(root.lfp_tsb2) ~= size(root.lfp,2)
     disp(['LFP data to LFP timestamp length mismatch by ' num2str(length(root.lfp_tsb2) - size(root.lfp,2))])
@@ -163,8 +163,6 @@ end
 % root.lfp_tsb = inds;    %tsb = behavioral time series spike indices
 
 %% Save
-root = rmfield(root,'tspulse'); %Remove unnecessary fields to reduce file size
-
 save([root.name '_root'],'root');
 
 end

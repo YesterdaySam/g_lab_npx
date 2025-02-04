@@ -38,7 +38,7 @@ if ~isempty(tmp) & overwrite == 0
     return
 end
 
-% Get sync pulse by reading in meta data
+%% Get sync pulse by reading in meta data
 cd(datpath)
 lfpath = dir("*rec*");
 cd(lfpath.name)
@@ -64,15 +64,21 @@ syncpulse = SGLX_readMeta.ExtractDigital(dataArray, meta, dw, dLineList);
 syncpulse = double(syncpulse);
 tspulse   = (1:length(syncpulse)) / SGLX_readMeta.SampRate(meta);
 
-if length(syncfile) > 1
+%% Get LFP data
+if length(syncfile) > 1 %i.e. for 2.0 recordings
+    chSubsamp = 4;
+    lfSubsamp = 2;
     meta      = SGLX_readMeta.ReadMeta(syncfile(2).name, syncfile(2).folder);
     chanCt    = SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
     dataArray = SGLX_readMeta.ReadBin(0, nSamp, meta, syncfile(2).name, syncfile(2).folder);
-    dataArray = dataArray(1:8:chanCt,:); %Subsample
+    dataArray = dataArray(1:chSubsamp:chanCt,1:lfSubsamp:length(dataArray)); %Subsample to 1250KHz and 1/chSubsamp channels
     dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:size(dataArray,1), meta).*1000; %Outputs channels in mVolts
 else
-    dataArray = dataArray(1:8:size(dataArray,1),:); %Subsample
-    dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:length(dataArray), meta).*1000; %Outputs channels in mVolts    
+    chSubsamp = 4;
+    lfSubsamp = 2;
+    [~,chanCt]= SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
+    dataArray = dataArray(1:chSubsamp:chanCt,1:lfSubsamp:length(dataArray)); %Subsample to 1250kHz and 1/chSubsamp channels
+    dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:size(dataArray,1), meta).*1000; %Outputs channels in mVolts    
 end
 
 if contains(meta.imDatFx_pn, 'NP2_FLEX_0')
@@ -83,7 +89,7 @@ elseif contains(meta.imDatFx_pn, 'NPM_FLEX_01')
     root.prbType = 'NPX2.0';
 end
 
-% Get kilosort and Phy outputs
+%% Get kilosort and Phy outputs
 cd(datpath)
 kspath = dir('*kilosort*');
 try 
@@ -107,7 +113,7 @@ catch
     return
 end
 
-% Organize root struct
+%% Organize root struct
 [~, mname] = fileparts(meta.fileName);
 mname = strsplit(mname, '_g0');
 root.name = mname{1};
@@ -126,11 +132,7 @@ root.syncpulse  = syncpulse;
 root.tspulse    = tspulse;
 root.fspulse    = SGLX_readMeta.SampRate(meta);
 
-% Process LFP with 3rd order Butterworth 300Hz lowpass zero phase lag filter
-root.fs_lfp = SGLX_readMeta.SampRate(meta);
-[filtb, filta] = butter(3, 300/(root.fs_lfp/2),'low');
-root.lfp       = filtfilt(filtb, filta, dataArray(1:size(dataArray,1),:)')';
-
+%% Assign shankID to units
 if contains(meta.prbType,'NPX2.0')
     for i = 1:height(root.info)
         if root.info.ch(i) >= 0 && root.info.ch(i) < 48 || root.info.ch(i) >= 96 && root.info.ch(i) < 144
@@ -149,7 +151,13 @@ else
     root.info.shankID = zeros(length(root.info.ch),1);
 end
 
-lfpch = (1:8:chanCt)'-1;   % Correct for 0-starting IDs of electrodes
+%% Process LFP and assign LFP metadata
+% Use 3rd order Butterworth 300Hz lowpass zero phase lag filter
+root.fs_lfp = SGLX_readMeta.SampRate(meta)/lfSubsamp;
+[filtb, filta] = butter(3, 300/(root.fs_lfp/2),'low');
+root.lfp       = filtfilt(filtb, filta, dataArray(1:size(dataArray,1),:)')';
+
+lfpch = (1:chSubsamp:chanCt)'-1;   % Correct for 0-starting IDs of electrodes
 lfpShank = zeros(size(root.lfp,1),1);
 lfpDepth = zeros(size(root.lfp,1),1);
 root.lfpinfo = table(lfpch,lfpShank,lfpDepth);
@@ -167,14 +175,18 @@ if contains(meta.prbType,'NPX2.0')
         end
     end
     tmpDepthMap = probeDepthMap(root);  %Create depth map with potential shifts due to recording bank hot swapping
-    root.lfpinfo.lfpDepth = tmpDepthMap(root.lfpinfo.lfpch+1);
+    root.lfpinfo.lfpDepth = tmpDepthMap(root.lfpinfo.lfpch+1)';
 else 
     root.lfpinfo.lfpShank = zeros(length(root.lfpinfo.lfpch),1);
+    tmpDepthMap = probeDepthMap(root);  %Create depth map with potential shifts due to recording bank hot swapping
+    root.lfpinfo.lfpDepth = tmpDepthMap(root.lfpinfo.lfpch+1)';
 end
 
+%% Save output
 cd(spath)
 
 save([root.name, '_root'],'root')
 save([root.name, '_meta'],'meta')
+
 end
 

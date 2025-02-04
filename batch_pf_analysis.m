@@ -6,6 +6,7 @@ saveFlag = 0;
 metafile = dir('*_meta.mat');
 load(metafile.name)
 
+%%
 SI = zeros(1,length(root.good));
 uFR = zeros(1,length(root.good));
 pkFR = zeros(1,length(root.good));
@@ -30,9 +31,10 @@ lowuFR = uFR < uThresh;
 
 % Find depth and shankID of good fields
 goodPFs = root.good(hiSI & hiFR & lowuFR);
+clear tmprgn
 
 for i = 1:numel(goodPFs)
-    [goodPFs(i,2), goodPFs(i,3)] = getDepthByID(root,goodPFs(i));
+    [goodPFs(i,2), goodPFs(i,3), tmprgn(i)] = getDepthByID(root,goodPFs(i));
 end
 [~,goodPFsSort] = sort(goodPFs(:,3));
 goodPFsSort = goodPFs(goodPFsSort,:);
@@ -50,6 +52,116 @@ if saveFlag
     saveas(tmpfig,'goodSIFR_waterfall','png');
     saveas(tmpfig2,'goodSIFRxShank','png');
     save([root.name '_goodPFs'],'goodPFs')
+end
+
+%% Find good PFs by region
+
+goodCA1 = goodPFs(tmprgn == "CA1",:);
+goodSub = goodPFs(tmprgn == "Sub",:);
+
+ca1Waterfall = plot_unitsXpos(root,sess,goodCA1);
+subWaterfall = plot_unitsXpos(root,sess,goodSub);
+
+allCA1 = sum(root.info.region(root.goodind) == "CA1");
+allSub = sum(root.info.region(root.goodind) == "Sub");
+
+prGoodPFsub = length(goodSub)/allSub;
+prGoodPFca1 = length(goodCA1)/allCA1;
+
+regionGoodPFpr = figure;
+set(gcf,'units','normalized','position',[0.45 0.3 0.1 0.4])
+bar([prGoodPFsub prGoodPFca1])
+xticklabels({"Sub" "CA1"})
+ylabel('"Good" PF Probability')
+set(gca,'FontSize',12,'FontName','Arial')
+
+if saveFlag
+    saveas(ca1Waterfall,'goodCA1_waterfall','png');
+    saveas(subWaterfall,'goodSub_waterfall','png');
+    saveas(regionGoodPFpr,'goodPF_regionPr','png');
+end
+
+%% Find speed coding units
+
+ps = zeros(1,length(root.good));
+rs = zeros(1,length(root.good));
+bs = zeros(1,length(root.good));
+
+nUnits = length(root.good);
+
+for i = 1:nUnits
+    cc = root.good(i);
+
+    [~,~,tmpModel] = plot_frXvel(root,cc,sess,2,0);
+
+    ps(i) = tmpModel.p;
+    rs(i) = tmpModel.r;
+    bs(i) = tmpModel.b;
+end
+
+psthresh = 0.05;
+rsthresh = 0.4;
+
+lops = ps < psthresh;
+hirs = rs > rsthresh;
+
+% Find depth and shankID of good fields
+goodVels = root.good(lops & hirs);
+goodbs   = bs(lops & hirs)';
+
+for i = 1:numel(goodVels)
+    [goodVels(i,2), goodVels(i,3), tmprgn(i)] = getDepthByID(root,goodVels(i));
+end
+
+if meta.prbType == 'NPX2.0'
+    tmpfigV = figure; histogram(goodVels(:,3))
+    set(gcf,'units','normalized','position',[0.2 0.4 0.2 0.4])
+    xlabel('Shank ID')
+    ylabel('"Good" Velocity count')
+    set(gca,'FontSize',12,'FontName','Arial')
+end
+
+if saveFlag
+    saveas(tmpfigV,'goodVelxShank','png');
+    save([root.name '_goodVels'],'goodVels')
+end
+
+%% Find good speed units by region
+
+goodCA1 = goodVels(tmprgn == "CA1",:);
+goodSub = goodVels(tmprgn == "Sub",:);
+goodCA1bs = goodbs(tmprgn == "CA1",:);
+goodSubbs = goodbs(tmprgn == "Sub",:);
+
+allCA1 = sum(root.info.region(root.goodind) == "CA1");
+allSub = sum(root.info.region(root.goodind) == "Sub");
+
+prGoodPFsub = length(goodSub)/allSub;
+prGoodPFca1 = length(goodCA1)/allCA1;
+
+regionGoodVpr = figure;
+set(gcf,'units','normalized','position',[0.45 0.3 0.1 0.4])
+bar([prGoodPFsub prGoodPFca1])
+xticklabels({"Sub" "CA1"})
+ylim([0 1])
+ylabel('"Good" Speed Cell Prob.')
+set(gca,'FontSize',12,'FontName','Arial')
+
+ca1Slopes = [sum(goodCA1bs > 0)/length(goodCA1) sum(goodCA1bs < 0)/length(goodCA1)];
+subSlopes = [sum(goodSubbs > 0)/length(goodSub) sum(goodSubbs < 0)/length(goodSub)];
+
+regionSlopeProb = figure;
+set(gcf,'units','normalized','position',[0.45 0.3 0.1 0.4])
+bar([subSlopes; ca1Slopes])
+xticklabels({"Sub" "CA1"})
+ylim([0 1])
+legend({'Positve','Negative'},'Location','northeast')
+ylabel('Probability')
+set(gca,'FontSize',12,'FontName','Arial')
+
+if saveFlag
+    saveas(regionGoodVpr,'goodVel_regionPr','png');
+    saveas(regionSlopeProb,'goodVel_slopePr','png');
 end
 
 %% compare shifted spike trains for pfs
