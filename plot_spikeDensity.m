@@ -24,13 +24,13 @@ for i = 1:max(root.info.shankID)+1
     bdIncl = zeros(1,length(root.ts));
 
     for j = 1:height(root.info)
-        if root.info.shankID(j) == i-1 & root.lb.group{j}(1) ~= 'm' % If right shank and (m)ua
+        if root.info.shankID(j) == i-1 & root.info.group{j}(1) ~= 'm' % If right shank and (m)ua
             muIncl(root.cl == j) = 1;
         end
-        if root.info.shankID(j) == i-1 & root.lb.group{j}(1) == 'g' % If right shank and (g)ood
+        if root.info.shankID(j) == i-1 & root.info.group{j}(1) == 'g' % If right shank and (g)ood
             gdIncl(root.cl == j) = 1;
         end
-        if root.info.shankID(j) == i-1 & root.lb.group{j}(1) == 'n' % If right shank and (n)oise
+        if root.info.shankID(j) == i-1 & root.info.group{j}(1) == 'n' % If right shank and (n)oise
             bdIncl(root.cl == j) = 1;
         end
     end

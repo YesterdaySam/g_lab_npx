@@ -79,13 +79,26 @@ for band = 1:size(bands,1)
     uPSD(band,:) = mean(10*log10(pxx(f_tmp,:)),1);    %Get mean per electrode within band
 end
 
+% Locate electrode with max spectral power for each band, for each shank
+root.bands = bands;
+for sh = 0:3
+    for band = 1:size(bands,1)
+        [tmpMax, tmpInd] = max(uPSD(band,root.lfpinfo.lfpShank == sh));
+        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh);
+        tmpD = tmpD(tmpInd);
+        root.uPSDMax(band,sh+1) = find(root.lfpinfo.lfpDepth == tmpD & root.lfpinfo.lfpShank == sh);
+    end
+end
+
+%% Plot LFP by depth
 cmap(1).map = cool(4);
 cmap(2).map = hot(8);
 cmap(3).map = gray(5);
 
-%%
 tmpLFPDensityFig = figure; hold on
 legcell = {};
+nChXSh = height(root.lfpinfo)/numel(unique(root.lfpinfo.lfpShank));
+grid on
 for sh = 0:3
     for band = 1:size(bands,1)
         plot(uPSD(band,root.lfpinfo.lfpShank == sh),root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh),'Color',cmap(band).map(sh+1,:))
@@ -93,11 +106,46 @@ for sh = 0:3
     end
     for band = 1:size(bands,1)
         [tmpMax, tmpInd] = max(uPSD(band,root.lfpinfo.lfpShank == sh));
-        plot(tmpMax,root.lfpinfo.lfpDepth(tmpInd),'<','Color',cmap(band).map(sh+1,:))
+        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh);
+        plot(tmpMax+1,tmpD(tmpInd),'<','Color',cmap(band).map(sh+1,:))
     end
 end
 xlabel('PSD (dB/Hz)')
 ylabel('Distance from Probe tip (um)')
 legend(legcell)
 set(gca,'FontSize',12,'FontName','Arial')
-saveas(tmpLFPDensityFig,[root.name '_LFPPower.png'])
+
+% saveas(tmpLFPDensityFig,[root.name '_LFPPower.png'])
+
+%% Assign units by peak of Ripple band
+
+for sh = 0:max(root.lfpinfo.lfpShank)
+    tmpsh_psd = uPSD(2,root.lfpinfo.lfpShank == sh);
+    [tmpmax, tmpmaxind] = max(tmpsh_psd);
+    tmpsh_depth = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh)'; %Pad NaNs on either side
+    if tmpmaxind == 1 %Pad on either side to enable find peaks on the edges
+        tmpsh_psd = [min(tmpsh_psd) tmpsh_psd]; 
+    elseif tmpmaxind == length(tmpsh_psd)
+        tmpsh_psd = [tmpsh_psd min(tmpsh_psd) ]
+    end
+    [pks,locs,widths,proms] = findpeaks(tmpsh_psd,'MinPeakProminence',std(tmpsh_psd)); %Get peaks and prominences
+    tmpind = find(pks == max(pks));    %Index of highest peak
+    tmploc = locs(tmpind); %Channel index of highest peak
+    tmpprom = proms(tmpind);
+
+    % Split PSD into two vectors and search for last point of 2/3
+    % prominence in either direction to get full-width quarter maximum
+    v1 = fliplr(tmpsh_psd(1:tmploc));
+    v2 = tmpsh_psd(tmploc:end);
+    lim1 = find(diff(v1 > pks(tmpind) - tmpprom*3/4) == -1,1,'first');
+    lim2 = find(diff(v2 > pks(tmpind) - tmpprom*3/4) == -1,1,'first');
+    lowD = tmpsh_depth(tmpsh_psd == v1(lim1));
+    uppD = tmpsh_depth(tmpsh_psd == v2(lim2));
+
+    root.lyrbounds(:,sh+1) = [lowD; uppD];
+end
+
+for sh = 0:max(root.lfpinfo.lfpShank)
+    lyrUnits = root.info.shankID == sh & root.info.depth > root.lyrbounds(1,sh+1) & root.info.depth < root.lyrbounds(2,sh+1) & root.goodind;
+    sum(lyrUnits)
+end

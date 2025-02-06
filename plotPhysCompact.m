@@ -27,7 +27,7 @@ end
 cd(sdir)
 
 if contains(dType,'good')
-    if isempty(dir('*_good')) || overwrite
+    if isempty(dir('ephysPlots_good')) || overwrite
         mkdir('ephysPlots_good')
     end
     cd('ephysPlots_good')
@@ -100,8 +100,9 @@ for i = 1:nUnits
             ax.Parent = tcl;
             ax.Layout.Tile = j;
         end
-        title(tcl,['unit ' num2str(cc) ' Shank ' num2str(root.info.shankID(cc)), ' Depth ', num2str(root.info.depth(cc)) 'um'])
-        saveas(newfig, ['unit' num2str(cc) '_shank' num2str(root.info.shankID(cc)) '_depth' num2str(root.info.depth(cc)) '_summary'], 'png')
+        tblind = find(root.info.cluster_id == cc);
+        title(tcl,['unit ' num2str(cc) ' Shank ' num2str(root.info.shankID(tblind)), ' Depth ', num2str(root.info.depth(tblind)) 'um'])
+        saveas(newfig, ['unit' num2str(cc) '_shank' num2str(root.info.shankID(tblind)) '_depth' num2str(root.info.depth(tblind)) '_summary'], 'png')
         close all
     end
 end

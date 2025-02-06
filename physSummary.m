@@ -89,7 +89,9 @@ for sh = 0:3
         root.uPSDMax(band,sh+1) = find(root.lfpinfo.lfpDepth == tmpD & root.lfpinfo.lfpShank == sh);
     end
 end
+root.uPSD = uPSD;
 
+%% Plot LFP by depth
 cmap(1).map = cool(4);
 cmap(2).map = hot(8);
 cmap(3).map = gray(5);
@@ -113,4 +115,46 @@ xlabel('PSD (dB/Hz)')
 ylabel('Distance from Probe tip (um)')
 legend(legcell)
 set(gca,'FontSize',12,'FontName','Arial')
+
 saveas(tmpLFPDensityFig,[root.name '_LFPPower.png'])
+
+%% Assign units by peak of Ripple band
+
+for sh = 0:max(root.lfpinfo.lfpShank)
+    tmpsh_psd = root.uPSD(2,root.lfpinfo.lfpShank == sh);
+    [tmpmax, tmpmaxind] = max(tmpsh_psd);
+    tmpsh_depth = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh)';
+
+    if tmpmaxind == 1 || tmpmaxind == 2 %Pad on either side to enable find peaks on the edges
+        tmpsh_psd = [mean(tmpsh_psd), tmpsh_psd]; 
+        tmpsh_depth = [NaN, tmpsh_depth];
+    elseif tmpmaxind == length(tmpsh_psd) || tmpmaxind == length(tmpsh_psd)-1
+        tmpsh_psd = [tmpsh_psd, mean(tmpsh_psd)];
+        tmpsh_depth = [tmpsh_depth, NaN];
+    end
+
+    [pks,locs,widths,proms] = findpeaks(tmpsh_psd,'MinPeakProminence',std(tmpsh_psd)); %Get peaks and prominences
+    tmpind = find(pks == max(pks));    %Index of highest peak
+    tmploc = locs(tmpind); %Channel index of highest peak
+    tmpprom = proms(tmpind);
+
+    % Split PSD into two vectors and search for last point of 2/3
+    % prominence in either direction to get full-width quarter maximum
+    v1 = fliplr(tmpsh_psd(1:tmploc));
+    v2 = tmpsh_psd(tmploc:end);
+    lim1 = find(diff(v1 > pks(tmpind) - tmpprom*3/4) == -1,1,'first');
+    lim2 = find(diff(v2 > pks(tmpind) - tmpprom*3/4) == -1,1,'first');
+    lowD = tmpsh_depth(tmpsh_psd == v1(lim1));
+    uppD = tmpsh_depth(tmpsh_psd == v2(lim2));
+
+    root.lyrbounds(:,sh+1) = [lowD; uppD];
+end
+
+root.lyrbounds
+clear lyrUnits dgyUnits ctxUnits
+for sh = 0:max(root.lfpinfo.lfpShank)
+    lyrUnits(:,sh+1) = root.info.shankID == sh & root.info.depth > root.lyrbounds(1,sh+1) & root.info.depth < root.lyrbounds(2,sh+1) & root.goodind;
+    dgyUnits(:,sh+1) = root.info.shankID == sh & root.info.depth < root.lyrbounds(1,sh+1) & root.goodind;
+    ctxUnits(:,sh+1) = root.info.shankID == sh & root.info.depth > root.lyrbounds(2,sh+1) & root.goodind;
+    [sum(ctxUnits(:,sh+1)), sum(lyrUnits(:,sh+1)), sum(dgyUnits(:,sh+1))]
+end

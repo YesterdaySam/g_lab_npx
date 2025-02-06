@@ -106,19 +106,19 @@ root.tsb = inds;    %tsb = behavioral time series spike indices
 
 %% Naively align LFP to start of sess, using pk_lag only (unbounded error)
 lfSubsamp = round(sess.samprate / root.fs_lfp); %Get how much the LFP was downsampled
-root.lfp_tsb2 = sess.ind+pk_lag;
-root.lfp_tsb2 = sess.ind(root.lfp_tsb2 > 0);
-root.lfp_tsb2 = root.lfp_tsb2(1:lfSubsamp:length(root.lfp_tsb2));
-if size(root.lfp,2) > length(root.lfp_tsb2) % If SGLX rec overruns behavior rec
-    tmp = size(root.lfp,2) - length(root.lfp_tsb2);
+root.lfp_tsb = sess.ind+pk_lag;
+root.lfp_tsb = sess.ind(root.lfp_tsb > 0);
+root.lfp_tsb = root.lfp_tsb(1:lfSubsamp:length(root.lfp_tsb));
+if size(root.lfp,2) > length(root.lfp_tsb) % If SGLX rec overruns behavior rec
+    tmp = size(root.lfp,2) - length(root.lfp_tsb);
     disp(['During LFP alignment, ' num2str(tmp) ' lfp samples fell after root.lfp_tsb(end) and were removed'])
     % root.lfp_tsb = root.lfp_tsb(1:end-tmp);
     root.lfp = root.lfp(:,1:end-tmp);
 else
-    root.lfp_tsb2 = root.lfp_tsb2(1:length(root.syncpulse));
+    root.lfp_tsb = root.lfp_tsb(1:size(root.lfp,2));    % Untested
 end
-if length(root.lfp_tsb2) ~= size(root.lfp,2)
-    disp(['LFP data to LFP timestamp length mismatch by ' num2str(length(root.lfp_tsb2) - size(root.lfp,2))])
+if length(root.lfp_tsb) ~= size(root.lfp,2)
+    disp(['LFP data to LFP timestamp length mismatch by ' num2str(length(root.lfp_tsb) - size(root.lfp,2))])
 end
 
 %% Use sync edges to align LFP ts -- experimental
@@ -163,6 +163,8 @@ end
 % root.lfp_tsb = inds;    %tsb = behavioral time series spike indices
 
 %% Save
+root = rmfield(root,'tspulse','tssync'); %Remove unnecessary fields to reduce file size
+
 save([root.name '_root'],'root');
 
 end
