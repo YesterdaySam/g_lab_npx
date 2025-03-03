@@ -76,7 +76,7 @@ if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
             colormap(ax,'sky')
         end
     end
-    title(tcl,sess.name(1:end-8))
+    title(tcl,replace(sess.name(1:end-8),'_',' '))
     saveas(newfig, [sess.name(1:14) '_behavior_summary.png'], 'png')
     close all
 end

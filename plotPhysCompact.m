@@ -1,4 +1,4 @@
-function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag)
+function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastF,velF,avgposF,trialheatmapF,templateF,perioptoF)
 %% Plot and save some neural analyses
 %
 % Inputs:
@@ -17,11 +17,12 @@ arguments
     sdir                    % Directory to save subplots
     overwrite           = 0 % Overwrite old plots
     dType               = 'good' % Type of units to work with
-    rastFlag            = 1 % Include raster across trials
-    velFlag             = 1 % Include velocity binned firing rate
-    avgposFlag          = 1 % Include averaged spatial firing rate
-    trialheatmapFlag    = 1 % Include heatmap across trials
-    perioptoFlag        = 0 % Include peri-opto pulse spikes plot
+    rastF               = 1 % Include raster across trials
+    velF                = 1 % Include velocity binned firing rate
+    avgposF             = 1 % Include averaged spatial firing rate
+    trialheatmapF       = 1 % Include heatmap across trials
+    templateF           = 1 % Include template waveform 
+    perioptoF           = 0 % Include peri-opto pulse spikes plot
 end
 
 cd(sdir)
@@ -40,7 +41,7 @@ elseif contains(dType,'mua')
     nUnits = length(root.mua);
 end
 
-nPlots = sum([rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag]);
+nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF]);
 
 for i = 1:nUnits
 
@@ -57,21 +58,21 @@ for i = 1:nUnits
 
     if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
 
-        if rastFlag
+        if rastF
             tmpraster = plot_trialraster(root,cc,sess);
         end
 
-        if velFlag
+        if velF
             [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
             title('');
         end
 
-        if avgposFlag
+        if avgposF
             [~,~,tmpfrpos] = plot_frXpos(root,cc,sess);
             title('');
         end
 
-        if trialheatmapFlag
+        if trialheatmapF
             try
                 tmpheatmap = plot_trialHeatmap(root,cc,sess);
             catch
@@ -79,7 +80,11 @@ for i = 1:nUnits
             end
         end
 
-        if perioptoFlag
+        if templateF
+            tmpWF = plot_templateWF(root,cc);
+        end
+
+        if perioptoF
             [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.01,0.1);
             title('');
         end

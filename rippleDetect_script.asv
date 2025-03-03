@@ -78,18 +78,14 @@ end
 
 %% Plot lfp across space on 1 shank 
 shchans = root.lfpinfo.lfpch(root.lfpinfo.lfpShank == 3);
-twin = [1164.5 1165.5];
-indwin = twin*root.fs_lfp ;
+twin = [1165 1166]
+indwin(1) = twin(1)*root.fs_lfp;
 
-ripByDepthFig = figure; hold on
+figure; hold on
 set(gcf,'units','normalized','position',[0.45 0.05 0.4 0.85])
 for i = 1:length(shchans)
     tmpch = find(root.lfpinfo.lfpch == shchans(i));
-    plot(sess.ts(root.lfp_tsb(indwin(1):indwin(2))), root.lfp(tmpch, indwin(1):indwin(2)) + i,'k')
-end
-
-if saveFlag
-    saveas(ripByDepthFig,[sbase '_RippleByDepthExample.png'])
+    plot(sess.ts(root.lfp_tsb(twin(1):twin(2))), root.lfp(tmpch, twin(1):twin(2)) + i,'k')
 end
 
 %% Get Average Ripple
@@ -112,7 +108,7 @@ plotwdw = (-wdw:wdw) / root.fs_lfp * 1000;
 
 avgRipFig = figure; hold on
 plot(plotwdw,ripMap(1,:),'Color',[.7 .7 .7])
-plot(plotwdw,ripMap(1:round(nRips/25):nRips,:),'Color',[.7 .7 .7],'HandleVisibility','off')
+plot(plotwdw,ripMap(1:round(nRips)/5:nRips,:),'Color',[.7 .7 .7],'HandleVisibility','off')
 plot(plotwdw, meanRip, 'r')
 patch([plotwdw,fliplr(plotwdw)],[cidn,fliplr(ciup)],'r','FaceAlpha',0.5,'EdgeColor','none')
 

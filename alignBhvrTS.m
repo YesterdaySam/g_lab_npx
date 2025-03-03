@@ -32,6 +32,7 @@ cd(sdir)
 [sync_ccg, sync_lags] = xcorr(root.syncpulse, sess.slx);
 
 pk_lag = sync_lags(sync_ccg == max(sync_ccg));  %Index to offset sess.ts
+pk_lag = pk_lag(1); %In case of multiple matching peaks
 
 [~, edges_sync] = findpeaks(root.syncpulse);
 edges_root_ts = [root.tspulse(1) root.tspulse(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
@@ -41,6 +42,24 @@ edges_root_ts = [root.tspulse(1) root.tspulse(edges_sync)];   %Start at sync.ts 
 align_start = edges_sess + pk_lag > 0;
 edges_sess = [abs(pk_lag) edges_sess(align_start)'];   %Indices of sess edges after aligning to start of SGLX rec
 edges_sess_ts = sess.ts(edges_sess);
+
+%% Remove double spikes < 1ms apart for each cluster
+
+allcl = unique(root.cl);
+badInds = zeros(length(root.ts),1);
+
+for i = 1:height(root.info)
+    tmpspks = root.ts(root.cl == allcl(i));
+    tmpDoubles = find((diff(tmpspks) < 0.001))+1;   % Index of second spike under 1ms
+    for j = 1:length(tmpDoubles)
+        tmpInd = root.ts == tmpspks(tmpDoubles(j)) & root.cl == allcl(i);
+        badInds(tmpInd) = 1;
+    end
+end
+
+badInds = logical(badInds);
+root.ts(badInds) = [];
+root.cl(badInds) = [];
 
 %% align all spike times to behavior
 % SA = EA + RA*(SB - EB)/RB
@@ -163,7 +182,7 @@ end
 % root.lfp_tsb = inds;    %tsb = behavioral time series spike indices
 
 %% Save
-root = rmfield(root,{'tspulse','tssync'}); %Remove unnecessary fields to reduce file size
+root = rmfield(root,{'tssync'}); %Remove unnecessary fields to reduce file size
 
 save([root.name '_root'],'root');
 

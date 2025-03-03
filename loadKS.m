@@ -102,14 +102,16 @@ fileClust = dir("spike_clusters.npy");
 fileTime  = dir("spike_times.npy");
 fileLabel = dir("cluster_group.tsv");   % Contains post-manual curation labels
 fileInfo  = dir("cluster_info.tsv");    % Contains pre-manual curation labels and metadata like depth
+fileTempl = dir("templates.npy");
 
 try
     spkClusts   = readNPY(fileClust.name);
     spkTimes    = readNPY(fileTime.name);
     spkLabels   = readtable(fileLabel.name, "FileType", "text", 'Delimiter', '\t');
     spkInfo     = readtable(fileInfo.name, "FileType", "text", 'Delimiter', '\t');
+    tplAmp      = readNPY(fileTempl.name);
 catch
-    disp("Missing critical file 'spike_clusters.npy', 'spike_times.npy', 'cluster_group.tsv', or 'cluster_info.tsv'. Aborting.")
+    disp("Missing critical file 'spike_clusters.npy', 'spike_times.npy', 'cluster_group.tsv', 'cluster_info.tsv', or 'templates.npy'. Aborting.")
     return
 end
 
@@ -122,6 +124,8 @@ root.ts         = double(spkTimes)/root.fs;
 root.cl         = spkClusts;
 % root.lb         = spkLabels;
 root.info       = spkInfo(:,[1:3,5:8,10]);
+root.templateWF = assignTemplateWFs(tplAmp,root);
+
 if length(root.info.cluster_id) == length(spkLabels.cluster_id)
     root.info.group = spkLabels.group;
 elseif length(root.info.cluster_id) > length(spkLabels.cluster_id) %Edge case where spkLabels file is missing clusters
@@ -201,8 +205,65 @@ end
 %% Save output
 cd(spath)
 
-save([root.name, '_root'],'root')
+save([root.name, '_root'],'root','-v7.3')
 save([root.name, '_meta'],'meta')
 
 end
 
+function [templateWFs] = assignTemplateWFs(templates,root)
+
+templateWFs = [];
+templates2  = templates;
+templateUsed = [];
+
+for i = 1:height(root.info)
+    templateCh = root.info.ch(i)+1;
+
+    try
+        % if root.info.cluster_id(i)+1 <= size(templates,1)
+        tmp = squeeze(templates(root.info.cluster_id(i)+1,:,:)); % [Unit, amp, ch] Intermediate step for plotting
+        templateWFs(i,:) = tmp(:,templateCh); % Assign the template on the max amplitude channel
+        templateUsed = [templateUsed; root.info.cluster_id(i)+1];
+    catch
+        break  % For only 
+    end
+
+    % Optional plotting for validation
+    % figure; hold on; plot(tmp); title(num2str(root.info.cluster_id(i)))
+    % plot(tmp(:,templateCh),'r','LineWidth',2)
+    % disp(['Cluster ID' num2str(root.info.cluster_id(i)) ' Chan ' num2str(root.info.ch(i)) ' ChanInd ' num2str(templateCh)])
+    % close all
+
+end
+
+remainInds = [i, height(root.info)];
+templates2(templateUsed,:,:) = [];  %Get only unused templates
+
+disp(['Waveforms assigned automatically up to cluster: ' num2str(root.info.cluster_id(i))])
+disp(['Assigning waveforms to manually grouped clusters: ' num2str(root.info.cluster_id(remainInds(1):remainInds(2))')])
+
+for i = 1:size(templates2,1)
+    tmp = squeeze(templates2(i,:,:));
+    maxWF = max(tmp,[],'all');
+    minWF = min(tmp,[],'all');
+    if maxWF > abs(minWF)
+        maxAmp = maxWF;
+    else
+        maxAmp = minWF;
+    end
+    [~, templateChans(i)] = find(tmp == maxAmp);
+    templateRemain(i,:) = tmp(:,templateChans(i));
+end
+
+% Attempt match to remaining templates based on root.info.ch proximity to
+% biggest magnitude of each template waveform
+
+ct = 1;
+for i = remainInds(1):remainInds(2)
+    tmp = min(abs(templateChans - root.info.ch(i)));
+    trymatch(ct) = find(abs(templateChans - root.info.ch(i)) == tmp,1);
+    templateWFs(i,:) = templateRemain(trymatch(ct),:);
+    ct = ct + 1;
+end
+
+end
