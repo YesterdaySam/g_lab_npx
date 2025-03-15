@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW032\KW032_03062025_rec_D3_RMed1';
-datpath = 'D:\Data\Kelton\probe_data\KW032\KW032_03062025_rec_D3_RMed1_g0';
+spath = 'D:\Data\Kelton\analyses\KW032\KW032_03112025_rec_D5_LLat2';
+datpath = 'D:\Data\Kelton\probe_data\KW032\KW032_03112025_rec_D5_LLat2_g0';
 
 loadKS(datpath,spath);
 root = alignBhvrTS(spath,spath,spath);
@@ -133,6 +133,7 @@ xlabel('PSD (dB/Hz)')
 ylabel('Distance from Probe tip (um)')
 legend(legcell)
 set(gca,'FontSize',12,'FontName','Arial')
+
 
 %% Save updated root
 

@@ -1,4 +1,4 @@
-function [ripples,envStd] = get_ripples(root,chan,sess)
+function [ripples,envStd] = get_ripples(root,chan,sess,lThresh,hThresh,dThresh)
 %% Returns an updated root
 % Based off Jadhav lab methods and Buzsaki lab code
 % https://www.cell.com/neuron/fulltext/S0896-6273(19)30785-8
@@ -27,6 +27,9 @@ arguments
     root            %struct containing neural info
     chan {double}   %LFP channel ID
     sess            %session struct
+    lThresh = 3     %First threshold for ripple envelope
+    hThresh = 5     %Second threshold for ripple peak power
+    dThresh = [15 250] % Min and Max ripple duration
 end
 
 % Get Analytic siganl envelope
@@ -36,9 +39,9 @@ ripEnv = abs(hilbert(riplf));
 
 % Set thresholds
 envStd = std(ripEnv);
-lowThresh = 3*envStd;
-hiThresh = 5*envStd;
-durThresh = [15 250];
+lowThresh = lThresh*envStd;
+hiThresh = hThresh*envStd;
+durThresh = dThresh;
 runThresh = 4;
 
 %% Find candidate start/stops

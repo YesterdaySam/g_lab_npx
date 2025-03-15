@@ -1,4 +1,4 @@
-function [ripSpkZ, binedges, fhandle] = plot_frXripple(root,unit,wlen,bnsz,plotflag)
+function [ripSpkPr, binedges, fhandle] = plot_frXripple(root,unit,wlen,bnsz,plotflag)
 %% Plots the avg binned firing rate by position of a unit
 %
 % Inputs:

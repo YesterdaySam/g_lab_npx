@@ -58,3 +58,44 @@ for sh = 0:3
     plot(uPSD(1,root.lfpinfo.lfpShank == sh),root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh),'Color',cmapcool(sh+1,:))
     plot(uPSD(2,root.lfpinfo.lfpShank == sh),root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh),'Color',cmaphot(sh+1,:))
 end
+
+%%
+bestChan = 4;
+nRips = size(ripStruc(bestChan).ripples,1);
+nearRips = zeros(nRips,nChans);
+for i = 1:nRips
+    pkInd = ripStruc(bestChan).ripples(i,2);
+    % nearRips(i,1) = pkInd;
+    for j = 1:nChans
+        [tmpMin, tmpMinInd] = min(abs(pkInd - ripStruc(j).ripples(:,2)));
+        if tmpMin < 1*root.fs_lfp     % 1 second
+            nearRips(i,j) = ripStruc(j).ripples(tmpMinInd,2);
+        else
+            nearRips(i,j) = NaN;
+        end
+    end
+end
+
+%%
+bnsz = 2.5;
+compChans = logical(1 - ([1:nChans] == bestChan));
+rDist = nearRips(:,compChans) - nearRips(:,bestChan);
+
+bins = -root.fs_lfp:bnsz:root.fs_lfp;
+binnedRipCounts = histcounts(reshape(rDist,1,[]),bins);
+
+figure; hold on
+% histogram(rDist)
+bar((bins(1:end-1)+0.5*bnsz)/root.fs_lfp,binnedRipCounts);
+
+figure; hold on
+% plot(rDist(:,1)/root.fs_lfp,1:nRips,'k|')
+for i = 1:nChans
+    if compChans(i)
+        plot(rDist(:,i)/root.fs_lfp,1:nRips,'|')
+    end
+end
+plot((bins(1:end-1)+0.5*bnsz)/root.fs_lfp,binnedRipCounts,'r')
+xlim([-0.02 0.02])
+xlabel(['Time to reference ripple chan ' num2str(chans(bestChan))])
+ylabel('Ripple #')

@@ -17,21 +17,25 @@ if root.prbType == 'NPX2.0'
     bankMap3 = [241:288, 337:384];
     try
         minChan0 = root.info.depth(find(root.info.ch == 0 | root.info.ch == 1, 1)); %Get depth of first channel on bank 0
+        if isempty(minChan0); minChan0 = 0; end
     catch
         minChan0 = 0;
     end
     try 
         minChan1 = root.info.depth(find(root.info.ch == 48 | root.info.ch == 49, 1)); %Get depth of first channel on bank 1
+        if isempty(minChan1); minChan1 = 0; end
     catch
         minChan1 = 0;
     end
     try 
         minChan2 = root.info.depth(find(root.info.ch == 192 | root.info.ch == 193, 1)); %Get depth of first channel on bank 2
+        if isempty(minChan2); minChan2 = 0; end
     catch
         minChan2 = 0;
     end
     try 
         minChan3 = root.info.depth(find(root.info.ch == 240 | root.info.ch == 241, 1)); %Get depth of first channel on bank 3
+        if isempty(minChan3); minChan3 = 0; end
     catch
         minChan3 = 0;
     end
