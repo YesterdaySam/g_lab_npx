@@ -1,8 +1,6 @@
 % Batched Import behavior script
 
-% bhvrdir = 'C:\Users\cornu\Documents\Research\Data\test\test_02';
-% mousedir = 'C:\Users\cornu\Documents\Research\Data\KW005';
-mousedir = 'D:\Data\Kelton\analyses\KW032';
+mousedir = 'D:\Data\Kelton\analyses\KW035';
 
 overwriteFlag = 0;
 

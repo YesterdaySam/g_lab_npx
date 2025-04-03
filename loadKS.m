@@ -126,6 +126,7 @@ root.cl         = spkClusts;
 root.info       = spkInfo(:,[1:3,5:8,10]);
 root.templateWF = assignTemplateWFs(tplAmp,root);
 
+%%
 if length(root.info.cluster_id) == length(spkLabels.cluster_id)
     root.info.group = spkLabels.group;
 elseif length(root.info.cluster_id) > length(spkLabels.cluster_id) %Edge case where spkLabels file is missing clusters

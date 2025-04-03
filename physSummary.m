@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW032\KW032_03062025_rec_D3_RMed1';
-datpath = 'D:\Data\Kelton\probe_data\KW032\KW032_03062025_rec_D3_RMed1_g0';
+spath = 'D:\Data\Kelton\analyses\KW035\KW035_03182025_rec_D1_RLat1';
+datpath = 'D:\Data\Kelton\probe_data\KW035\KW035_03182025_rec_D1_RLat1_g0';
 
 loadKS(datpath,spath);
 root = alignBhvrTS(spath,spath,spath);
@@ -21,26 +21,25 @@ load(sessfile.name)
 %%
 % Plot Amp X Depth x FR
 adfr1 = plot_ampXdepthxFR(root);
-adfr2 = plot_ampXdepthxFR(root,1,1,0);
-adfr3 = plot_ampXdepthxFR(root,1,0,0);
-adfr4 = plot_ampXdepthxFR(root,0,1,0);
-
-saveas(adfr1,[root.name '_AmpDepthFR_all.png'])
-saveas(adfr2,[root.name '_AmpDepthFR_noNoise.png'])
-saveas(adfr3,[root.name '_AmpDepthFR_good.png'])
-saveas(adfr4,[root.name '_AmpDepthFR_mua.png'])
+% adfr2 = plot_ampXdepthxFR(root,1,1,0);
+% adfr3 = plot_ampXdepthxFR(root,1,0,0);
+% adfr4 = plot_ampXdepthxFR(root,0,1,0);
 
 % Plot FR X Depth
-frd1 = plot_frXdepth(root);
-frd2 = plot_frXdepth(root,1,1,0);
+% frd1 = plot_frXdepth(root);
+% frd2 = plot_frXdepth(root,1,1,0);
 frd3 = plot_frXdepth(root,1,0,0);
-frd4 = plot_frXdepth(root,0,1,0);
+% frd4 = plot_frXdepth(root,0,1,0);
 
 if saveFlag
-    saveas(frd1,[root.name '_FRDepth_all.png'])
-    saveas(frd2,[root.name '_FRDepth_noNoise.png'])
+    saveas(adfr1,[root.name '_AmpDepthFR_all.png'])
+    % saveas(adfr2,[root.name '_AmpDepthFR_noNoise.png'])
+    % saveas(adfr3,[root.name '_AmpDepthFR_good.png'])
+    % saveas(adfr4,[root.name '_AmpDepthFR_mua.png'])
+    % saveas(frd1,[root.name '_FRDepth_all.png'])
+    % saveas(frd2,[root.name '_FRDepth_noNoise.png'])
     saveas(frd3,[root.name '_FRDepth_good.png'])
-    saveas(frd4,[root.name '_FRDepth_mua.png'])
+    % saveas(frd4,[root.name '_FRDepth_mua.png'])
 end
 
 %% Summarize counts by shank and depth
@@ -105,41 +104,40 @@ for sh = 0:3
     end
 end
 root.uPSD = uPSD;
-root = get_layerUnits(root,100);    % Assign units to layers, min layer width 100um, prominence cut off 0.25
+root = get_layerBounds(root,100);    % Assign units to layers, min layer width 100um, prominence cut off 0.25
+root = get_layerUnits(root);
+
+%% Plot PSD (not very informative)
+
+% figure; hold on
+% nshank = size(root.uPSDMax,2);
+% ind1hz = find(f >= 1,1);
+% ind300hz = find(f >= 300,1);
+% for sh = 1:nshank
+%     cmapcool = cool(nshank);
+%     plot(f(ind1hz:ind300hz),pxx(ind1hz:ind300hz,root.uPSDMax(2,sh)),'Color',cmapcool(sh,:))
+% end
 
 %% Plot LFP by depth
 
-cmap(1).map = cool(4);
-cmap(2).map = hot(8);
-cmap(3).map = gray(5);
+tmpLFPDensityFig = plot_lfpXdepth(root);
 
-tmpLFPDensityFig = figure; hold on
-legcell = {};
-nChXSh = height(root.lfpinfo)/numel(unique(root.lfpinfo.lfpShank));
-grid on
-for sh = 0:3
-    for band = 1:size(bands,1)
-        plot(uPSD(band,root.lfpinfo.lfpShank == sh),root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh),'Color',cmap(band).map(sh+1,:))
-        legcell(band) = {[num2str(bands(band,1)) '-' num2str(bands(band,2)) 'Hz']};
-    end
-    for band = 1:size(bands,1)
-        [tmpMax, tmpInd] = max(uPSD(band,root.lfpinfo.lfpShank == sh));
-        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh);
-        plot(tmpMax+1,tmpD(tmpInd),'<','Color',cmap(band).map(sh+1,:))
-        if band == 2; plot([tmpMax tmpMax]+1,root.lyrbounds(:,sh+1),':_','Color',cmap(band).map(sh+1,:)); end
-    end
-end
-xlabel('PSD (dB/Hz)')
-ylabel('Distance from Probe tip (um)')
-legend(legcell)
-set(gca,'FontSize',12,'FontName','Arial')
+if saveFlag; saveas(tmpLFPDensityFig,[root.name '_LFPPower.png']); end
+
+%% Assign putative unit type (0 = IN; 1 = Principle) and FR Variance by time
+
+% root = get_estCellType(root,15,5,100,1);    % FW = 15; FWHM = 5; FR = 100; Plotflag = 1
+root = get_umapCellType(root);
+root = get_FRVar(root,sess,1);
+
+%% Plot Units assigned by layer and type
+
+uTypeDepthFig = plot_layerUnits(root,1,0,0);
+if saveFlag; saveas(uTypeDepthFig,[root.name '_uTypeXDepth.png']); end
 
 %% Save updated root
 
-if saveFlag
-    saveas(tmpLFPDensityFig,[root.name '_LFPPower.png'])
-    saveRoot(root,spath)
-end
+if saveFlag; saveRoot(root,spath); end
 
 %% Plot phys compact
 
@@ -149,16 +147,18 @@ plotPhysCompact(root,sess,spath,1)
 
 disp(['Finished phys summary for ' root.name])
 
+%% Presence ratio tests
 
-
-
-
-
-
-
-
-
-
-
-
-
+% for i = 1:length(root.good)
+%     cc = root.good(i);
+% 
+%     [tmpCts,tmpZFail(i),sdZ(i)] = get_presence(root,cc,sess,60,2,0);
+%     % if tmpZFail(i) > 0.5
+%     %     [tmpCts,tmpZFail(i)] = get_presence(root,cc,sess,30,1.5,1);
+%         % close(gcf)
+%     % end
+%     % sum(tmpCts)
+%     % root.info.n_spikes(find(root.info.cluster_id == cc))
+% end
+% 
+% figure; plot(root.good,sdZ,'k')

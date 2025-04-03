@@ -1,4 +1,4 @@
-function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastF,velF,avgposF,trialheatmapF,templateF,perioptoF)
+function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF)
 %% Plot and save some neural analyses
 %
 % Inputs:
@@ -23,6 +23,7 @@ arguments
     trialheatmapF       = 1 % Include heatmap across trials
     templateF           = 1 % Include template waveform 
     perioptoF           = 0 % Include peri-opto pulse spikes plot
+    acgF                = 1 % Include AutoCorreloGram plot
 end
 
 cd(sdir)
@@ -41,7 +42,7 @@ elseif contains(dType,'mua')
     nUnits = length(root.mua);
 end
 
-nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF]);
+nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF]);
 
 for i = 1:nUnits
 
@@ -57,6 +58,10 @@ for i = 1:nUnits
     end
 
     if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
+
+        if acgF
+            tmpacg = plot_acg(root,cc);
+        end
 
         if rastF
             tmpraster = plot_trialraster(root,cc,sess);
