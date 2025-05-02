@@ -116,3 +116,7 @@ for i = 1:nUnits
         close all
     end
 end
+
+cd(sdir)
+
+end

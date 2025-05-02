@@ -17,11 +17,18 @@ maxY = max(root.templateWF(ccc,:));
 minY = min(root.templateWF(ccc,:));
 
 fhandle = figure; hold on
-plot(root.templateWF(ccc,:),'k')
-plot([1 length(root.templateWF(ccc,:))], [0 0], 'k--')
+ts = (0:1:size(root.templateWF,2)-1) / root.fs * 1000;
+plot(ts, root.templateWF(ccc,:),'k')
+plot([ts(1) ts(end)], [0 0], 'k--')
 ylim([minY-2, maxY+2])
 ylabel('Amplitude (A.U.)')
-legend(['Probe Channel: ' num2str(root.info.ch(ccc))])
+xlabel('Time (ms)')
+if root.info.uType(ccc) == 1
+    typeStr = 'Putative Pyr';
+else
+    typeStr = 'Putative IN';
+end
+legend({['Probe Channel: ' num2str(root.info.ch(ccc))],typeStr})
 set(gca,'FontSize',12,'FontName','Arial')
 
 end

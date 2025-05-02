@@ -1,5 +1,5 @@
 %% IN Classification script
-parentDir = "D:\Data\Kelton\analyses\group_analyses\Subiculum_FR"; 
+parentDir = "D:\Data\Kelton\analyses\group_analyses\waveform_classification"; 
 subDatT = import_xldat(parentDir,"dat_include.xlsx");
 cd(parentDir) 
 
@@ -41,7 +41,7 @@ for i = 1:size(goodwfs,1)
 end
 
  %%
-% goodwfs = root.templateWF(root.goodind,:);
+goodwfs = root.templateWF(root.goodind,:);
 
 unitFWHM = [];
 unitFW   = [];
@@ -68,10 +68,14 @@ for i = 1:size(goodwfs)
     unitFW   = [unitFW; (lowind(2) + length(firsthalf)) - lowind(1)];
 end
 
-fwThresh = 15; fwhmThresh = 5;
+%Convert to ms
+unitFWHM = unitFWHM / 30;
+unitFW = unitFW / 30;
+
+fwThresh = 15/30; fwhmThresh = 5/30;
 INWFs = unitFW <= fwThresh & unitFWHM <= fwhmThresh;
 % INWFs = root.info.uType(root.goodind) == 0;
-INWFs = INWFs_UMAP;
+% INWFs = INWFs_UMAP;
 
 %% Plot aggregated Wfs
 figure; set(gcf,"Position",[680 300 495 630])
@@ -79,18 +83,38 @@ subplot(3,1,1:2); hold on
 plot(unitFW(INWFs),unitFWHM(INWFs),'ro')
 plot(unitFW(~INWFs),unitFWHM(~INWFs),'bo')
 % plot(unitFW(root.good(umap_INs)),unitFWHM(root.good(umap_INs)),'go')
-plot([fwThresh, fwThresh],[min(unitFWHM) max(unitFWHM)],'k--')
-plot([min(unitFW) max(unitFW)],[fwhmThresh, fwhmThresh],'k--')
+plot([fwThresh, fwThresh],[0 max(unitFWHM)],'k--')
+plot([0 max(unitFW)],[fwhmThresh, fwhmThresh],'k--')
 xlim([0 max(unitFW)]); ylim([0 max(unitFWHM)])
-ylabel('FWHM (A.U.)')
+ylabel('FWHM (ms)')
 set(gca,'FontSize',12,'FontName','Arial')
 
 subplot(3,1,3); hold on
-binctrs1 = 0:1:max(unitFW);
-bincount = histogram(unitFW,binctrs1,'DisplayStyle','stairs','LineWidth',2,'EdgeColor','b');
+binctrs1 = 0:0.035:max(unitFW);
+bincount = histogram(unitFW(~INWFs),binctrs1,'DisplayStyle','stairs','LineWidth',2,'EdgeColor','b');
 incount = histogram(unitFW(INWFs),binctrs1,'DisplayStyle','stairs','LineWidth',2,'EdgeColor','r');
+plot([fwThresh, fwThresh],[0 max(bincount.Values)],'k--')
 % bar(binctrs1(2:end)-0.5,bincount)
-xlim([0 max(unitFW)]); xlabel('FullWidth (A.U.)'); ylabel('Count')
+xlim([0 max(unitFW)]); xlabel('FullWidth (ms)'); ylabel('Count')
+set(gca,'FontSize',12,'FontName','Arial')
+
+% figure;
+% plot3(goodfrs(INWFs),unitFW(INWFs),unitFWHM(INWFs),'ro')
+% hold on
+% plot3(goodfrs(~INWFs),unitFW(~INWFs),unitFWHM(~INWFs),'bo')
+% % plot3([mean(goodfrs(INWFs))],[mean(unitFW(INWFs))],[mean(unitFWHM(INWFs))],'ko','MarkerFaceColor','r')
+% % plot3([mean(goodfrs(~INWFs))],[mean(unitFW(~INWFs))],[mean(unitFWHM(~INWFs))],'ko','MarkerFaceColor','r')
+% xlabel('Global FR (Hz)')
+% ylabel('FullWidth (ms)')
+% zlabel('FWHM (ms)')
+
+figure; hold on
+plot(unitFW(INWFs),goodfrs(INWFs),'ro')
+plot(unitFW(~INWFs),goodfrs(~INWFs),'bo')
+plot(mean(unitFW(INWFs)),mean(goodfrs(INWFs)),'ko','MarkerFaceColor','k')
+plot(mean(unitFW(~INWFs)),mean(goodfrs(~INWFs)),'ko','MarkerFaceColor','k')
+plot([fwThresh, fwThresh],[0 max(goodfrs)],'k--')
+ylabel('Global FR (Hz)'); xlabel('Full Width (ms)');
 set(gca,'FontSize',12,'FontName','Arial')
 
 %% PCA
@@ -181,9 +205,11 @@ fTemplate = 'D:\Data\Kelton\analyses\group_analyses\waveform_classification\umap
 [reduction_new] = run_umap(goodwfs,'template_file',fTemplate, 'verbose','none');
 
 load('D:\Data\Kelton\analyses\group_analyses\waveform_classification\kmeans_centroids_3.mat');
-tmpidx = kmeans(reduction_new, [], 'Distance','cityblock', 'Start', tmpc);
+% tmpidx = kmeans(reduction_new, [], 'Distance','cityblock', 'Start', tmpc);
+[~,tmpidx] = pdist2(tmpc,reduction_new,'euclidean','Smallest',1);
 
 figure; hold on
+plot(reduction_new(INWFs,1),reduction_new(INWFs,2),'r*')
 plot(reduction_new(:,1),reduction_new(:,2),'k.')
 plot(reduction_new(tmpidx == 1,1),reduction_new(tmpidx == 1,2),'b.')
 plot(reduction_new(tmpidx == 2,1),reduction_new(tmpidx == 2,2),'g.')
@@ -192,7 +218,8 @@ plot(reduction_new(tmpidx == 4,1),reduction_new(tmpidx == 4,2),'c.')
 plot(reduction_new(tmpidx == 5,1),reduction_new(tmpidx == 5,2),'m.')
 xlabel('UMAP 1'); ylabel('UMAP 2'); xticks([]); yticks([]);
 
-round_reds = round(reduction_wfs,3);
+% round_reds = round(reduction_wfs,3);
+INWFs_UMAP = tmpidx == 1;
 
 %% Plot different waveforms overlayed
 nINs = sum(tmpidx == 3);

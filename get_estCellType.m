@@ -1,5 +1,5 @@
-function [root] = get_estCellType(root,fwThresh,fwhmThresh,frThresh,plotflag)
-%% Calculates waveform width and FWHM and automatically assigns
+function [root, histoFig] = get_estCellType(root,fwThresh,pkvyThresh,frThresh,plotflag)
+%% Calculates waveform width and FWHM to automatically assign cell type
 %
 % Inputs:
 % root = root object. Must have root.tssync and root.tsb fields
@@ -18,8 +18,8 @@ function [root] = get_estCellType(root,fwThresh,fwhmThresh,frThresh,plotflag)
 
 arguments
     root
-    fwThresh = 15
-    fwhmThresh = 5
+    fwThresh = 0.5
+    pkvyThresh = 0.6 %0.1667
     frThresh = 100
     plotflag = 1
 end
@@ -32,6 +32,7 @@ unitProm = [];
 unitcls  = [];
 unitprhp = []; % pre-hyperpolarization
 unitpohp = []; % post-hyperpolarization
+unitPkVy = []; % Peak to valley time
 
 for i = 1:height(root.info)
     % unit = root.info.cluster_id == i;
@@ -62,11 +63,17 @@ for i = 1:height(root.info)
     unitFWHM = [unitFWHM; tmpwidth(maxind)];
     unitFW   = [unitFW; (lowind(2) + length(firsthalf)) - lowind(1)];
     unitProm = [unitProm; tmpprom(maxind)];
+    unitPkVy = [unitPkVy; tmplocs(maxind) - lowind(1)];
 end
+
+% Convert to ms
+unitFWHM = unitFWHM / root.fs * 1000;
+unitFW   = unitFW   / root.fs * 1000;
+unitPkVy = unitPkVy / root.fs * 1000;
 
 %% WF Width cutoff
 
-INWFs = unitFW <= fwThresh & unitFWHM <= fwhmThresh & unitFRs <= frThresh;
+INWFs = unitPkVy <= pkvyThresh & unitFW <= fwThresh & unitFRs <= frThresh;
 root.info.uType = ~INWFs;
 
 % [goodcls(narrWFs), goodAmps(narrWFs), goodFW(narrWFs), goodFWHM(narrWFs)]
@@ -74,56 +81,57 @@ root.info.uType = ~INWFs;
 %% Plot for visual inspection
 
 if plotflag
-    figure; set(gcf,"Position",[680 300 495 630])
+    histoFig = figure; set(gcf,"Position",[680 300 495 630])
     subplot(3,1,1:2); hold on
-    plot(unitFW(INWFs),unitFWHM(INWFs),'ro')
-    plot(unitFW(~INWFs),unitFWHM(~INWFs),'bo')
+    plot(unitPkVy(INWFs),unitFW(INWFs),'ro')
+    plot(unitPkVy(~INWFs),unitFW(~INWFs),'bo')
     % plot(unitFW(root.good(umap_INs)),unitFWHM(root.good(umap_INs)),'go')
-    plot([fwThresh, fwThresh],[min(unitFWHM) max(unitFWHM)],'k--')
-    plot([min(unitFW) max(unitFW)],[fwhmThresh, fwhmThresh],'k--')
-    xlim([0 max(unitFW)]); ylim([0 max(unitFWHM)])
-    ylabel('FWHM (A.U.)')
+    plot([pkvyThresh, pkvyThresh],[0 max(unitFW)],'k--')
+    plot([0 max(unitPkVy)],[fwThresh, fwThresh],'k--')
+    xlim([0 max(unitPkVy)]); ylim([0 max(unitFW)])
+    ylabel('FullWidth (ms)')
     set(gca,'FontSize',12,'FontName','Arial')
 
     subplot(3,1,3); hold on
-    binctrs1 = 0:1:max(unitFW);
-    bincount = histogram(unitFW,binctrs1,'DisplayStyle','stairs','LineWidth',2,'EdgeColor','b');
-    incount = histogram(unitFW(INWFs),binctrs1,'DisplayStyle','stairs','LineWidth',2,'EdgeColor','r');
+    binctrs1 = 0:0.035:max(unitPkVy);
+    bincount = histogram(unitPkVy(~INWFs),binctrs1,'DisplayStyle','stairs','LineWidth',2,'EdgeColor','b');
+    incount = histogram(unitPkVy(INWFs),binctrs1,'DisplayStyle','stairs','LineWidth',2,'EdgeColor','r');
     % bar(binctrs1(2:end)-0.5,bincount)
-    xlim([0 max(unitFW)]); xlabel('FullWidth (A.U.)'); ylabel('Count')
+    xlim([0 max(unitPkVy)]); xlabel('Trough-to-Peak (ms)'); ylabel('Count')
     set(gca,'FontSize',12,'FontName','Arial')
 
     figure;
-    plot3(unitprhp(INWFs),unitFW(INWFs),unitFWHM(INWFs),'ro')
+    plot3(unitFRs(INWFs),unitFW(INWFs),unitPkVy(INWFs),'ro')
     hold on
-    plot3(unitprhp(~INWFs),unitFW(~INWFs),unitFWHM(~INWFs),'bo')
-    xlabel('pre-hyperpol')
-    ylabel('FullWidth')
-    zlabel('FWHM')
+    plot3(unitFRs(~INWFs),unitFW(~INWFs),unitPkVy(~INWFs),'bo')
+    xlabel('Global FR (Hz)')
+    ylabel('FullWidth (ms)')
+    zlabel('Trough-to-Peak (ms)')
 
-    goodINs = find(root.goodind & INWFs);
-    goodPyrs = find(root.goodind & ~INWFs);
-    nSubFigs = ceil(length(goodINs)/16);
-    ct = 0;
-    for i = 1:nSubFigs
-        figure
-        for j = 1:16
-            try
-                subplot(4,4,j)
-                hold on
-                plot(root.templateWF(goodINs(j+ct),:),'k')
-                plot(root.templateWF(goodPyrs(j+ct),:),'b')
-                plot([0 size(root.templateWF,2)],[0 0], 'k--')
-                xlim([0 size(root.templateWF,2)])
-                title(['Unit ' num2str(root.info.cluster_id(goodINs(j+ct)))])
-                legend({['FR ' num2str(root.info.fr(goodINs(j+ct)))]},'Location','se','FontSize',8)
-                set(gca,'FontSize',12,'FontName','Arial')
-            catch
-                continue
-            end
-        end
-        ct = ct + 16;
-    end
+    % Plot all good IN waveforms vs matched good Pyr w/fs
+    % goodINs = find(root.goodind & INWFs);
+    % goodPyrs = find(root.goodind & ~INWFs);
+    % nSubFigs = ceil(length(goodINs)/16);
+    % ct = 0;
+    % for i = 1:nSubFigs
+    %     figure
+    %     for j = 1:16
+    %         try
+    %             subplot(4,4,j)
+    %             hold on
+    %             plot(root.templateWF(goodINs(j+ct),:),'k')
+    %             plot(root.templateWF(goodPyrs(j+ct),:),'b')
+    %             plot([0 size(root.templateWF,2)],[0 0], 'k--')
+    %             xlim([0 size(root.templateWF,2)])
+    %             title(['Unit ' num2str(root.info.cluster_id(goodINs(j+ct)))])
+    %             legend({['FR ' num2str(root.info.fr(goodINs(j+ct)))]},'Location','se','FontSize',8)
+    %             set(gca,'FontSize',12,'FontName','Arial')
+    %         catch
+    %             continue
+    %         end
+    %     end
+    %     ct = ct + 16;
+    % end
 end
 
 %% Optional plots for testing purposes
@@ -183,39 +191,4 @@ end
 % xlabel('WF Width (AU)')
 % xlim([0, max(goodFW)])
 
-%% PCA for waveform clustering -- doesn't seem to work consistently
-
-% wfMetricsMat = [goodFRs,goodFW,goodFWHM,goodAmps,goodProm];
-% 
-% % [coefs,score,~,tsquared,explained] = pca(wfMetricsMat);
-% 
-% wfsMat = root.templateWF(root.goodind,:);
-% [coefs,score,latent,tsquared,explained] = pca(wfsMat','centered',false);
-% 
-% figure; hold on;
-% plot(explained,'k-o')
-% plot(cumsum(explained),'k-o')
-% 
-% xlim([0 length(explained)])
-% xlabel('PC#')
-% ylabel('Explained variance')
-% 
-% figure; 
-% plot3(score(:,1),score(:,2),score(:,3),'k.')
-% xlabel('PC1')
-% ylabel('PC2')
-% zlabel('PC3')
-% 
-% hold on
-% plot3(score(INWFs(root.goodind),1),score(INWFs(root.goodind),2),score(INWFs(root.goodind),3),'r.')
-% title(replace(root.name,'_',' '))
-% 
-% figure; hold on
-% plot(coefs(:,1),coefs(:,2),'.')
-% plot(coefs(INWFs(root.goodind),1),coefs(INWFs(root.goodind),2),'r.')
-% 
-% % [goodcls, score(:,1), score(:,2), score(:,3)]
-% 
-% Z = linkage(coefs(:,1:3));
-% figure
-% dendrogram(Z)
+end

@@ -1,4 +1,4 @@
-function [root] = get_umapCellType(root,umap_template,kmeans_centroids,c_IDs_IN, plotflag)
+function [root,fhandle] = get_umapCellType(root,plotflag,umap_template,kmeans_centroids,c_IDs_IN)
 %% Calculates waveform width and FWHM and automatically assigns
 %
 % Inputs:
@@ -18,10 +18,10 @@ function [root] = get_umapCellType(root,umap_template,kmeans_centroids,c_IDs_IN,
 
 arguments
     root
+    plotflag = 1
     umap_template = 'D:\Data\Kelton\analyses\group_analyses\waveform_classification\umap_euclidean_3.mat'
     kmeans_centroids = 'D:\Data\Kelton\analyses\group_analyses\waveform_classification\kmeans_centroids_3.mat'
     c_IDs_IN = [1]
-    plotflag = 1
 end
 
 load('D:\Data\Kelton\analyses\group_analyses\waveform_classification\waveform_dat.mat')
@@ -63,16 +63,17 @@ end
 %% Plot against FWHM ID'ed interneurons
 
 if plotflag
-    root = get_estCellType(root,15,5,100,0);
+    root = get_estCellType(root,0.5,0.1677,100,0);
 
     cmapcool = cool(length(c_IDs_IN));
 
-    umapINsFig = figure; hold on
+    fhandle = figure; hold on
     plot(reduction_wfs(root.info.uType == 0,1),reduction_wfs(root.info.uType == 0,2),'r*')
     plot(reduction_wfs(:,1),reduction_wfs(:,2),'k.')
     for i = 1:length(c_IDs_IN)
         plot(reduction_wfs(tmpidx == c_IDs_IN(i),1),reduction_wfs(tmpidx == c_IDs_IN(i),2),'.','Color',cmapcool(i,:))
     end
+    legend({'FWHM INs', 'UMAP Pyrs', 'UMAP INs'})
     xlabel('UMAP 1'); ylabel('UMAP 2'); xticks([]); yticks([]);
 end
 

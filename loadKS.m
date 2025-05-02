@@ -65,7 +65,7 @@ syncpulse = double(syncpulse);
 tspulse   = (1:length(syncpulse)) / SGLX_readMeta.SampRate(meta);
 
 %% Get LFP data
-if length(syncfile) > 1 %i.e. for 2.0 recordings
+if length(syncfile) > 1 % i.e. for 2.0 recordings
     chSubsamp = 4;
     lfSubsamp = 2;
     meta      = SGLX_readMeta.ReadMeta(syncfile(2).name, syncfile(2).folder);

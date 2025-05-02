@@ -1,3 +1,4 @@
+
 function [ripples,envStd] = get_ripples(root,chan,sess,lThresh,hThresh,dThresh)
 %% Returns an updated root
 % Based off Jadhav lab methods and Buzsaki lab code

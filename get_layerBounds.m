@@ -34,14 +34,14 @@ for sh = 0:nShanks-1
 
     [pks,locs,widths,proms] = findpeaks(tmpsh_psd,'MinPeakProminence',std(tmpsh_psd)); %Get peaks and prominences
     if isempty(pks) % In case of small double peak near mean peak leading to spurious prominence
-        [pks,locs,widths,proms] = findpeaks(smooth(tmpsh_psd,3),'MinPeakProminence',std(tmpsh_psd)*.5);
+        % [pks,locs,widths,proms] = findpeaks(smooth(tmpsh_psd,3),'MinPeakProminence',std(tmpsh_psd)*.5);
+        [pks,locs,widths,proms] = findpeaks(smooth(tmpsh_psd,3));
     end
     tmpind = find(pks == max(pks));    %Index of highest peak
     tmploc = locs(tmpind); %Channel index of highest peak
     tmpprom = proms(tmpind);
 
-    % Split PSD into two vectors and search for last point of 2/3
-    % prominence in either direction to get full-width quarter maximum
+    % Split PSD into two vectors and search for last point of minProm prominence in either direction to get layer boundaries
     v1 = fliplr(tmpsh_psd(1:tmploc));
     v2 = tmpsh_psd(tmploc:end);
     lim1 = find(diff(v1 > pks(tmpind) - tmpprom*(1-minProm)) == -1,1,'first');
