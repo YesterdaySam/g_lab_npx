@@ -1,4 +1,4 @@
-function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF)
+function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF)
 %% Plot and save some neural analyses
 %
 % Inputs:
@@ -24,6 +24,7 @@ arguments
     templateF           = 1 % Include template waveform 
     perioptoF           = 0 % Include peri-opto pulse spikes plot
     acgF                = 1 % Include AutoCorreloGram plot
+    thetaF              = 1 % Include Theta Phase Modulation plot
 end
 
 cd(sdir)
@@ -42,7 +43,7 @@ elseif contains(dType,'mua')
     nUnits = length(root.mua);
 end
 
-nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF]);
+nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF]);
 
 for i = 1:nUnits
 
@@ -58,6 +59,12 @@ for i = 1:nUnits
     end
 
     if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
+
+        if thetaF
+            tmpInd = find(root.info.cluster_id == cc);
+            lfpInd = root.info.shankID(tmpInd) + 1; % Account for 0-indexing
+            [~,tmptheta] = plot_thetaMod(root,cc,lfpInd);   % Plot theta modulation relative to local theta
+        end
 
         if acgF
             tmpacg = plot_acg(root,cc);
@@ -98,8 +105,10 @@ for i = 1:nUnits
         newfig = figure;
         if nPlots < 5
             set(gcf,'units','normalized','position',[0.1 0.1 0.4 0.7])
-        else
+        elseif nPlots < 7
             set(gcf,'units','normalized','position',[0.1 0.1 0.7 0.7])
+        else
+            set(gcf,'units','normalized','position',[0.1 0.01 0.7 0.95])
         end
 
         tcl = tiledlayout(newfig, 'flow');

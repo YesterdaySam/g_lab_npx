@@ -53,6 +53,14 @@ for i = 1:height(root.info)
     [tmppks,tmplocs,tmpwidth,tmpprom] = findpeaks(tmpwf);
     [~,maxind] = max(tmppks);
     % [~,tmpinds] = sort(tmpprom);
+    if isempty(maxind)
+        disp(['Template WF for unit ' num2str(i) ' is empty! Assigning IN.'])
+            unitFWHM = [unitFWHM; 1];
+            unitFW   = [unitFW; 1];
+            unitPkVy = [unitPkVy; 1];
+        continue
+    end
+
     firsthalf = tmpwf(1:tmplocs(maxind));
     lasthalf  = tmpwf(tmplocs(maxind):end);
     lowind(1) = find(firsthalf <= tmppks(maxind) - tmpprom(maxind),1,'last');

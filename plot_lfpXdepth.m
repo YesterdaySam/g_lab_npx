@@ -1,4 +1,15 @@
 function [fhandle] = plot_lfpXdepth(root)
+%% Plots estimated power spectral density by shank, depth and freq band
+%
+% Inputs:
+% root = root object. Must have lyrbounds and uPSD fields
+%
+% Outputs:
+% fhandle = handle to figure
+%
+% Created 2/15/25 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
+
 
 try
     disp(['Existing root.lyrbounds: ' num2str(root.lyrbounds(1,:)) ' TO ' num2str(root.lyrbounds(2,:))])

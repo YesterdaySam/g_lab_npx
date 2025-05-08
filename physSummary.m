@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW036\KW036_04032025_rec_D6_LMed1';
-datpath = 'D:\Data\Kelton\probe_data\KW036\KW036_04032025_rec_D6_LMed1_g0';
+spath = 'D:\Data\Kelton\analyses\KW038\KW038_04072025_rec_D1_RLat1';
+datpath = 'D:\Data\Kelton\probe_data\KW038\KW038_04072025_rec_D1_RLat1_g0';
 
 loadKS(datpath,spath,1);
 root = alignBhvrTS(spath,spath,spath);
@@ -80,50 +80,9 @@ if saveFlag
     saveas(tmpSpikeDensityFig,[root.name '_spikeDensity.png'])
 end
 
-%% Raw LFP power by depth
+%% Estimate LFP power by depth
 
-nshanks = numel(unique(root.info.shankID));
-NFFT = 10000;
-[pxx,f] = pwelch(root.lfp',[],[],NFFT,root.fs_lfp);
-
-bands = [6 10; 150 250];    % Also [0.01 300]
-uPSD = zeros(size(bands,1),size(pxx,2));
-
-for band = 1:size(bands,1)
-    f_tmp = f > bands(band,1) & f < bands(band,2);  % Get frequencies in band
-    uPSD(band,:) = mean(10*log10(pxx(f_tmp,:)),1);    %Get mean per electrode within band
-end
-
-% Locate electrode with max spectral power for each band, for each shank
-root.bands = bands;
-for sh = 1:nshanks
-    for band = 1:size(bands,1)
-        [tmpMax, tmpInd] = max(uPSD(band,root.lfpinfo.lfpShank == sh-1));
-        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh-1);
-        tmpD = tmpD(tmpInd);
-        root.uPSDMax(band,sh) = find(root.lfpinfo.lfpDepth == tmpD & root.lfpinfo.lfpShank == sh-1);
-    end
-end
-
-root.uPSD = uPSD;
-
-% Interpolate over bad channels with low PSD 
-badChans = root.uPSD(2,:) < mean(root.uPSD(2,:)) - 5* std(root.uPSD(2,:)); % With average LFP < 5 StDev of mean
-if sum(badChans) > 0
-    disp(['Found ' num2str(sum(badChans)) ' Bad LFP channels, spline interpolation commencing'])
-    for sh = 1:nshanks   %Interpolate by shank instead of globally
-        shChans = root.lfpinfo.lfpShank == sh-1;
-        tmpsh_upsd = root.uPSD(2,shChans);
-        badChans = tmpsh_upsd < mean(tmpsh_upsd) - 3* std(tmpsh_upsd); % With average LFP < 3 StDev of mean
-        if sum(badChans) > 0 
-            interpVec = 1:length(tmpsh_upsd);
-            interpTrn = interpVec(~badChans);
-            uPSDInterp = interp1(interpTrn,tmpsh_upsd(~badChans),interpVec,'spline');
-            root.uPSD(2,shChans) = uPSDInterp;
-        end
-    end
-end
-
+root = get_lfpXdepth(root,[6 10; 150 250]);
 root = get_layerBounds(root,100,0.25);    % Assign units to layers, min layer width 100um, prominence cut off 0.25
 
 %% Plot PSD (not very informative)
