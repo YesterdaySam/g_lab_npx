@@ -64,14 +64,17 @@ for i = 1:height(root.info)
     firsthalf = tmpwf(1:tmplocs(maxind));
     lasthalf  = tmpwf(tmplocs(maxind):end);
     lowind(1) = find(firsthalf <= tmppks(maxind) - tmpprom(maxind),1,'last');
-    lowind(2) = find(lasthalf <= tmppks(maxind) - tmpprom(maxind),1,'first');
-
+    % lowind(2) = find(lasthalf <= tmppks(maxind) - tmpprom(maxind),1,'first');
+    [lowpks, lowlocs] = findpeaks(-lasthalf);
+    [~,lowmax] = max(lowpks);
+    lowind(2) = lowlocs(lowmax);
+    
     unitprhp = [unitprhp; abs(mean(tmpwf) - firsthalf(lowind(1)))]; % pre-hyperpolarization
     unitpohp = [unitpohp; abs(mean(tmpwf) - lasthalf(lowind(2)))];  % post-hyperpolarization
     unitFWHM = [unitFWHM; tmpwidth(maxind)];
     unitFW   = [unitFW; (lowind(2) + length(firsthalf)) - lowind(1)];
     unitProm = [unitProm; tmpprom(maxind)];
-    unitPkVy = [unitPkVy; tmplocs(maxind) - lowind(1)];
+    unitPkVy = [unitPkVy; lowind(2)-1]; % Difference between trough point (lowind(2)) and peak point (lasthalf(1))
 end
 
 % Convert to ms

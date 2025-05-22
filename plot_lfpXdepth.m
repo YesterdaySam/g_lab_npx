@@ -10,6 +10,7 @@ function [fhandle] = plot_lfpXdepth(root)
 % Created 2/15/25 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
+nShanks = numel(unique(root.lfpinfo.lfpShank));
 
 try
     disp(['Existing root.lyrbounds: ' num2str(root.lyrbounds(1,:)) ' TO ' num2str(root.lyrbounds(2,:))])
@@ -26,16 +27,16 @@ fhandle = figure; hold on
 legcell = {};
 nChXSh = height(root.lfpinfo)/numel(unique(root.lfpinfo.lfpShank));
 grid on
-for sh = 0:3
+for sh = 1:nShanks
     for band = 1:size(root.bands,1)
-        plot(root.uPSD(band,root.lfpinfo.lfpShank == sh),root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh),'Color',cmap(band).map(sh+1,:))
+        plot(root.uPSD(band,root.lfpinfo.lfpShank == sh-1),root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh-1),'Color',cmap(band).map(sh,:))
         legcell(band) = {[num2str(root.bands(band,1)) '-' num2str(root.bands(band,2)) 'Hz']};
     end
     for band = 1:size(root.bands,1)
-        [tmpMax, tmpInd] = max(root.uPSD(band,root.lfpinfo.lfpShank == sh));
-        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh);
-        plot(tmpMax+1,tmpD(tmpInd),'<','Color',cmap(band).map(sh+1,:))
-        if band == 2; plot([tmpMax tmpMax]+1,root.lyrbounds(:,sh+1),':_','Color',cmap(band).map(sh+1,:)); end
+        [tmpMax, tmpInd] = max(root.uPSD(band,root.lfpinfo.lfpShank == sh-1));
+        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh-1);
+        plot(tmpMax+1,tmpD(tmpInd),'<','Color',cmap(band).map(sh,:))
+        if band == 2; plot([tmpMax tmpMax]+1,root.lyrbounds(:,sh),':_','Color',cmap(band).map(sh,:)); end
     end
 end
 xlabel('PSD (dB/Hz)')

@@ -1,4 +1,4 @@
-function [ripMod,uRipFR,uCtlFR,ripSpkMap] = get_RipMod(root,unit,tOffset)
+function [ripMod,uRipFR,uCtlFR,ripSpkMap] = get_RipMod(root,unit,sess,tOffset)
 %% Returns the Ripple Modulation Index of a unit
 %
 % Gets ripple_spks / (ripple_spks + control_spks)
@@ -6,7 +6,7 @@ function [ripMod,uRipFR,uCtlFR,ripSpkMap] = get_RipMod(root,unit,tOffset)
 %
 % Inputs:
 % root = root object. Must have root.tssync and root.tsb fields
-% unit = cluster ID
+% unit = cluster ID OR spike train indices (i.e. when jitter shuffling)
 % tOffset = distance of offset in msec, can be - or +
 %
 % Outputs:
@@ -18,19 +18,33 @@ function [ripMod,uRipFR,uCtlFR,ripSpkMap] = get_RipMod(root,unit,tOffset)
 % Created 1/14/25 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
+arguments
+    root
+    unit            % Cluster ID OR spike train indices (i.e. when jitter shuffling)
+    sess
+    tOffset = 1000  % in msec
+end
+
+if isscalar(unit)
+    spkinds = root.tsb(root.cl == unit);
+else
+    spkinds = unit;
+end
+spkinds = sess.ts(spkinds);
+
 lowSpkThresh = 25;
 
-ripStt = root.ripples(:,1);
-ripEnd = root.ripples(:,3);
+ripStt = sess.ts(root.ripples(:,1));
+ripEnd = sess.ts(root.ripples(:,3));
 
-offInd = tOffset / 1000 * root.fs_lfp;
+offInd = tOffset / 1000;
 
 ctlStt = ripStt + offInd;
 ctlEnd = ripEnd + offInd;
 
 % Find and remove ripples with control periods falling before or after session
-badInds = ctlStt < root.lfp_tsb(1) | ctlStt > root.lfp_tsb(end);
-badInds = logical(badInds + ctlEnd < root.lfp_tsb(1) | ctlEnd > root.lfp_tsb(end));
+badInds = ctlStt < sess.ts(root.lfp_tsb(1)) | ctlStt > sess.ts(root.lfp_tsb(end));
+badInds = logical(badInds + ctlEnd < sess.ts(root.lfp_tsb(1)) | ctlEnd > sess.ts(root.lfp_tsb(end)));
 
 ctlStt(badInds) = [];
 ctlEnd(badInds) = [];
@@ -38,8 +52,7 @@ ripStt(badInds) = [];
 ripEnd(badInds) = [];
 
 nRips = length(ripEnd);
-spkinds = root.tsb(root.cl == unit);
-ripDurs = (ripEnd - ripStt) / root.fs_lfp;    % In seconds
+ripDurs = (ripEnd - ripStt);    % In seconds
 
 ripSpkMap = zeros(nRips,2);
 ripFRMap = zeros(nRips,2);

@@ -31,54 +31,65 @@ clear sess dat datFields
 sess.bhvrDir = datdir;
 cd(sess.bhvrDir)
 bhvrFile = dir("*.h5");
-sess.name = bhvrFile.name;
 
-% Load data from .h5 file
-dat             = ws.loadDataFile(sess.name);
-datFields       = fieldnames(dat);      % Use in case sweep number is not 001
-sess.header     = dat.header;
-sess.samprate   = sess.header.AcquisitionSampleRate;
+for i = 1:size(bhvrFile,1)
+    % Load data from .h5 file
+    sess.name = bhvrFile(i).name;
+    dat             = ws.loadDataFile(sess.name);
+    datFields       = fieldnames(dat);      % Use in case sweep number is not 001
+    sess.header     = dat.header;
+    sess.samprate   = sess.header.AcquisitionSampleRate;
 
-% Analog data: 1 = Vel; 2 = Dist (m); 3 = Licks; 4 = Reward; 5 = VmOut; 6 = Im; 7 = Bpod Target; 8 = SGLX
-sess.aidat      = dat.(datFields{2}).analogScans;
-sess.ind        = 1:size(sess.aidat,1);
-sess.ts         = sess.ind/sess.samprate;
-sess.vel        = sess.aidat(:,1);
-sess.velshft    = (sess.vel - mode(sess.vel))*80; % Subtract off velocity offset and convert analog voltage to cm/s, may leave negative values
-sess.pos        = sess.aidat(:,2);
-sess.lck        = sess.aidat(:,3);
-sess.opto       = sess.aidat(:,4);
-[~,sess.optoind]= findpeaks(double(sess.opto > 0.5));
-[~,sess.lckind] = findpeaks(double(sess.lck > 0.5));
-try
-    sess.slx        = double(sess.aidat(:,8) > 0.5);    % Translate to binary
-catch
-    warning('Failed to import synch pulse (sess.slx)')
-end
-
-% Digital data; multiplexed from all digital channels; 1 = LapReset; 2 = Reward release
-sess.didat      = dat.(datFields{2}).digitalScans;
-sess.rwd        = double(sess.didat == 2);
-[~,sess.rwdind] = findpeaks(sess.rwd);
-sess.rst        = double(sess.didat == 1);
-[~,sess.lapstt] = findpeaks(sess.rst); sess.lapstt = sess.lapstt + 1; % Account for position reset lagged by 1 index
-sess.lapstt     = [sess.ind(1); sess.lapstt];   %use first ts as first lap start
-sess.lapend     = [sess.lapstt(2:end) - 1; sess.ind(end)];     %Use last ts as last lap end
-sess.nlaps      = size(sess.lapend,1);
-sess            = getErrorTrials(sess);     % Identify non-rewarded trials and trials >2m long
-sess            = get_RunInds(sess,0.04,2); % Add runInds variable with binary of running (1) or standing (0)
-
-if sess.nlaps == 1      % In case of reset error
+    % Analog data: 1 = Vel; 2 = Dist (m); 3 = Licks; 4 = Reward; 5 = VmOut; 6 = Im; 7 = Bpod Target; 8 = SGLX
+    sess.aidat      = dat.(datFields{2}).analogScans;
+    sess.ind        = 1:size(sess.aidat,1);
+    sess.ts         = sess.ind/sess.samprate;
+    sess.vel        = sess.aidat(:,1);
+    sess.velshft    = (sess.vel - mode(sess.vel))*80; % Subtract off velocity offset and convert analog voltage to cm/s, may leave negative values
+    sess.pos        = sess.aidat(:,2);
+    sess.lck        = sess.aidat(:,3);
+    sess.opto       = sess.aidat(:,4);
+    [~,sess.optoind]= findpeaks(double(sess.opto > 0.5));
+    [~,sess.lckind] = findpeaks(double(sess.lck > 0.5));
     try
-        posrst = find(diff(sess.pos) < -0.3);
-        sess.lapstt = [sess.ind(1); posrst+1];
-        sess.lapend = [sess.lapstt(2:end) - 1; sess.ind(end)];
-        sess.nlaps  = size(sess.lapend,1);
+        sess.slx        = double(sess.aidat(:,8) > 0.5);    % Translate to binary
     catch
-        warning(['Only 1 lap found for session ' sess.name])
+        warning('Failed to import synch pulse (sess.slx)')
     end
+
+    % Digital data; multiplexed from all digital channels; 1 = LapReset; 2 = Reward release
+    sess.didat      = dat.(datFields{2}).digitalScans;
+    sess.rwd        = double(sess.didat == 2);
+    [~,sess.rwdind] = findpeaks(sess.rwd);
+    sess.rst        = double(sess.didat == 1);
+    [~,sess.lapstt] = findpeaks(sess.rst); sess.lapstt = sess.lapstt + 1; % Account for position reset lagged by 1 index
+    sess.lapstt     = [sess.ind(1); sess.lapstt];   %use first ts as first lap start
+    sess.lapend     = [sess.lapstt(2:end) - 1; sess.ind(end)];     %Use last ts as last lap end
+    sess.nlaps      = size(sess.lapend,1);
+    sess            = getErrorTrials(sess);     % Identify non-rewarded trials and trials >2m long
+    sess            = get_RunInds(sess,0.04,2); % Add runInds variable with binary of running (1) or standing (0)
+
+    if sess.nlaps == 1      % In case of reset error
+        try
+            posrst = find(diff(sess.pos) < -0.3);
+            sess.lapstt = [sess.ind(1); posrst+1];
+            sess.lapend = [sess.lapstt(2:end) - 1; sess.ind(end)];
+            sess.nlaps  = size(sess.lapend,1);
+        catch
+            warning(['Only 1 lap found for session ' sess.name])
+        end
+    end
+
+    sess            = get_lapInclude(sess);
+
+    sessOrg(i).sess = sess;
 end
 
-sess            = get_lapInclude(sess);
+% Use only the session with highest laps
+for i = 1:size(bhvrFile,1)
+    nlaps(i) = sessOrg(i).sess.nlaps;
+end
+[~, maxSess] = max(nlaps);
+sess = sessOrg(maxSess).sess;
 
 end

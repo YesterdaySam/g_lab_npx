@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW043\KW043_05092025_rec_D4_RMed2';
-datpath = 'D:\Data\Kelton\probe_data\KW043\KW043_05092025_rec_D4_RMed2_g0';
+spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2';
+datpath = 'D:\Data\Kelton\probe_data\KW038\KW038_04182025_rec_D5_LLat2_g0';
 
 loadKS(datpath,spath,1);
 root = alignBhvrTS(spath,spath,spath);
@@ -138,13 +138,10 @@ if saveFlag
     lfp.uPSDMax  = root.uPSDMax;
     lfp.uPSD     = root.uPSD;
 
-    nshanks = numel(unique(root.lfpinfo.lfpShank));
-
-    root.lfp     = root.lfp(root.uPSDMax(2,:),:);
-    root.uPSD    = root.uPSD(:,root.uPSDMax(2,:));
-    root.lfpinfo = root.lfpinfo(root.uPSDMax(2,:),:);
-    root.uPSDMax = [repmat(1:nshanks,size(root.bands,2),1)]; % Set uPSD to match updated LFP info
-
+    root.lfp     = root.lfp(root.uPSDMax(2,:));
+    root.uPSD    = root.uPSD(root.uPSDMax(2,:));
+    root.lfpinfo = root.lfpinfo(root.uPSDMax(2,:));
+    root.uPSDMax = [repmat(1:4,size(root.bands,2),1)];
     saveRoot(root,spath)
     save([lfp.name '_lfp'],'lfp')
 end

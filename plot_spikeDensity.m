@@ -49,6 +49,9 @@ set(gcf,'units','normalized','position',[0.4 0.05 0.3 0.85])
 cmapGrey = gray(nShanks + 1);
 cmapRed  = hot(nShanks + 5);
 cmapSky  = sky(nShanks + 2);
+if nShanks == 1
+    cmapSky = [0 0 1];
+end
 
 subplot(3,1,1); hold on
 plot(binedges(2:end),mean(tmpGdCount),'b','LineWidth',2)

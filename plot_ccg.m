@@ -1,5 +1,5 @@
 function [fhandle] = plot_ccg(root,unit1,unit2,bnsz,winlen,plotflag)
-%% Calculates waveform width and FWHM and automatically assigns
+%% Calculates the Cross Correlogram between two units
 %
 % Inputs:
 % root = root object. Must have root.tssync and root.tsb fields

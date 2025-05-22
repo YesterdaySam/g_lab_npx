@@ -22,12 +22,13 @@ arguments
     avgposF             = 1 % Include averaged spatial firing rate
     trialheatmapF       = 1 % Include heatmap across trials
     templateF           = 1 % Include template waveform 
-    perioptoF           = 0 % Include peri-opto pulse spikes plot
+    perioptoF           = 1 % Include peri-opto pulse spikes plot
     acgF                = 1 % Include AutoCorreloGram plot
     thetaF              = 1 % Include Theta Phase Modulation plot
 end
 
 cd(sdir)
+close all
 
 if contains(dType,'good')
     if isempty(dir('ephysPlots_good')) || overwrite
@@ -60,10 +61,15 @@ for i = 1:nUnits
 
     if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
 
+        if perioptoF
+            [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.005,0.1);
+            title('');
+        end
+
         if thetaF
             tmpInd = find(root.info.cluster_id == cc);
             lfpInd = root.info.shankID(tmpInd) + 1; % Account for 0-indexing
-            [~,tmptheta] = plot_thetaMod(root,cc,lfpInd);   % Plot theta modulation relative to local theta
+            [~,tmptheta] = plot_thetaMod(root,cc,lfpInd,2*pi/36);   % Plot theta modulation relative to local theta, 10 degree bin size (Quilichini et al., 2010)
         end
 
         if acgF
@@ -96,11 +102,6 @@ for i = 1:nUnits
             tmpWF = plot_templateWF(root,cc);
         end
 
-        if perioptoF
-            [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.01,0.1);
-            title('');
-        end
-
         figlist = get(groot, 'Children');
         newfig = figure;
         if nPlots < 5
@@ -121,6 +122,7 @@ for i = 1:nUnits
         end
         tblind = find(root.info.cluster_id == cc);
         title(tcl,['unit ' num2str(cc) ' Shank ' num2str(root.info.shankID(tblind)), ' Depth ', num2str(root.info.depth(tblind)) 'um'])
+        figure(newfig)  % To pull figure to front of screen for visualization
         saveas(newfig, ['unit' num2str(cc) '_shank' num2str(root.info.shankID(tblind)) '_depth' num2str(root.info.depth(tblind)) '_summary'], 'png')
         close all
     end

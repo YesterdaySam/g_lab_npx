@@ -117,7 +117,7 @@ end
 
 %% Organize root struct
 [~, mname] = fileparts(meta.fileName);
-mname = strsplit(mname, '_g0');
+mname = strsplit(mname, '_g');  %Agnostic to g0, g1, etc
 root.name = mname{1};
 root.fs         = 30000;
 root.ts         = double(spkTimes)/root.fs;
@@ -200,7 +200,7 @@ if contains(meta.prbType,'NPX2.0')
 else 
     root.lfpinfo.lfpShank = zeros(length(root.lfpinfo.lfpch),1);
     tmpDepthMap = probeDepthMap(root);  %Create depth map with potential shifts due to recording bank hot swapping
-    root.lfpinfo.lfpDepth = tmpDepthMap(root.lfpinfo.lfpch+1)';
+    root.lfpinfo.lfpDepth = tmpDepthMap(root.lfpinfo.lfpch+1);
 end
 
 %% Save output

@@ -184,6 +184,6 @@ end
 %% Save
 root = rmfield(root,{'tssync'}); %Remove unnecessary fields to reduce file size
 
-save([root.name '_root'],'root');
+save([root.name, '_root'],'root','-v7.3')
 
 end

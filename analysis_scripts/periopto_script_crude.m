@@ -14,7 +14,8 @@ bnrg = 0.1;
 
 %%
 for i = 1:nUnits
-    [bnctrs,tmpbnfr] = plot_frXopto_shift(root,optoShiftTs,root.good(i),sess,0.002,0.1,0);
+    % [bnctrs,tmpbnfr] = plot_frXopto_shift(root,optoShiftTs,root.good(i),sess,0.002,0.1,0);
+    [bnctrs,tmpbnfr] = plot_frXopto(root,root.good(i),sess,0.002,0.1,0);
     frMapRaw(i,:) = mean(tmpbnfr,1,'omitnan');
 end
 nBins = size(frMapRaw,2);
@@ -31,7 +32,6 @@ end
 
 frMapSort = frMapNorm(sortInd,:);
 
-%%
 fhandle = figure; hold on;
 set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
 imagesc(frMapSort,[prctile(frMapSort,1,'all'), prctile(frMapSort,98,'all')]);

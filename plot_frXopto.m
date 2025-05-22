@@ -21,13 +21,14 @@ arguments
     unit {double}   %Cluster ID
     sess            %session struct
     bnsz = 0.002    %sec
-    bnrg = 0.5     %sec on either side of the pulse start
+    bnrg = 0.5      %sec on either side of the pulse start
     plotflag = 1    %binary
 end
 
 nPulse = length(sess.optoind);
 binedges = -bnrg:bnsz:bnrg;
 nBins = length(binedges)-1;
+bnctrs = -bnrg+0.5*bnsz:bnsz:bnrg;
 
 spkinds = root.tsb(root.cl == unit);
 spkts   = sess.ts(spkinds);
@@ -42,12 +43,11 @@ end
 
 if plotflag
     fhandle = figure; hold on
-    bnctrs = -bnrg+0.5*bnsz:bnsz:bnrg;
-    b1 = bar(bnctrs,sum(pulseMat),'FaceColor',[0.5 0.5 1]);
-    plot(bnctrs,smooth(sum(pulseMat),5),'r');
+    b1 = bar(bnctrs*1000,sum(pulseMat),'FaceColor',[0.5 0.5 1]);
+    plot(bnctrs*1000,smooth(sum(pulseMat),5),'r');
     lims = ylim;
     plot([0 0], lims, 'k--')
-    xlabel('Time after opto pulse (sec)'); ylabel('Spike count')
+    xlabel('Time after opto pulse (ms)'); ylabel('Spike count')
     % histogram(pulseMat,-bnrg:bnsz:bnrg,'Normalization','probability')
     % plot([binedges(1:end-1)]*100,mean(binfr,1,'omitnan'), 'k')
     % patch(100*[binedges(1:length(cidn)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
