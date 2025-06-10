@@ -25,7 +25,7 @@ arguments
     root
     unit
     lfpInd % (use center of s.pyr. layer)
-    thbnsz = 2*pi/18 % Default 20 degree bins (360/18 = 20)
+    thbnsz = 2*pi/36 % Default 10 degree bins (360/36 = 10)
     plotFlag = 1
 end
 

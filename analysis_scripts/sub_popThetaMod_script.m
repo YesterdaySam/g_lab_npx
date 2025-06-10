@@ -1,6 +1,6 @@
 %% Subiculum theta-modulation at population level
 
-spath = 'D:\Data\Kelton\analyses\KW032\KW032_03122025_rec_D6_LMed1';
+spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2';
 saveFlag = 1;
 
 cd(spath)
@@ -34,7 +34,7 @@ if saveFlag
     end
 
     saveRoot(root,spath)
-    save([lfp.name '_lfp'],'lfp')
+    save([lfp.name '_lfp'],'lfp','-v7.3')
 end
 
 %% Collect all good, in-layer unit spikes relative to local or same-reference theta

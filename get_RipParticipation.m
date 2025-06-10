@@ -1,12 +1,14 @@
-function [ripParticipation] = get_RipParticipation(root,unit,sess,wlen)
+function [ripParticipation] = get_RipParticipation(root,unit,sess,ripref,wlen)
 %% Returns the Ripple Participation Probability of a unit
 %
 % Counts N ripples where unit fired within wlen, divide by total # ripples
 %
 % Inputs:
 % root = root object. Must have root.tssync and root.tsb fields
-% unit = cluster ID OR spike train indices (i.e. when jitter shuffling)
-% tOffset = distance of offset in msec, can be - or +
+% unit = cluster ID
+% sess = session object
+% ripref = index of root.ripStruc to use for reference ripples
+% wlen = size in ms of window around ripple peak
 %
 % Outputs:
 % ripMod = ripple_spks / (ripple_spks + control_spks)
@@ -21,6 +23,7 @@ arguments
     root            %struct containing neural info
     unit            %Cluster ID OR spike train indices (i.e. when jitter shuffling)
     sess
+    ripref   = 1
     wlen     = 25  %msec
 end
 
@@ -36,12 +39,13 @@ if tmpsz(2) > 1
     spkinds = spkinds';
 end
 
-nRips = size(root.ripples,1);
+ripples = root.ripStruc(ripref).ripples;
+nRips = size(ripples,1);
 wdw = wlen/1000;
 ripSpiked = zeros(nRips, 1);
 
 for i = 1:nRips
-    tmpspks      = spkinds(spkinds > sess.ts(root.ripples(i,2)) - wdw & spkinds < sess.ts(root.ripples(i,2)) + wdw) - sess.ts(root.ripples(i,2));
+    tmpspks      = spkinds(spkinds > sess.ts(ripples(i,2)) - wdw & spkinds < sess.ts(ripples(i,2)) + wdw) - sess.ts(ripples(i,2));
     ripSpiked(i) = ~isempty(tmpspks);
 end
 

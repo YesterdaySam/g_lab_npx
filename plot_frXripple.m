@@ -1,10 +1,11 @@
-function [ripSpkZ, binedges, fhandle] = plot_frXripple(root,unit,sess,wlen,bnsz,plotflag)
+function [ripSpkZ, binedges, fhandle] = plot_frXripple(root,unit,sess,ripref,wlen,bnsz,plotflag)
 %% Plots the avg binned firing rate by position of a unit
 %
 % Inputs:
 % root = root object
 % unit = cluster ID OR spike train indices (i.e. when jitter shuffling)
 % sess = session struct from importBhvr
+% ripref = index of root.ripStruc to reference for all ripples
 % wlen = size of window on either side of ripple peak, msec
 % bnsz = size of binning for spike probability line, msec
 % plotflag = binary of whether to plot the output
@@ -21,6 +22,7 @@ arguments
     root            %struct containing neural info
     unit            %Cluster ID OR spike train indices (i.e. when jitter shuffling)
     sess
+    ripref   = 1    % ripStruc index
     wlen     = 125  %msec
     bnsz     = 5    %msec
     plotflag = 1    %binary
@@ -38,7 +40,8 @@ if tmpsz(2) > 1
     spkinds = spkinds';
 end
 
-nRips = size(root.ripples,1);
+ripples = root.ripStruc(ripref).ripples;
+nRips = size(ripples,1);
 wdw = wlen/1000;
 ripFRMap = zeros(nRips, wlen*2/bnsz);
 % binedges = -wlen:bnsz:wlen;
@@ -47,7 +50,7 @@ ripRast = [];
 
 for i = 1:nRips
     % sigInds = [find(root.lfp_tsb == root.ripples(i,2) - wdw) find(root.lfp_tsb == root.ripples(i,2) + wdw)];
-    tmpspks         = spkinds(spkinds > sess.ts(root.ripples(i,2)) - wdw & spkinds < sess.ts(root.ripples(i,2)) + wdw) - sess.ts(root.ripples(i,2));
+    tmpspks         = spkinds(spkinds > sess.ts(ripples(i,2)) - wdw & spkinds < sess.ts(ripples(i,2)) + wdw) - sess.ts(ripples(i,2));
     ripFRMap(i,:)   = histcounts(tmpspks, binedges);
     ripRast = [ripRast; tmpspks, i*ones(numel(tmpspks),1)];
 end
@@ -75,7 +78,7 @@ if plotflag
     % legend({'Spike Raster','Spike Probability'})
     set(gca,'FontSize',12,'FontName','Arial')
     if exist("tmpind")
-    title(['Unit ' num2str(unit) ', Shank ' num2str(root.info.shankID(tmpind)), ', Depth ', num2str(root.info.depth(tmpind)) 'um'])
+        title(['Unit ' num2str(unit) ', Shank ' num2str(root.info.shankID(tmpind)), ', Depth ', num2str(root.info.depth(tmpind)) 'um'])
     end
 end
 

@@ -35,7 +35,7 @@ pk_lag = sync_lags(sync_ccg == max(sync_ccg));  %Index to offset sess.ts
 pk_lag = pk_lag(1); %In case of multiple matching peaks
 
 [~, edges_sync] = findpeaks(root.syncpulse);
-edges_root_ts = [root.tspulse(1) root.tspulse(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
+edges_root_ts = [0 root.tspulse(edges_sync)];   %Start at sync.ts wall time (not a proper down/up flip)
 % tmp = diff(edges_root_ts);
 
 [~, edges_sess] = findpeaks(sess.slx);  %Indices of edges

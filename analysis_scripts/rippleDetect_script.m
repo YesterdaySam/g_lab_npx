@@ -13,15 +13,16 @@
 saveFlag = 1;
 
 % chan = find(root.lfpinfo.lfpch == 336);
-chan = root.uPSDMax(2,1);
+chan = root.uPSDMax(2,3);
 
-root.ripples = get_ripples(root,chan,sess,3,5);
+root.ripples = get_ripples(root,chan,sess,3,5,[15 250]);
 
 rawlf = root.lfp(chan,:);
 riplf = bandpass(rawlf, [150, 250], root.fs_lfp);
 
 %% Optional plotting
 
+% Raw, filtered, and ripple event times over all session
 tmplfpfig = figure; hold on    
 set(gcf,'units','normalized','position',[0.4 0.35 0.5 0.39])
 plot(sess.ts(root.lfp_tsb), rawlf,'k')

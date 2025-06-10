@@ -1,4 +1,4 @@
-function [binedges,binfr,fhandle] = plot_frXpos(root,unit,sess,dbnsz,vthresh,plotflag)
+function [binedges,binfr,fhandle] = plot_frXpos(root,unit,sess,dbnsz,vFlag,plotflag)
 %% Plots the avg binned firing rate by position of a unit
 %
 % Inputs:
@@ -6,7 +6,7 @@ function [binedges,binfr,fhandle] = plot_frXpos(root,unit,sess,dbnsz,vthresh,plo
 % unit = cluster ID
 % sess = session struct from importBhvr
 % dbnsz = size of position bins, default 0.05m = 5cm
-% vthresh = threshold of behavioral velocity to throw out spikes, default 0.04 m/s
+% vFlag = whether or not to remove spikes not coinciding with sess.runInds
 % plotflag = binary of whether to plot the output
 %
 % Outputs:
@@ -22,7 +22,8 @@ arguments
     unit {double}   %Cluster ID
     sess            %session struct
     dbnsz = 0.05    %m
-    vthresh = 0.04  %m/s; velocity threshold for spikes
+    % vthresh = 0.04  %m/s; velocity threshold for spikes
+    vFlag = 1
     plotflag = 1    %binary
 end
 
@@ -33,8 +34,11 @@ sess.nlaps  = length(sess.lapstt);
 
 binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
 spkinds = root.tsb(root.cl == unit);
-% spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold 
-spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
+
+if vFlag
+    % spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+    spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
+end
 
 % dspk = histcounts(sess.pos(spkinds),binedges);
 % docc = histcounts(sess.pos,binedges)/sess.samprate;

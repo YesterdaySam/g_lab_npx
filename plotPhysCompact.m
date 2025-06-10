@@ -1,4 +1,4 @@
-function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF)
+function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF,rwdTF)
 %% Plot and save some neural analyses
 %
 % Inputs:
@@ -22,9 +22,10 @@ arguments
     avgposF             = 1 % Include averaged spatial firing rate
     trialheatmapF       = 1 % Include heatmap across trials
     templateF           = 1 % Include template waveform 
-    perioptoF           = 1 % Include peri-opto pulse spikes plot
+    perioptoF           = 0 % Include peri-opto pulse spikes plot
     acgF                = 1 % Include AutoCorreloGram plot
     thetaF              = 1 % Include Theta Phase Modulation plot
+    rwdTF               = 1 % Include reward time binned firing rate
 end
 
 cd(sdir)
@@ -44,7 +45,7 @@ elseif contains(dType,'mua')
     nUnits = length(root.mua);
 end
 
-nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF]);
+nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF,rwdTF]);
 
 for i = 1:nUnits
 
@@ -60,6 +61,10 @@ for i = 1:nUnits
     end
 
     if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
+
+        if rwdTF
+            [~,~,tmpfrrwdT] = plot_frXrwdtime(root,cc,sess);
+        end
 
         if perioptoF
             [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.005,0.1);

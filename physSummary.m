@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW043\KW043_05092025_rec_D4_RMed2';
-datpath = 'D:\Data\Kelton\probe_data\KW043\KW043_05092025_rec_D4_RMed2_g0';
+spath = 'D:\Data\Kelton\analyses\KW040\KW040_05012025_rec_D6_LMed1';
+datpath = 'D:\Data\Kelton\probe_data\KW040\KW040_05012025_rec_D6_LMed1_g0';
 
 loadKS(datpath,spath,1);
 root = alignBhvrTS(spath,spath,spath);
@@ -119,12 +119,28 @@ root = get_FRVar(root,sess,0);
 
 if saveFlag; saveas(INsFig,[root.name '_FW_class.png']); end
 
-%% Assign and plot Units by layer and type
+%% Assign and plot units by layer and type
 
 root = get_layerUnits(root);
 
 uTypeDepthFig = plot_layerUnits(root,1,0,0);
 if saveFlag; saveas(uTypeDepthFig,[root.name '_uTypeXDepth.png']); end
+
+%% Get ripples at s. pyr. layer as determined by ripple band peak
+
+nshanks = numel(unique(root.lfpinfo.lfpShank));
+
+chans = root.uPSDMax(2,:);
+
+ct = 1;
+catRips = [];
+for chan = chans
+    ripStruc(ct).ripples = get_ripples(root,chan,sess,3,5,[15 250]);
+    % catRips = [catRips; ripStruc(ct).ripples(:,2), -1+ct+zeros(size(ripStruc(ct).ripples,1),1)];
+    ct = ct+1;
+end
+
+root.ripStruc = ripStruc;
 
 %% Save updated root and split out LFP for subsequent root save/load speed
 

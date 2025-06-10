@@ -12,33 +12,47 @@ load(rootfile.name)
 sessfile = dir("*_session.mat");
 load(sessfile.name)
 
-%% Get ripples at s. pyr. layer as determined by ripple band peak
+rwdShift = sess.valTrials(find(diff(sess.pos(sess.rwdind)) > 0.1)+1);   % Find lap of reward shift
 
-nshanks = numel(unique(root.lfpinfo.lfpShank));
+%% Make summary plots
 
-chans = root.uPSDMax(2,:);
-nChans = length(chans);
-cmapcool = cool(nChans);
-
-ct = 1;
-catRips = [];
-for chan = chans
-    ripStruc(ct).ripples = get_ripples(root,chan,sess,4,5,[15 250]);
-    % catRips = [catRips; ripStruc(ct).ripples(:,2), -1+ct+zeros(size(ripStruc(ct).ripples,1),1)];
-    ct = ct+1;
+tmpRipDur = plot_ripDurHisto(root,sess,5,150);
+tmpRipPwr = plot_ripPwrHisto(root);
+[tmpRipIRI, tmpRipIRIZoom] = plot_ripIRIHisto(root,sess);
+tmpRipTime = plot_ripTimeHisto(root,sess);
+if ~isempty(rwdShift)
+    plot([sess.ts(sess.lapstt(rwdShift)),sess.ts(sess.lapstt(rwdShift))],[0 25],'k--','LineWidth',2,'HandleVisibility','off');
+end
+    
+if saveFlag
+    saveas(tmpRipDur,[root.name '_rippleDur.png'])
+    saveas(tmpRipPwr,[root.name '_ripplePwr.png'])
+    saveas(tmpRipIRI,[root.name '_rippleIRI.png'])
+    saveas(tmpRipIRIZoom,[root.name '_rippleIRI_zoom.png'])
+    saveas(tmpRipTime,[root.name '_rippleTiming.png'])
 end
 
 %% Batch plot units relative to ripples
 wlen = 150;
 histoBnsz = 5;
+ripref = 2; % Index of ripStruc to use as reference ripples
+if ~isempty(rwdShift)
+    postShiftInd = find(sess.ts(root.ripStruc(ripref).ripples(:,3)) > sess.ts(sess.lapstt(rwdShift)),1);
+end
 
 mkdir("ripplePlots_good")
 cd('ripplePlots_good')
 
 for i = 1:length(root.good)
     cc = root.good(i);
-    [~,~,tmpfig] = plot_frXripple(root,cc,sess,wlen,histoBnsz);
-    tmpRipPart = get_RipParticipation(root,cc,sess,wlen);
+    [~,~,tmpfig] = plot_frXripple(root,cc,sess,ripref,wlen,histoBnsz);
+    tmpRipPart = get_RipParticipation(root,cc,sess,ripref,wlen);
+
+    if ~isempty(rwdShift)
+        yyaxis left
+        plot([-wlen wlen],[postShiftInd postShiftInd],'k--')    
+    end
+
     legend(['P(Participation) ' num2str(tmpRipPart)])
     tmpind = find(root.info.cluster_id == cc);
     saveas(tmpfig, ['Unit' num2str(cc) '_Shank' num2str(root.info.shankID(tmpind)), '_Depth', num2str(root.info.depth(tmpind)) '_ripRaster'], 'png')
@@ -47,26 +61,22 @@ end
 cd('..')
 
 %% Test 1 unit against 95% Global Error band shuffle (circular or jitter)
-cc = 245;
+cc = 35;
 nShufs = 500;
 jitlen = round(150/1000/(1/sess.samprate)); % -100:100 msec jitter interval
 histoBnsz = 5;
 wlen = 150;
-zsc = 1.96; % 2.58 for 99% or 1.96 for 95%
 
-% dummy_spks = sort(datasample(sess.ind(root.tsb(1):root.tsb(end)),15000,'Replace',false));
-% cc = dummy_spks';
-
-[orig_count,binedges] = plot_frXripple(root,cc,sess,wlen,histoBnsz,1);
-tmpRipMod = get_RipMod(root,cc,sess,1000);
-tmpRipPart = get_RipParticipation(root,cc,sess,wlen);
+[orig_count,binedges] = plot_frXripple(root,cc,sess,ripref,wlen,histoBnsz,1);
+% tmpRipMod = get_RipMod(root,cc,sess,1000);
+tmpRipPart = get_RipParticipation(root,cc,sess,ripref,wlen);
 legend(['P(Participation) ' num2str(tmpRipPart)])
 jit_count = zeros(nShufs,length(orig_count));
 
 for i = 1:nShufs
     % Circular shuffle method
     shiftRoot = shiftTrain(root,sess);
-    jit_count(i,:) = plot_frXripple(shiftRoot,cc,sess,150,histoBnsz,0);
+    jit_count(i,:) = plot_frXripple(shiftRoot,cc,sess,ripref,wlen,histoBnsz,0);
 
     % % Jitter shuffle method
     % jits = jitter_spks(root.tsb(root.cl == cc), jitlen);   
@@ -74,53 +84,8 @@ for i = 1:nShufs
     % jit_count(i,:) = plot_frXripple(root,jits,sess,wlen,histoBnsz,0);
 end
 
-% for i = 1:length(root.good)
-%     jit_count(i,:) = plot_frXripple(root,root.good(i),150,histoBnsz,0);
-% end
-
-% Try Fujisawa et al. 2008 point-wise and global confidence bands
-% For all shuffles, find how often orig_count fell above or below
-p_over = sum(jit_count >= orig_count) / (nShufs + 1);
-p_undr = sum(jit_count <= orig_count) / (nShufs + 1);
-sig_over = p_over < 0.025;   % alpha 0.05/2
-sig_undr = p_undr < 0.025;
-
-% Global confidence band is proportion of shuffled data sets that had even
-% 1 location above/below the associated pointwise band
-% Iteratively search stricter pointwise band alpha until global, Family-wise alpha = 5%
-gbl_alpha = 1.0;
-pt_delta = 0;
-while gbl_alpha > 0.05
-    tmpPctUp = prctile(jit_count,97.5+pt_delta,1);
-    tmpPctDn = prctile(jit_count,2.5-pt_delta,1);
-    gbl_cross = jit_count > tmpPctUp | jit_count < tmpPctDn;
-    gbl_alpha = sum(sum(gbl_cross,2) > 0)/nShufs;
-    pt_delta = pt_delta + 0.05;
-    % Error out if get above 100 percentile
-    if pt_delta + 97.5 > 100
-        gbl_alpha = 0;
-        pt_delta = pt_delta + 0.05; % Ensure final check gets to 100th pctile
-    end
-end
-pt_delta = pt_delta - 0.05; %Correct for final loop iteration adjustment
-
-% Final check if true data exceeds globally set pointwise bands at any point
-p_final = orig_count > prctile(jit_count,97.5+pt_delta,1) | orig_count < prctile(jit_count,2.5-pt_delta,1);
-
-figure; hold on
-xcoords = binedges(1:end-1)+histoBnsz/2000;
-% errorbar(xcoords,binMu,zsc*(binStd / sqrt(nShufs)),'k')
-bar(xcoords,orig_count,'FaceColor','flat','CData',[.5 .5 .5]);
-plot(xcoords,prctile(jit_count,97.5,1),'b-')
-plot(xcoords,prctile(jit_count,2.5,1),'b-','HandleVisibility','off')
-plot(xcoords,prctile(jit_count,97.5+pt_delta,1),'m-')
-plot(xcoords,prctile(jit_count,2.5-pt_delta,1),'m-','HandleVisibility','off')
-if sum(p_final) > 0
-    plot(xcoords(sig_over | sig_undr),orig_count(sig_over | sig_undr)+1,'k*')
-end
+get_confband(jit_count,orig_count,1,binedges(1:end-1)*1000,histoBnsz/2);
 xlabel('Time to ripple peak (sec)'); ylabel('Spike Count')
-legend({'Real','95% Pointwise','95% Global','Pt-wise < 0.05'})
-set(gca,'FontSize',12,'FontName','Arial')
 
 %% Test all good units in layer for modulation
 nShufs = 500;
@@ -136,15 +101,15 @@ for j = 1:nshanks
     lyrCCs = find(root.goodind & root.info.shankID == j-1 & root.info.lyrID == 1);
     for i = 1:length(lyrCCs)
         cc = root.info.cluster_id(lyrCCs(i));
-        [orig_count,binedges] = plot_frXripple(root,cc,sess,wlen,histoBnsz,0);
+        [orig_count,binedges] = plot_frXripple(root,cc,sess,ripref,wlen,histoBnsz,0);
         ripMod(ct,1:3) = [cc, j-1 root.info.uType(lyrCCs(i))];
-        ripMod(ct,4) = get_RipParticipation(root,cc,sess,wlen);
+        ripMod(ct,4) = get_RipParticipation(root,cc,sess,ripref,wlen);
 
         jit_count = zeros(nShufs,length(orig_count));
         for k = 1:nShufs
             % Circular shuffle method
             shiftRoot = shiftTrain(root,sess);
-            jit_count(k,:) = plot_frXripple(shiftRoot,cc,sess,wlen,histoBnsz,0);
+            jit_count(k,:) = plot_frXripple(shiftRoot,cc,sess,ripref,wlen,histoBnsz,0);
 
             % % Jitter shuffle method
             % jits = jitter_spks(root.tsb(root.cl == cc), jitlen);
@@ -152,25 +117,10 @@ for j = 1:nshanks
             % jit_count(i,:) = plot_frXripple(root,jits,sess,wlen,histoBnsz,0);
         end
 
-        gbl_alpha = 1.0;
-        pt_delta = 0;
-        while gbl_alpha > 0.05
-            tmpPctUp = prctile(jit_count,97.5+pt_delta,1);
-            tmpPctDn = prctile(jit_count,2.5-pt_delta,1);
-            gbl_cross = jit_count > tmpPctUp | jit_count < tmpPctDn;
-            gbl_alpha = sum(sum(gbl_cross,2) > 0)/nShufs;
-            pt_delta = pt_delta + 0.05;
-            % Error out if get above 100 percentile
-            if pt_delta + 97.5 > 100
-                gbl_alpha = 0;
-            end
-        end
-        pt_delta = pt_delta - 0.05; %Correct for final loop iteration adjustment
+        p_final = get_confband(jit_count,orig_count);
 
-        % Final check if true data exceeds globally set pointwise bands at any point
-        p_final = orig_count > prctile(jit_count,97.5+pt_delta,1) | orig_count < prctile(jit_count,2.5-pt_delta,1);
-
-        ripMod(ct,5) = sum(p_final);    % If more than 1 point falls outside global significance
+        ripMod(ct,5) = sum(p_final);
+        ripMod(ct,6) = sum(p_final) > 1;    % If more than 1 point falls outside global significance
         ct = ct + 1;
     end
     disp(['Finished shuffling shank ' num2str(j)])
@@ -180,16 +130,16 @@ root.ripMod = ripMod;
 
 %% Observational statistics
 
-disp(['Overall in-layer significant ' num2str(sum(ripMod(:,5))) '/' num2str(size(ripMod,1))])
+disp(['Overall in-layer significant ' num2str(sum(ripMod(:,6))) '/' num2str(size(ripMod,1))])
 
 for i = 1:nshanks
-    disp(['Shank ' num2str(i-1) ' significant ' num2str(sum(ripMod(ripMod(:,2) == i-1,5))) '/' num2str(numel(ripMod(ripMod(:,2) == i-1,5)))])
+    disp(['Shank ' num2str(i-1) ' significant ' num2str(sum(ripMod(ripMod(:,2) == i-1,6))) '/' num2str(numel(ripMod(ripMod(:,2) == i-1,6)))])
     disp(['      ' num2str(i-1) ' mean participation: ' num2str(mean(ripMod(ripMod(:,2) == i-1,4)))])
 end
 
 %% Waterfall
 histoBnsz = 1;
-dummy_counts = plot_frXripple(root,1,sess,wlen,histoBnsz,0);
+dummy_counts = plot_frXripple(root,1,sess,ripref,wlen,histoBnsz,0);
 gaussSigma = 5;
 sz = 32;
 gaussX = linspace(-sz/2, sz/2, sz);
@@ -200,9 +150,9 @@ ct = 1;
 ripZMap = [];
 
 for i = 1:size(ripMod,1)
-    if ripMod(i,5) == 1
+    if ripMod(i,6) == 1
         cc = ripMod(i,1);
-        [tmpPeriSpikes,bins] = plot_frXripple(root,cc,sess,wlen,histoBnsz,0);
+        [tmpPeriSpikes,bins] = plot_frXripple(root,cc,sess,ripref,wlen,histoBnsz,0);
         muRipSpks = mean(tmpPeriSpikes);
         sdRipSpks = std(tmpPeriSpikes);
         zRipSpks = (tmpPeriSpikes - muRipSpks) ./ sdRipSpks;
@@ -213,7 +163,7 @@ for i = 1:size(ripMod,1)
     ct = ct + 1;
 end
 
-sigMod = ripMod(:,5) == 1;
+sigMod = ripMod(:,6) == 1;
 sigInfo = ripMod(sigMod,:);
 sigMap = ripZMap(sigMod,:);
 
@@ -254,6 +204,21 @@ saveas(sigRipFig,[root.name '_sigRipModUnits.png'])
 %% Save for easier loading later
 
 save([root.name '_sigRipModUnit_data'], 'sigMap', 'sigInfo')
+
+
+%% testing new shiftTrain.m
+
+unit = 329;
+origctall = numel(root.tsb(root.cl == unit));
+origctrun = sum(sess.runInds(root.tsb(root.cl == unit)));
+
+shufall = [];
+shufrun = [];
+for i = 1:100
+    [tmproot,tmpsess] = shiftTrain(root,sess);
+    shufall(i) = numel(root.tsb(root.cl == unit));
+    shufrun(i) = sum(sess.runInds(root.tsb(root.cl == unit)));
+end
 
 
 

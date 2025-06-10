@@ -1,4 +1,4 @@
-function [si,uFR,peakFR,spksmooth,occsmooth,binfr] = get_SI(root,unit,sess,dbnsz,vthresh)
+function [si,uFR,peakFR,peakLoc,spksmooth,occsmooth,binfr,binedges] = get_SI(root,unit,sess,dbnsz,vthresh)
 %% Returns the Spatial Information of a Unit
 %
 % Inputs:
@@ -25,9 +25,10 @@ binedges = 0:dbnsz:max(sess.pos(sess.lapstt(2):sess.lapend(2)));    % Base max b
 spkinds = root.tsb(root.cl == unit);
 % spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
 try 
-spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
+    spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
 catch
-    disp('uh oh')
+    disp('uh oh, failed to threshold spikes based on runInds')
+    return
 end
 
 valspks = spkinds(sess.lapInclude(spkinds));
@@ -41,7 +42,7 @@ spksmooth = smoothdata(bnspks,'gaussian',5);
 occsmooth = smoothdata(bnoccs,'gaussian',5);
 
 binfr = spksmooth ./ occsmooth;
-peakFR = max(binfr);
+[peakFR,peakLoc] = max(binfr);
 
 pOcc = bnoccs ./ sum(bnoccs,'all','omitnan');
 uFR = sum(spksmooth,'all','omitnan') / sum(occsmooth,'all','omitnan');
