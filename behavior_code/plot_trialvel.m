@@ -1,4 +1,4 @@
-function [fhandle,fhandle2, binedges, bnvel] = plot_trialvel(sess, dbnsz)
+function [binedges,bnvel,fhandle,fhandle2] = plot_trialvel(sess,dbnsz,plotflag)
 %% Create linearized velocity (binned by space)
 % Inputs
 %   sess        = struct from importBhvr.m
@@ -12,6 +12,7 @@ function [fhandle,fhandle2, binedges, bnvel] = plot_trialvel(sess, dbnsz)
 arguments
     sess
     dbnsz = 0.01    % velocity bin size in m
+    plotflag = 1
 end
 
 % Only use valid trials
@@ -32,27 +33,29 @@ for i = 1:sess.nlaps
     % bnvel(i,:) = bnvel(i,:) ./ (bnocc / sess.samprate);
 end
 
-fhandle = figure;
-set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
-imagesc(bnvel,[prctile(bnvel,1,'all'), prctile(bnvel,99,'all')]); 
-% imagesc(bnvel, [0 max(bnvel,[],'all')])
-colormap("sky")
-cbar = colorbar; clim([0 inf]);
-xlabel('Position'); % xlim([0 200])
-ylabel('Trial #'); ylabel(cbar,'cm/s','FontSize',12,'Rotation',90)
-set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+if plotflag
+    fhandle = figure;
+    set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+    imagesc(bnvel,[prctile(bnvel,1,'all'), prctile(bnvel,99,'all')]);
+    % imagesc(bnvel, [0 max(bnvel,[],'all')])
+    colormap("sky")
+    cbar = colorbar; clim([0 inf]);
+    xlabel('Position'); % xlim([0 200])
+    ylabel('Trial #'); ylabel(cbar,'cm/s','FontSize',12,'Rotation',90)
+    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
-sem = std(bnvel,'omitnan')/sqrt(sess.nlaps);
-ciup = rmmissing(mean(bnvel,1,'omitnan') + sem*1.96);
-cidn = rmmissing(mean(bnvel,1,'omitnan') - sem*1.96);
+    sem = std(bnvel,'omitnan')/sqrt(sess.nlaps);
+    ciup = rmmissing(mean(bnvel,1,'omitnan') + sem*1.96);
+    cidn = rmmissing(mean(bnvel,1,'omitnan') - sem*1.96);
 
-fhandle2 = figure; hold on
-set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
-plot(binedges(1:end-1)*100,mean(bnvel,1,'omitnan'),'k','LineWidth',2)
-patch(100*[binedges(1:length(cidn)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
-% plot(bnvel','Color',[.5 .5 .5])
-xlabel('Position'); % xlim([0 200])
-ylabel('Average Velocity'); ylim([0 prctile(sess.velshft,99)])
-set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    fhandle2 = figure; hold on
+    set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
+    plot(binedges(1:end-1)*100,mean(bnvel,1,'omitnan'),'k','LineWidth',2)
+    patch(100*[binedges(1:length(cidn)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
+    % plot(bnvel','Color',[.5 .5 .5])
+    xlabel('Position'); % xlim([0 200])
+    ylabel('Average Velocity'); ylim([0 prctile(sess.velshft,99)])
+    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+end
 
 end

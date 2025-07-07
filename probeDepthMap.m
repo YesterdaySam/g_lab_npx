@@ -15,25 +15,34 @@ if root.prbType == 'NPX2.0'
     bankMap1 = [49:96, 145:192];
     bankMap2 = [193:240, 289:336];
     bankMap3 = [241:288, 337:384];
+    
     try
+        % minChID0 = min(root.info.ch(root.info.shankID == 0));
+        % minChan0 = root.info.depth(find(root.info.ch == minChID0,1));
         minChan0 = root.info.depth(find(root.info.ch == 0 | root.info.ch == 1, 1)); %Get depth of first channel on bank 0
         if isempty(minChan0); minChan0 = 0; end
     catch
         minChan0 = 0;
     end
-    try 
+    try
+        % minChID1 = min(root.info.ch(root.info.shankID == 1))+1;
+        % minChan1 = root.info.depth(find(root.info.ch == minChID1,1));
         minChan1 = root.info.depth(find(root.info.ch == 48 | root.info.ch == 49, 1)); %Get depth of first channel on bank 1
         if isempty(minChan1); minChan1 = 0; end
     catch
         minChan1 = 0;
     end
-    try 
+    try
+        % minChID2 = min(root.info.ch(root.info.shankID == 2));
+        % minChan2 = root.info.depth(find(root.info.ch == minChID2,1));
         minChan2 = root.info.depth(find(root.info.ch == 192 | root.info.ch == 193, 1)); %Get depth of first channel on bank 2
         if isempty(minChan2); minChan2 = 0; end
     catch
         minChan2 = 0;
     end
-    try 
+    try
+        % minChID3 = min(root.info.ch(root.info.shankID == 3))+1;
+        % minChan3 = root.info.depth(find(root.info.ch == minChID3,1));
         minChan3 = root.info.depth(find(root.info.ch == 240 | root.info.ch == 241, 1)); %Get depth of first channel on bank 3
         if isempty(minChan3); minChan3 = 0; end
     catch

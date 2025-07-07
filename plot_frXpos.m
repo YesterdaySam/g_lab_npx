@@ -31,6 +31,7 @@ end
 sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
+sess.valTrials = 1:sess.nlaps;
 
 binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
 spkinds = root.tsb(root.cl == unit);
@@ -72,17 +73,29 @@ cidn = rawfr - sem*1.96;
 
 if plotflag
     fhandle = figure; hold on
-    plot([binedges(1:length(rawfr))]*100,rawfr, 'k')
-    patch(100*[binedges(1:length(rawfr)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
-    plot([binedges(1:end-1)]*100,binfr, 'r')
-
+    xcoords = (binedges(1:end-1) + 0.5*dbnsz)*100;
+    plot(xcoords,rawfr, 'k')
+    patch([xcoords,fliplr(xcoords)],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+    plot(xcoords,binfr, 'b')
+    
     xlabel('Position (cm)'); ylabel('Firing Rate (spk/s)')
 
     if max(mean(binfr,1,'omitnan'),[],'all') < 10
-        ylim([0 10])
+        ylim([-1 10])
     elseif max(binfr,[],'all') < 20
-        ylim([0 20])
+        ylim([-1 20])
     end
+
+    % Plot velocity overlay
+    ax = gca;
+    yyaxis right
+    [~,bnvel] = plot_trialvel(sess,dbnsz,0);
+    plot(xcoords,mean(bnvel),'r','LineWidth',2)
+    ylim([0 prctile(sess.velshft,99)])
+    ax.YAxis(2).Color = 'r';
+    ylabel('Velocity (cm/s)')
+
+    yyaxis left
 
     title(['Unit ' num2str(unit)])
     set(gca,'FontSize',12,'FontName','Arial')

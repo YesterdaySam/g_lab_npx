@@ -21,8 +21,8 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
-    tbnsz = .25      %sec
-    wlen = 5       %sec On one side of the reward
+    tbnsz    = .25  %sec
+    wlen     = 5    %sec On one side of the reward
     plotflag = 1    %binary
 end
 
@@ -33,7 +33,7 @@ sess.nlaps  = length(sess.lapstt);
 
 binedges = -wlen:tbnsz:wlen;
 spkinds = root.tsb(root.cl == unit);
-spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
+% spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
 spkts = sess.ts(spkinds);
 
 spkmap = [];
@@ -41,7 +41,7 @@ bnoccs = [];
 for i = 1:sess.nlaps
     rtime = sess.ts(sess.rwdind(i));
     spkct   = histcounts(spkts, binedges + rtime);
-    runocc  = histcounts(sess.ts(sess.ind(sess.runInds)), binedges + rtime);
+    runocc  = histcounts(sess.ts(sess.ind), binedges + rtime);
     runocc  = runocc ./ sess.samprate;
     bnoccs  = [bnoccs; runocc];              % Save bin occupancy
     spkmap  = [spkmap; spkct];              % Save spike counts
@@ -68,11 +68,9 @@ cidn = rawfr - sem*1.96;
 if plotflag
     binpos = binedges(1:end-1)+tbnsz/2;
     fhandle = figure; hold on
-    plot(binpos,rawfr, 'k')
+    plot(binpos,rawfr, 'k', 'LineWidth', 2)
     patch([binpos,fliplr(binpos)],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
-    plot(binpos,binfr, 'r')
-    plot([0 0],[0 max(rawfr)],'k--')
-
+    plot(binpos,binfr, 'b')
     xlabel('Time (sec)'); ylabel('Firing Rate (spk/s)')
 
     if max(mean(binfr,1,'omitnan'),[],'all') < 10
@@ -80,8 +78,20 @@ if plotflag
     elseif max(binfr,[],'all') < 20
         ylim([0 20])
     else
-        ylim([0 inf])
+        ylim([0 max(rawfr)])
     end
+    plot([0 0],[0 max(ylim)],'k--')
+
+    % Plot velocity overlay
+    ax = gca;
+    yyaxis right
+    [~,bnvel] = get_velXrwd(sess,tbnsz,wlen,0);
+    plot(binpos,bnvel,'r','LineWidth',2)
+    ylim([0 prctile(sess.velshft,99)])
+    ax.YAxis(2).Color = 'r';
+    ylabel('Velocity (cm/s)')
+
+    yyaxis left
 
     title(['Unit ' num2str(unit)])
     set(gca,'FontSize',12,'FontName','Arial')

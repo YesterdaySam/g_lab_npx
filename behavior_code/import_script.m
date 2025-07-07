@@ -1,6 +1,6 @@
 % Batched Import behavior script
 
-mousedir = 'D:\Data\Kelton\analyses\KW042';
+mousedir = 'D:\Data\Kelton\analyses\KW049';
 
 overwriteFlag = 1;
 
@@ -38,7 +38,7 @@ for i = 1:length(dirlist)
         continue
     end
 
-    [fig_trialvel,fig_velavg, tmpedges1, tmpbnvel] = plot_trialvel(sess);  % default 0.01m binsize
+    [tmpedges1, tmpbnvel, fig_trialvel,fig_velavg] = plot_trialvel(sess);  % default 0.01m binsize
     saveas(fig_trialvel,[sbase, '_trialvelocity'],'png')
     saveas(fig_velavg,[sbase, '_avgvelocity'],'png')
 

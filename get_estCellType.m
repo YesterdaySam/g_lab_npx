@@ -19,7 +19,7 @@ function [root, histoFig] = get_estCellType(root,fwThresh,pkvyThresh,frThresh,pl
 arguments
     root
     fwThresh = 0.5
-    pkvyThresh = 0.6 %0.1667
+    pkvyThresh = 0.4 %0.1667
     frThresh = 100
     plotflag = 1
 end
@@ -67,8 +67,18 @@ for i = 1:height(root.info)
     % lowind(2) = find(lasthalf <= tmppks(maxind) - tmpprom(maxind),1,'first');
     [lowpks, lowlocs] = findpeaks(-lasthalf);
     [~,lowmax] = max(lowpks);
-    lowind(2) = lowlocs(lowmax);
-    
+    try
+        lowind(2) = lowlocs(lowmax);
+    catch
+        disp(['oops, very odd waveform template, assigning IN'])
+        unitFWHM = [unitFWHM; 1];
+        unitFW   = [unitFW; 1];
+        unitPkVy = [unitPkVy; 1];
+        figure;
+        plot(tmpwf)
+        title(['Unit ' num2str(root.info.cluster_id(i))])
+        continue
+    end
     unitprhp = [unitprhp; abs(mean(tmpwf) - firsthalf(lowind(1)))]; % pre-hyperpolarization
     unitpohp = [unitpohp; abs(mean(tmpwf) - lasthalf(lowind(2)))];  % post-hyperpolarization
     unitFWHM = [unitFWHM; tmpwidth(maxind)];
@@ -84,7 +94,8 @@ unitPkVy = unitPkVy / root.fs * 1000;
 
 %% WF Width cutoff
 
-INWFs = unitPkVy <= pkvyThresh & unitFW <= fwThresh & unitFRs <= frThresh;
+% INWFs = unitPkVy <= pkvyThresh & unitFW <= fwThresh & unitFRs <= frThresh;
+INWFs = unitPkVy <= pkvyThresh;
 root.info.uType = ~INWFs;
 
 % [goodcls(narrWFs), goodAmps(narrWFs), goodFW(narrWFs), goodFWHM(narrWFs)]

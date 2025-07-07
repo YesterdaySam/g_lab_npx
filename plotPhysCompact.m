@@ -68,7 +68,6 @@ for i = 1:nUnits
 
         if perioptoF
             [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.005,0.1);
-            title('');
         end
 
         if thetaF
@@ -87,12 +86,10 @@ for i = 1:nUnits
 
         if velF
             [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
-            title('');
         end
 
         if avgposF
             [~,~,tmpfrpos] = plot_frXpos(root,cc,sess);
-            title('');
         end
 
         if trialheatmapF
@@ -121,6 +118,7 @@ for i = 1:nUnits
 
         for j = 1:numel(figlist)
             figure(figlist(j))
+            title('')
             ax = gca;
             ax.Parent = tcl;
             ax.Layout.Tile = j;

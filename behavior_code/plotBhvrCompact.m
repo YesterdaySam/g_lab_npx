@@ -47,7 +47,7 @@ if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
     end
 
     if velheatmapFlag
-        [fig_trialvel,fig_velavg, ~, tmpbnvel] = plot_trialvel(sess);  % default 0.01m binsize
+        [~,tmpbnvel,fig_trialvel,fig_velavg] = plot_trialvel(sess);  % default 0.01m binsize
         close(fig_velavg)
         title("Velocity by Trial")
     end

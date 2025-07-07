@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW040\KW040_05012025_rec_D6_LMed1';
-datpath = 'D:\Data\Kelton\probe_data\KW040\KW040_05012025_rec_D6_LMed1_g0';
+spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2';
+datpath = 'D:\Data\Kelton\probe_data\KW049\KW049_06172025_rec_D2_RLat2_g0';
 
 loadKS(datpath,spath,1);
 root = alignBhvrTS(spath,spath,spath);
@@ -162,7 +162,7 @@ if saveFlag
     root.uPSDMax = [repmat(1:nshanks,size(root.bands,2),1)]; % Set uPSD to match updated LFP info
 
     saveRoot(root,spath)
-    save([lfp.name '_lfp'],'lfp')
+    save([lfp.name '_lfp'],'lfp','-v7.3')
 end
 
 %% Plot phys compact
@@ -172,19 +172,3 @@ close all
 plotPhysCompact(root,sess,spath,1)
 
 disp(['Finished phys summary for ' root.name])
-
-%% Presence ratio tests
-
-% for i = 1:length(root.good)
-%     cc = root.good(i);
-% 
-%     [tmpCts,tmpZFail(i),sdZ(i)] = get_presence(root,cc,sess,60,2,0);
-%     % if tmpZFail(i) > 0.5
-%     %     [tmpCts,tmpZFail(i)] = get_presence(root,cc,sess,30,1.5,1);
-%         % close(gcf)
-%     % end
-%     % sum(tmpCts)
-%     % root.info.n_spikes(find(root.info.cluster_id == cc))
-% end
-% 
-% figure; plot(root.good,sdZ,'k')
