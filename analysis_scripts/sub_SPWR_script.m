@@ -4,7 +4,7 @@
 % Ripple-Spike CCGs Oliva et al., 2016; 10.1016/j.neuron.2016.08.008
 % Spike jitter method Amarasingham et al., 2011; 10.1152/jn.00633.2011
 
-spath = 'D:\Data\Kelton\analyses\KW022\KW022_12162024_rec_D1_RLat1';
+spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -61,7 +61,7 @@ end
 cd('..')
 
 %% Test 1 unit against 95% Global Error band shuffle (circular or jitter)
-cc = 35;
+cc = 95;
 nShufs = 500;
 jitlen = round(150/1000/(1/sess.samprate)); % -100:100 msec jitter interval
 histoBnsz = 5;

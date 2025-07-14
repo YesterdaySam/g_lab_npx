@@ -1,12 +1,17 @@
 function [binedges,bnvel,fhandle] = get_velXrwd(sess,tbnsz,wlen,plotflag)
-%% Create linearized velocity (binned by space)
+%% Create linearized velocity (binned by time)
 % Inputs
 %   sess        = struct from importBhvr.m
-%   dbnsz       = double in meters (m)
+%   tbnsz       = double in seconds (s)
+%   wlen        = double in seconds (s)
+%   plotFlag    = binary, whether to plot
 % Outputs
-%   fhandle     = handle to figure 1
-%   trackedges  = velocity bin edges
-%   bnvel       = binned velocity
+%   binedges    = time bin edges
+%   bnvel       = avg velocity by time bin
+%   fhandle     = figure
+%
+% Created 7/7/25 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
 
 arguments
     sess
@@ -20,17 +25,21 @@ wlenInd = wlen / (1 / sess.samprate);
 binedges = -wlenInd:tbnInd:wlenInd;
 
 for i = 1:sess.nlaps
-    allvel(i,:) = sess.velshft(binedges(1)+sess.rwdind(i):binedges(end)+sess.rwdind(i));
+    try
+        allvel(i,:) = sess.velshft(binedges(1)+sess.rwdind(i):binedges(end)+sess.rwdind(i));
+    catch
+        disp(['Skipping lap ' num2str(i)])
+    end
 end
 % bnocc = histcounts(sess.pos(sess.lapstt(1):sess.lapend(end)),binedges);
 [~,~,loc]=histcounts(-wlenInd:wlenInd,binedges);
 bnvel = accumarray(loc(:),mean(allvel)) ./ accumarray(loc(:),1);
 
-sem = rmmissing(std(mean(allvel),'omitnan')/sqrt(sess.nlaps));
-ciup = bnvel + sem*1.96;
-cidn = bnvel - sem*1.96;
-
 if plotflag
+    sem = rmmissing(std(mean(allvel),'omitnan')/sqrt(sess.nlaps));
+    ciup = bnvel + sem*1.96;
+    cidn = bnvel - sem*1.96;
+
     fhandle = figure; hold on
     xcoords = (binedges(1:end-1)+0.5*tbnInd)/sess.samprate;
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])

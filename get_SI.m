@@ -1,4 +1,4 @@
-function [si,uFR,peakFR,peakLoc,spksmooth,occsmooth,binfr,binedges] = get_SI(root,unit,sess,dbnsz,vthresh)
+function [si,uFR,peakFR,peakLoc,spksmooth,occsmooth,binfr,binedges] = get_SI(root,unit,sess,dbnsz,dend)
 %% Returns the Spatial Information of a Unit
 %
 % Inputs:
@@ -6,7 +6,7 @@ function [si,uFR,peakFR,peakLoc,spksmooth,occsmooth,binfr,binedges] = get_SI(roo
 % unit = cluster ID
 % sess = session struct from importBhvr
 % dbnsz = size of position bins, default 0.05m = 5cm
-% vthresh = threshold of behavioral velocity to throw out spikes, default 0.04 m/s
+% dend = double in length meters of track length
 %
 % Outputs:
 %
@@ -18,12 +18,12 @@ arguments
     unit {double}   %Cluster ID
     sess            %session struct
     dbnsz = 0.05    %m
-    vthresh = 0.04  %m/s; velocity threshold for spikes
+    dend = 1.85     %m
 end
 
-binedges = 0:dbnsz:max(sess.pos(sess.lapstt(2):sess.lapend(2)));    % Base max binsize on first valid trial
+binedges = 0:dbnsz:dend; %max(sess.pos(sess.lapstt(2):sess.lapend(2)));    % Base max binsize on first valid trial
 spkinds = root.tsb(root.cl == unit);
-% spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+
 try 
     spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
 catch

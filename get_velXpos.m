@@ -1,12 +1,17 @@
 function [binedges,bnvel,fhandle] = get_velXpos(sess,dbnsz,plotflag)
-%% Create linearized velocity (binned by space)
+%% Create linearized velocity (binned by time)
+% !! Not functional!
 % Inputs
 %   sess        = struct from importBhvr.m
 %   dbnsz       = double in meters (m)
+%   plotFlag    = binary, whether to plot
 % Outputs
-%   fhandle     = handle to figure 1
-%   trackedges  = velocity bin edges
-%   bnvel       = binned velocity
+%   binedges    = spatial bin edges
+%   bnvel       = avg velocity by spatial bin
+%   fhandle     = figure
+%
+% Created 7/7/25 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
 
 arguments
     sess

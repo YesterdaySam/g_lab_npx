@@ -1,9 +1,9 @@
 
 % spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2';
-% spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
+spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
 % spath = 'D:\Data\Kelton\analyses\KW048\KW048_06172025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2';
-spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';
+% spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -47,7 +47,7 @@ if saveFlag
 end
 
 %% Plot example pre/post unit
-cc = 248;
+cc = 262;
 
 rzPosFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,1);
 rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
@@ -80,8 +80,8 @@ lastHalf.trueLc = zeros(size(root.good));
 for i = 1:nUnits
     cc = root.good(i);
     lfpInd = root.info.shankID(root.info.cluster_id == cc)+1;   % Account for 0-indexing
-    [frstHalf.trueSI(i),~,frstHalf.truePk(i),frstHalf.trueLc(i),~,~,frstHalf.binfr(i,:),frstHalf.binedges] = get_SI(rootFrst,cc,sessFrst,dbnsz);
-    [lastHalf.trueSI(i),~,lastHalf.truePk(i),lastHalf.trueLc(i),~,~,lastHalf.binfr(i,:),lastHalf.binedges] = get_SI(rootLast,cc,sessLast,dbnsz);
+    [frstHalf.trueSI(i),~,frstHalf.truePk(i),frstHalf.trueLc(i),~,~,~,frstHalf.binedges] = get_SI(rootFrst,cc,sessFrst,dbnsz);
+    [lastHalf.trueSI(i),~,lastHalf.truePk(i),lastHalf.trueLc(i),~,~,~,lastHalf.binedges] = get_SI(rootLast,cc,sessLast,dbnsz);
     frstHalf.frStandRun(i,:) = get_frStandVRun(rootFrst,cc,sessFrst);
     lastHalf.frStandRun(i,:) = get_frStandVRun(rootLast,cc,sessLast);
     [~,~,frstHalf.trueVelMdl(i)] = plot_frXvel(rootFrst,cc,sessFrst,2,0);
@@ -331,11 +331,10 @@ cleanInds = subDatT.include == 0;
 subDatT(cleanInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
-sbase = 'subRwdShift_';
+sbase = 'ca1RwdShift_';
 
 dbnsz = 0.05;
 histoBnsz = 5;
-binpos = 0.025:dbnsz:1.825;
 wlen = 150;
 r1pos = 0.1;    % 10 cm
 r2pos = 1;      % 100cm
@@ -346,7 +345,6 @@ frDat = [];     % [frstHalf.standFR, frstHalf.runFR, lastHalf.standFR, lastHalf.
 recID = [];     % [mouseID, recDay, recUnit ID]
 useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
 lcDat = [];     % [frstHalf.si_p, frstHalf.si, frstHalf.pkFR, frstHalf.pkLoc, lastHalf.si_p, lastHalf.si, lastHalf.pkFR, lastHalf.pkLoc]
-spDat = [];     % [frstHalf.binfr, lastHalf.binfr];
 siStr = [];     % Struc containing binned SI data per 10 laps
 vlDat = [];     % [frstHalf sig., frstHalf slope, frstHalf R, lastHalf sig., lastHalf slope, lastHalf R]
 thDat = [];     % [frstHalf.p, frstHalf.mrl, frstHalf.ang, lastHalf.p, lastHalf.mrl, lastHalf.ang]
@@ -381,9 +379,9 @@ for i = 1:height(subDatT)
     for j = 1:nShanks
         tmpUnits = root.info.shankID == j-1;
         if subDatT{i,6+j}{1} == 'ca1'
-            roiUnits(tmpUnits) = 0;
-        elseif subDatT{i,6+j}{1} == 'sub'
             roiUnits(tmpUnits) = 1;
+        elseif subDatT{i,6+j}{1} == 'sub'
+            roiUnits(tmpUnits) = 0;
         elseif subDatT{i,6+j}{1} == 'bdr'
             roiUnits(tmpUnits) = 0;
         end
@@ -415,7 +413,6 @@ for i = 1:height(subDatT)
     % === Concatenate SI and Peak data ===
     lcDat = [lcDat; frstHalf.sig, frstHalf.trueSI, frstHalf.truePk, frstHalf.trueLc,...
         lastHalf.sig, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
-    spDat = [spDat; frstHalf.binfr, lastHalf.binfr];
 
     % === Concatenate SPWR Modulation data ===
     rpDat = [rpDat; frstHalf.ripParticipation', frstHalf.ripModBinCt',...
@@ -441,7 +438,7 @@ end
 
 cd(groupSDir)
 
-save([sbase 'data2'],'frDat','recID','useCC','siStr','lcDat','spDat','thDat','rpDat','rpRat','vlDat','bvDat')
+save([sbase 'data2'],'frDat','recID','useCC','siStr','lcDat','thDat','rpDat','rpRat','vlDat','bvDat')
 
 %% Behavior comparisons
 
@@ -490,6 +487,7 @@ vlDltBFig = plotDeltaHisto(vlDat(vlBothID,2),vlDat(vlBothID,5),binedges);
 xlabel('\Delta Slope (Novel - Familiar)')
 title("Significant units pre & post");
 
+binedges = -1:0.05:1;
 vlDltRFig = plotDeltaHisto(vlDat(vlBothID,3),vlDat(vlBothID,6),binedges);
 ylabel('Probability'); xlabel('\Delta R (Novel - Familiar)')
 title("Significant units pre & post");
@@ -625,12 +623,6 @@ if saveFlag
     saveas(lcEithPkFig,[sbase 'pk_eith_bar'],'png')
     saveas(lcBothCtFig,[sbase 'si_Mod_both_bar'],'png')
 end
-
-
-%% Waterfall by position
-binedges = 0:dbnsz:1.85;
-
-spBothSortPreFig = plot_unitWaterfall(spDat(siBothID,1:length(binpos)),binedges);
 
 %% SI over 10 trial blocks
 
