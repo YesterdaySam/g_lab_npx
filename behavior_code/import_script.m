@@ -1,6 +1,6 @@
 % Batched Import behavior script
 
-mousedir = 'D:\Data\Kelton\analyses\KW049';
+mousedir = 'D:\Data\Kelton\analyses\FG044';
 
 overwriteFlag = 1;
 
@@ -30,6 +30,9 @@ for i = 1:length(dirlist)
         continue
     end
 
+    [~,sess.velXpos] = plot_trialvel(sess,0.01,0);
+    [~,sess.velXrwd] = get_velXrwd(sess,0.25,5,0);
+
     sbase = sess.name(1:14);
     save([sbase, '_session'], 'sess','-v7.3')
     disp(['Session created and saved for ' sbase])
@@ -47,7 +50,7 @@ for i = 1:length(dirlist)
     saveas(fig_lickavg,[sbase, '_lickaverage'],'png')
 
     if dirlist(i).name(end-1:end) ~= "D1"
-        [fig_lickpos, fig_licktrialavg, tmpedges2, ~, tmpbnlck] = plot_lickpos(sess);   % Don't run this for D1 - random acclimation (# laps ~= # rewards)
+        [tmpedges2, ~, tmpbnlck, fig_lickpos, fig_licktrialavg] = plot_lickpos(sess);   % Don't run this for D1 - random acclimation (# laps ~= # rewards)
         saveas(fig_lickpos,[sbase, '_lickraster'],'png')
         saveas(fig_licktrialavg,[sbase, '_lickpos_average'],'png')
     end

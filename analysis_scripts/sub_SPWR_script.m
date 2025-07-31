@@ -61,7 +61,7 @@ end
 cd('..')
 
 %% Test 1 unit against 95% Global Error band shuffle (circular or jitter)
-cc = 95;
+cc = 171;
 nShufs = 500;
 jitlen = round(150/1000/(1/sess.samprate)); % -100:100 msec jitter interval
 histoBnsz = 5;
@@ -84,8 +84,14 @@ for i = 1:nShufs
     % jit_count(i,:) = plot_frXripple(root,jits,sess,wlen,histoBnsz,0);
 end
 
-get_confband(jit_count,orig_count,1,binedges(1:end-1)*1000,histoBnsz/2);
-xlabel('Time to ripple peak (sec)'); ylabel('Spike Count')
+[~,tmpfig] = get_confband(jit_count,orig_count,1,binedges(1:end-1)*1000,histoBnsz/2);
+xlabel('Time to ripple peak (sec)')
+
+if saveFlag
+    tblind = find(root.info.cluster_id == cc);
+    sbase = ['unit_' num2str(cc) '_shank_' num2str(root.info.shankID(tblind)) '_rwdshift_'];
+    saveas(tmpfig,[sbase 'spwrMod'], 'png')
+end
 
 %% Test all good units in layer for modulation
 nShufs = 500;

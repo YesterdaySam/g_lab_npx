@@ -48,8 +48,8 @@ if plotflag
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
     plot(spkpos(:,1)*100,spkpos(:,2),'k|')
     plot(rwdpos(:,1)*100,rwdpos(:,2),'b*')
-    xlabel('Position (cm)')
-    ylabel('Trial #')
+    xlabel('Position (cm)'); xlim([0 100*max(sess.pos(sess.lapstt(1):sess.lapend(1)))])
+    ylabel('Trial #'); ylim([0 sess.nlaps])
     set(gca,'FontSize',12,'FontName','Arial')
 end
 

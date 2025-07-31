@@ -24,8 +24,12 @@ end
 axisFlag = 0;
 
 if      plttype == 1
+    r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
+    r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:30))),1);
     [~,~,fhandlePre] = plot_frXpos(root1,unit,sess1);
+    plot([r1pos, r1pos], ylim,'k--');
     [~,~,fhandlePst] = plot_frXpos(root2,unit,sess2);
+    plot([r2pos, r2pos], ylim,'k--');
     titleStr = 'Spatial Tuning ';
     axisFlag = 1;
 elseif  plttype == 2
@@ -33,12 +37,12 @@ elseif  plttype == 2
     [~,~,~,fhandlePst] = plot_frXvel(root2,unit,sess2);
     titleStr = 'Velocity Tuning ';
 elseif  plttype == 3
-    [~,fhandlePre] = plot_thetaMod(root1,unit,3);
-    [~,fhandlePst] = plot_thetaMod(root2,unit,3);
+    [~,~,fhandlePre] = plot_thetaMod(root1,unit,3);
+    [~,~,fhandlePst] = plot_thetaMod(root2,unit,3);
     titleStr = 'Theta Tuning ';
 elseif  plttype == 4
-    [~,~,fhandlePre] = plot_frXrwdtime(root1,unit,sess1);
-    [~,~,fhandlePst] = plot_frXrwdtime(root2,unit,sess2);
+    [~,~,~,fhandlePre] = plot_frXrwdtime(root1,unit,sess1);
+    [~,~,~,fhandlePst] = plot_frXrwdtime(root2,unit,sess2);
     titleStr = 'Reward Tuning ';
     axisFlag = 1;
 elseif  plttype == 5

@@ -22,7 +22,6 @@ sess.nlaps  = length(sess.lapstt);
 
 binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
 nbins           = size(binedges,2);
-clear bnvel
 
 for i = 1:sess.nlaps
     bnocc = histcounts(sess.pos(sess.ind(sess.lapstt(i):sess.lapend(i))),binedges);
@@ -38,11 +37,12 @@ if plotflag
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
     imagesc(bnvel,[prctile(bnvel,1,'all'), prctile(bnvel,99,'all')]);
     % imagesc(bnvel, [0 max(bnvel,[],'all')])
-    colormap("sky")
+    colormap("winter")
     cbar = colorbar; clim([0 inf]);
     xlabel('Position'); % xlim([0 200])
+    % xticks(1:45:length(binedges)); xticklabels(binedges(1:45:length(binedges))*100);
     ylabel('Trial #'); ylabel(cbar,'cm/s','FontSize',12,'Rotation',90)
-    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    set(gca,'FontSize',12,'FontName','Arial','YDir','reverse')
 
     sem = std(bnvel,'omitnan')/sqrt(sess.nlaps);
     ciup = rmmissing(mean(bnvel,1,'omitnan') + sem*1.96);

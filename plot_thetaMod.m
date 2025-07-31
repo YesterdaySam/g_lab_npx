@@ -1,4 +1,4 @@
-function [circ_stats,fhandle] = plot_thetaMod(root,unit,lfpInd,thbnsz,plotFlag)
+function [circ_stats,polar_rate,fhandle] = plot_thetaMod(root,unit,lfpInd,thbnsz,plotFlag)
 %% Calculates polar rate relative to theta (0 = trough, 180 = peak)
 % Methods from Oliva et al., 2016 (https://www.sciencedirect.com/science/article/pii/S0896627316305001#sec4)
 % Requires Toolbox for circular statistics with Matlab. Authors: Philipp Berens; Email: philipp@bethgelab.org; Homepage: http://philippberens.wordpress.com/code/circstats/
@@ -16,6 +16,7 @@ function [circ_stats,fhandle] = plot_thetaMod(root,unit,lfpInd,thbnsz,plotFlag)
 %   ang = preferred firing direction (radian), 0 = trough, pi = peak
 %   p = p-value of Rayleigh's test of non-uniformity for circular data
 %   z = z score of Rayleigh's test
+% polar_rate = polar rate map of firing to theta, 0 = trough, pi = peak
 % fhandle = handle to figure
 %
 % Created 5/2/25 LKW; Grienberger Lab; Brandeis University

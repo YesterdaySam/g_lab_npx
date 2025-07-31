@@ -1,4 +1,4 @@
-function [binedges,binfr,fhandle] = plot_frXrwdtime(root,unit,sess,tbnsz,wlen,plotflag)
+function [binedges,binfr,ri,fhandle] = plot_frXrwdtime(root,unit,sess,tbnsz,wlen,plotflag)
 %% Plots the avg binned firing rate by time to reward of a unit
 %
 % Inputs:
@@ -39,16 +39,20 @@ spkts = sess.ts(spkinds);
 spkmap = [];
 bnoccs = [];
 for i = 1:sess.nlaps
-    rtime = sess.ts(sess.rwdind(i));
-    spkct   = histcounts(spkts, binedges + rtime);
-    runocc  = histcounts(sess.ts(sess.ind), binedges + rtime);
-    runocc  = runocc ./ sess.samprate;
-    bnoccs  = [bnoccs; runocc];              % Save bin occupancy
+    tmpspks = spkts(spkts > sess.ts(sess.rwdind(i)) - wlen & spkts < sess.ts(sess.rwdind(i)) + wlen) - sess.ts(sess.rwdind(i));
+    spkct = histcounts(tmpspks,binedges);
+    % rtime   = sess.ts(sess.rwdind(i));
+    % spkct   = histcounts(spkts, binedges + rtime);
+    % runocc  = histcounts(sess.ts(sess.ind), binedges + rtime);
+    % runocc  = runocc ./ sess.samprate;
+    % bnoccs  = [bnoccs; runocc];              % Save bin occupancy
     spkmap  = [spkmap; spkct];              % Save spike counts
 end
 
-noOcc = bnoccs == 0;
-bnoccs(noOcc) = 0.0001; % Prevent div by 0 and NaNs later
+bnoccs = ones(sess.nlaps,length(binedges)-1)*tbnsz;
+
+% noOcc = bnoccs == 0;
+% bnoccs(noOcc) = 0.0001; % Prevent div by 0 and NaNs later
 
 spkct = sum(spkmap,1);
 occct = sum(bnoccs,1);
@@ -59,13 +63,17 @@ occsmooth = smoothdata(occct,'gaussian',5);
 binfr = spksmooth ./ occsmooth;
 rawfr = rmmissing(spkct ./ occct);
 
-sem = rmmissing(std(spkmap ./ bnoccs,'omitnan')/sqrt(sess.nlaps));
-ciup = rawfr + sem*1.96;
-cidn = rawfr - sem*1.96;
-% ciup = prctile(spkmap./bnoccs,95,1);
-% cidn = prctile(spkmap./bnoccs,5,1);
+pOcc = sum(bnoccs) ./ sum(bnoccs,'all','omitnan');
+uFR = sum(spksmooth,'all','omitnan') / sum(occsmooth,'all','omitnan');
+ri = sum(pOcc .* binfr .* log2(binfr ./ uFR),'all','omitnan');  % Reward Info in bits/spike
 
 if plotflag
+    sem = rmmissing(std(spkmap ./ bnoccs,'omitnan')/sqrt(sess.nlaps));
+    ciup = rawfr + sem*1.96;
+    cidn = rawfr - sem*1.96;
+    % ciup = prctile(spkmap./bnoccs,95,1);
+    % cidn = prctile(spkmap./bnoccs,5,1);
+
     binpos = binedges(1:end-1)+tbnsz/2;
     fhandle = figure; hold on
     plot(binpos,rawfr, 'k', 'LineWidth', 2)
@@ -85,7 +93,11 @@ if plotflag
     % Plot velocity overlay
     ax = gca;
     yyaxis right
-    [~,bnvel] = get_velXrwd(sess,tbnsz,wlen,0);
+    if ~isfield(sess,'velXrwd')
+        [~,bnvel] = get_velXrwd(sess,tbnsz,wlen,0);
+    else
+        bnvel = sess.velXrwd;
+    end
     plot(binpos,bnvel,'r','LineWidth',2)
     ylim([0 prctile(sess.velshft,99)])
     ax.YAxis(2).Color = 'r';

@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW049\KW049_06222025_rec_D6_LMed1';
-datpath = 'D:\Data\Kelton\probe_data\KW049\KW049_06222025_rec_D6_LMed1_g0';
+spath = 'D:\Data\Kelton\analyses\KW043\KW043_05082025_rec_D3_RLat2';
+datpath = 'D:\Data\Kelton\probe_data\KW043\KW043_05082025_rec_D3_RLat2_g0';
 
 loadKS(datpath,spath,1);
 root = alignBhvrTS(spath,spath,spath);
@@ -26,10 +26,10 @@ adfr1 = plot_ampXdepthxFR(root);
 % adfr4 = plot_ampXdepthxFR(root,0,1,0);
 
 % Plot FR X Depth
-% frd1 = plot_frXdepth(root);
-% frd2 = plot_frXdepth(root,1,1,0);
-frd3 = plot_frXdepth(root,1,0,0);
-% frd4 = plot_frXdepth(root,0,1,0);
+% frd1 = plot_datXdepth(root,0);
+% frd2 = plot_datXdepth(root,0,1,1,0);
+frd3 = plot_datXdepth(root,0,1,0,0);
+% frd4 = plot_datXdepth(root,0,0,1,0);
 
 if saveFlag
     saveas(adfr1,[root.name '_AmpDepthFR_all.png'])

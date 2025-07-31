@@ -32,7 +32,7 @@ for i = 1:sess.nlaps
     end
 end
 % bnocc = histcounts(sess.pos(sess.lapstt(1):sess.lapend(end)),binedges);
-[~,~,loc]=histcounts(-wlenInd:wlenInd,binedges);
+[~,~,loc] = histcounts(-wlenInd:wlenInd,binedges);
 bnvel = accumarray(loc(:),mean(allvel)) ./ accumarray(loc(:),1);
 
 if plotflag

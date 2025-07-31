@@ -1,0 +1,139 @@
+% EC
+% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05062025_rec_D1_RMed1';
+% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05072025_rec_D2_RLat1';
+spath = 'D:\Data\Kelton\analyses\KW043\KW043_05082025_rec_D3_RLat2';
+
+cd(spath)
+rootfile = dir("*_root.mat");
+load(rootfile.name)
+sessfile = dir("*_session.mat");
+load(sessfile.name)
+epochfile = dir("*_RwdShift_Data2.mat");
+try load(epochfile.name); catch; disp('No existing epoched data file'); end
+
+rwdShift = sess.valTrials(find(diff(sess.pos(sess.rwdind)) > 0.1,1)+1);   % Find lap of reward shift
+nUnits = length(root.good);
+saveFlag = 1;
+
+dbnsz = 0.05;
+histoBnsz = 5;
+wlen = 150;
+ripRef = root.ripRef;
+r1pos = 0.9;    % 10 cm
+binpos = 0.025:dbnsz:1.825;
+
+sbase = root.name; 
+
+%% Plot example pre/post behavior
+
+lickDIFig = plot_lickDiscrim(sess,[r1pos 1.8]*100,30,10);
+
+%% Get real unit and epoch parameters
+
+clear datStruc
+datStruc.name   = root.name;
+datStruc.trueSI = zeros(size(root.good));
+datStruc.truePk = zeros(size(root.good));
+datStruc.trueLc = zeros(size(root.good));
+
+for i = 1:nUnits
+    cc = root.good(i);
+    lfpInd = root.info.shankID(root.info.cluster_id == cc)+1;   % Account for 0-indexing
+    [datStruc.trueSI(i),~,datStruc.truePk(i),datStruc.trueLc(i),~,~,datStruc.posfr(i,:),datStruc.binedges] = get_SI(root,cc,sess,dbnsz);
+    datStruc.frStandRun(i,:) = get_frStandVRun(root,cc,sess);
+    [~,~,datStruc.trueVelMdl(i)] = plot_frXvel(root,cc,sess,2,0);
+    [datStruc.thetastats(i),datStruc.thetafr(i,:)] = plot_thetaMod(root,cc,lfpInd,2*pi/36,0);
+    % datStruc.swrfr(i,:) = plot_frXripple(root,cc,sess,ripRef,wlen,histoBnsz,0);
+    [~,datStruc.rwdfr(i,:),datStruc.trueRI(i)] = plot_frXrwdtime(root,cc,sess,0.25,5,0);
+    [datStruc.optobins,datStruc.optoMat(i,:,:)] = plot_frXopto(root,cc,sess,0.002,0.5,0);
+end
+
+datStruc = subEpochSI(sess,root,datStruc,10);
+
+% datStruc.ripRate = size(root.ripStruc(ripRef).ripples,1) / (sum(not(sess.runInds)) / sess.samprate);    %Normalize based on standing periods
+datStruc.binpos = datStruc.binedges(1:end-1)+0.5*dbnsz;
+
+%% Find place cells and SPW-R modulation pre and post shift
+% Methods: 
+% Kitanishi et al. 2021: Exceed 99th percentile of SI shuffle
+% Grienberger & Magee 2022:
+%   Field: contiguous area with >= 20% peak FR
+%   Induction: First lap with >3SD of in-field FR, above out-field noise
+%              and activity in 2/5 subsequent laps also >3SD
+%   Stability: Significant >3SD activity in 30% of post-induction laps
+
+% Add method for jittering opto tagging
+
+tic
+nShufs = 250;
+
+datStruc.shufSI = zeros(nUnits,nShufs);
+datStruc.shufSPWR = zeros(nShufs,nUnits,length(-wlen:histoBnsz:wlen)-1);
+
+for j = 1:nShufs
+    [shiftroot,shiftsess,shiftInd] = shiftTrain(root,sess);
+
+    if mod(j,50) == 0
+        disp(['Shuffle # ' num2str(j)])
+        toc 
+    end
+
+    for i = 1:nUnits
+        cc = root.good(i);
+
+        [datStruc.shufSI(i,j)] = get_SI(shiftroot,cc,shiftsess);
+
+        % frstHalf.shufSPWR(j,i,:) = plot_frXripple(shiftFrst,cc,shiftSessFrst,ripRef,wlen,histoBnsz,0);
+
+        % [~,~,frstHalf.shufRI(i,j)] = plot_frXrwdtime(shiftFrst,cc,shiftSessFrst,0.25,5,0);
+        % [~,~,lastHalf.shufRI(i,j)] = plot_frXrwdtime(shiftLast,cc,shiftSessLast,0.25,5,0);
+    end
+end
+
+toc
+
+datStruc.sig = sum(datStruc.shufSI > datStruc.trueSI,2) / nShufs;
+
+disp(['Sig SI p <= 0.05 ' num2str(sum(datStruc.sig <= 0.05)) ' of ' num2str(nUnits) ' units'])
+
+%% Save for later
+
+if saveFlag
+    save([root.name '_ec_pilot_dat'],'datStruc')
+end
+
+%% Future analyses
+% plot latency to opto tag peak
+% Plot spatial frequency of each cell for 1D grid cells
+
+thetaDepthFig = plot_datXdepth(root,datStruc,1,0,0,2);
+
+if saveFlag
+    saveas(thetaDepthFig,[sbase '_ec_pilot_thXdepth.png'])
+end
+
+%% Functions
+
+function [firstPkT] = get_firstPk(datStruc,unit)
+
+tmpOpto = squeeze(datStruc.optoMat(unit,:,:));
+
+baseInds = datStruc.optobins < 0;
+counts = sum(tmpOpto);
+baseMu = mean(counts(baseInds));
+baseSD = std(counts(baseInds));
+
+countZ = (counts - baseMu) ./ baseSD;
+smoothZ = smoothdata(countZ,'gaussian',10);
+
+figure; hold on
+plot(datStruc.optobins,countZ)
+plot(datStruc.optobins,smoothZ)
+[tmppks, tmplocs] = findpeaks(smoothZ);
+plot(datStruc.optobins(tmplocs),tmppks,'v')
+% first peak >2 Z score
+postPulsePks = datStruc.optobins(tmplocs) > 0;
+hiPks = tmppks > 2;
+firstPkT = datStruc.optobins(tmplocs(find(postPulsePks & hiPks, 1)));
+
+end

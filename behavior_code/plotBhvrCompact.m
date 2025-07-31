@@ -32,7 +32,7 @@ if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
 
     if rwdlickFlag
         try
-            [fig_lickpos, fig_licktrialavg, tmpedges2, ~, tmpbnlck] = plot_lickpos(sess);
+            [tmpedges2, ~, ~, fig_lickpos, fig_licktrialavg] = plot_lickpos(sess);
             close(fig_licktrialavg)
             title("Licks by Trial")
         catch

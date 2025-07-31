@@ -74,9 +74,29 @@ cidn = rawfr - sem*1.96;
 if plotflag
     fhandle = figure; hold on
     xcoords = (binedges(1:end-1) + 0.5*dbnsz)*100;
-    plot(xcoords,rawfr, 'k')
+
+    % Plot velocity overlay
+    ax = gca;
+    yyaxis right
+    if ~isfield(sess,'sess.velXpos')
+        [~,bnvel] = plot_trialvel(sess,dbnsz,0);
+    else
+        bnvel = sess.velXpos;
+    end
+    velmean = mean(bnvel);
+    velsem = std(bnvel)./sqrt(sess.nlaps);
+
+    plot(xcoords,velmean,'r','LineWidth',2)
+    patch([xcoords,fliplr(xcoords)],[velmean-velsem*1.96,fliplr(velmean+velsem*1.96)],'r','FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+    ylim([0 prctile(sess.velshft,99)])
+    ax.YAxis(2).Color = 'r';
+    ylabel('Velocity (cm/s)')
+
+    yyaxis left
+
+    plot(xcoords, rawfr, 'k-')
     patch([xcoords,fliplr(xcoords)],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-    plot(xcoords,binfr, 'b')
+    plot(xcoords, binfr, 'b-')
     
     xlabel('Position (cm)'); ylabel('Firing Rate (spk/s)')
 
@@ -85,17 +105,7 @@ if plotflag
     elseif max(binfr,[],'all') < 20
         ylim([-1 20])
     end
-
-    % Plot velocity overlay
-    ax = gca;
-    yyaxis right
-    [~,bnvel] = plot_trialvel(sess,dbnsz,0);
-    plot(xcoords,mean(bnvel),'r','LineWidth',2)
-    ylim([0 prctile(sess.velshft,99)])
-    ax.YAxis(2).Color = 'r';
-    ylabel('Velocity (cm/s)')
-
-    yyaxis left
+    ax.YAxis(1).Color = 'k';
 
     title(['Unit ' num2str(unit)])
     set(gca,'FontSize',12,'FontName','Arial')

@@ -22,7 +22,7 @@ arguments
     avgposF             = 1 % Include averaged spatial firing rate
     trialheatmapF       = 1 % Include heatmap across trials
     templateF           = 1 % Include template waveform 
-    perioptoF           = 0 % Include peri-opto pulse spikes plot
+    perioptoF           = 1 % Include peri-opto pulse spikes plot
     acgF                = 1 % Include AutoCorreloGram plot
     thetaF              = 1 % Include Theta Phase Modulation plot
     rwdTF               = 1 % Include reward time binned firing rate
@@ -63,17 +63,17 @@ for i = 1:nUnits
     if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
 
         if rwdTF
-            [~,~,tmpfrrwdT] = plot_frXrwdtime(root,cc,sess);
+            [~,~,~,tmpfrrwdT] = plot_frXrwdtime(root,cc,sess);
         end
 
         if perioptoF
-            [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.005,0.1);
+            [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.005,0.5);
         end
 
         if thetaF
             tmpInd = find(root.info.cluster_id == cc);
             lfpInd = root.info.shankID(tmpInd) + 1; % Account for 0-indexing
-            [~,tmptheta] = plot_thetaMod(root,cc,lfpInd,2*pi/36);   % Plot theta modulation relative to local theta, 10 degree bin size (Quilichini et al., 2010)
+            [~,~,tmptheta] = plot_thetaMod(root,cc,lfpInd,2*pi/36);   % Plot theta modulation relative to local theta, 10 degree bin size (Quilichini et al., 2010)
         end
 
         if acgF

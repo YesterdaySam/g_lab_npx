@@ -28,6 +28,8 @@ arguments
     plotflag = 1    %binary
 end
 
+warning('off','MATLAB:colon:operandsNotRealScalar')
+
 if isscalar(unit)
     spkinds = root.tsb(root.cl == unit);
     tmpind = find(root.info.cluster_id == unit);
@@ -51,7 +53,7 @@ ripRast = [];
 for i = 1:nRips
     % sigInds = [find(root.lfp_tsb == root.ripples(i,2) - wdw) find(root.lfp_tsb == root.ripples(i,2) + wdw)];
     tmpspks         = spkinds(spkinds > sess.ts(ripples(i,2)) - wdw & spkinds < sess.ts(ripples(i,2)) + wdw) - sess.ts(ripples(i,2));
-    ripFRMap(i,:)   = histcounts(tmpspks, binedges);
+    ripFRMap(i,:)   = histcounts(tmpspks,binedges);
     ripRast = [ripRast; tmpspks, i*ones(numel(tmpspks),1)];
 end
 

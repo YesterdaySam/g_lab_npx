@@ -21,20 +21,22 @@ units = [1 13 60 110 111 324 477 519 520];
 jetmap = jet(length(units));
 
 figure; hold on; axis off
-set(gcf,'color','w','units','normalized','position',[0.2 0.1 0.35 0.3])
-plot(sess.ts(1:nInds), vSmth(1:nInds)./maxVel,'r')
-plot(sess.ts(1:nInds), sess.pos(1:nInds)./maxPos+1.15,'b')
+set(gcf,'color','w','units','normalized','position',[0.2 0.1 0.5 0.8])
+% set(gcf,'color','w','units','normalized','position',[0.2 0.1 0.35 0.3])
+plot(sess.ts(1:nInds), 10*(vSmth(1:nInds)./maxVel),'r')
+plot(sess.ts(1:nInds), 10*(sess.pos(1:nInds)./maxPos)+10,'b')
 tmplcks = sess.lckind(sess.lckind < nInds);
-plot(sess.ts(tmplcks),0.8 + zeros(length(tmplcks),1),'k*')
+plot(sess.ts(tmplcks),10 + zeros(length(tmplcks),1),'k|')
 for i = 1:length(units) 
     tmpspks = root.cl == units(i);
     tmpspks = root.tsb(tmpspks);
     dispspks = tmpspks(tmpspks < nInds);
-    plot(sess.ts(dispspks),(1.2+i/5) + ones(1,length(dispspks))','|','Color',jetmap(i,:))
+    plot(sess.ts(dispspks),(20+i*3) + ones(1,length(dispspks))','|','Color',jetmap(i,:))
 end
+ylim([-0.5 190])
 % xlabel('Time')
 % ylabel('Normalized value')
-legend({'Velocity','Position'})
+% legend({'Velocity','Position'})
 set(gca,'FontSize',12,'FontName','Arial')
 
 %% Plot a few hand-selected neurons relative to behavior
@@ -140,6 +142,80 @@ for k = vStart:vEnd
     writeVideo(v,frame)
     hold off
 
+end
+close(v)
+
+%% Plot many neurons relative to behavior
+
+hsvmap = hsv(length(root.good));
+
+figure; hold on; axis off
+set(gcf,'color','w','units','normalized','position',[0.2 0.1 0.5 0.8])
+set(gca,"NextPlot","replacechildren")
+ylim([-1 190])
+
+v = VideoWriter("KW022_demo_laps6-12.avi");
+open(v)
+
+lStt = 6;
+lEnd = 9;
+vStart = round(sess.ts(sess.lapstt(lStt))*30);
+iStart = sess.lapstt(lStt);
+vEnd = round(sess.ts(sess.lapend(lEnd))*30);
+iEnd = sess.lapend(lEnd);
+for k = vStart:vEnd
+    subFrame = round(k / (30/sess.samprate));
+    plot(sess.ts(iStart:subFrame), 10*vSmth(iStart:subFrame)./maxVel,'r')
+    xlim([sess.ts(iStart) sess.ts(iEnd)])
+    ylim([-1 190])
+
+    hold on
+    plot(sess.ts(iStart:subFrame), 10*(sess.pos(iStart:subFrame)./maxPos)+10,'b')
+    tmplcks = sess.lckind(sess.lckind > iStart & sess.lckind < subFrame);
+    plot(sess.ts(tmplcks), 10 + zeros(length(tmplcks),1),'k|')
+
+    for i = 1:length(units)
+        tmpspks = root.tsb(root.cl == units(i));
+        tmpspks = root.tsb(tmpspks);
+        dispspks = tmpspks(tmpspks > iStart & tmpspks < subFrame);
+        plot(sess.ts(dispspks),(20+i*3) + ones(1,length(dispspks))','|','Color',jetmap(i,:))
+    end
+    % legend({'Velocity','Position','Spike Raster'})
+    set(gca,'FontSize',12,'FontName','Arial')
+    axis off
+    frame = getframe(gcf);
+    writeVideo(v,frame)
+    hold off
+end
+
+lStt = 10;
+lEnd = 12;
+vStart = round(sess.ts(sess.lapstt(lStt))*30);
+iStart = sess.lapstt(lStt);
+vEnd = round(sess.ts(sess.lapend(lEnd))*30);
+iEnd = sess.lapend(lEnd);
+
+for k = vStart:vEnd
+    subFrame = round(k / (30/sess.samprate));
+    plot(sess.ts(iStart:subFrame), 10*vSmth(iStart:subFrame)./maxVel,'r')
+    xlim([sess.ts(iStart) sess.ts(iEnd)])
+    ylim([-1 190])
+
+    hold on
+    plot(sess.ts(iStart:subFrame), 10*(sess.pos(iStart:subFrame)./maxPos)+10,'b')
+    tmplcks = sess.lckind(sess.lckind > iStart & sess.lckind < subFrame);
+    plot(sess.ts(tmplcks), 10 + zeros(length(tmplcks),1),'k|')
+
+    for i = 1:length(root.good)
+        tmpspks = root.tsb(root.cl == root.good(i));
+        dispspks = tmpspks(tmpspks > iStart & tmpspks < subFrame);
+        plot(sess.ts(dispspks), 20 + i + ones(1,length(dispspks))','|','Color',hsvmap(i,:))
+    end
+    set(gca,'FontSize',12,'FontName','Arial')
+    axis off
+    frame = getframe(gcf);
+    writeVideo(v,frame)
+    hold off
 end
 close(v)
 

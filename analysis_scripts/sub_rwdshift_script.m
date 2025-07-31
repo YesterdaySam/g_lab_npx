@@ -1,9 +1,18 @@
-
+% Subiculum RZ Shift
 % spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2';
 % spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
 % spath = 'D:\Data\Kelton\analyses\KW048\KW048_06172025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2';
-spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';
+% spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';
+
+% CA1 RZ Shift
+% spath = 'D:\Data\Kelton\analyses\FG044\FG044_20250710_R2';
+
+% Sub RZ Shift
+% spath = 'D:\Data\Kelton\analyses\KW040\KW040_05012025_rec_D6_LMed1';
+% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06202025_rec_D5_LLat2';
+% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06222025_rec_D6_LMed1';
+
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -11,7 +20,7 @@ load(rootfile.name)
 sessfile = dir("*_session.mat");
 load(sessfile.name)
 epochfile = dir("*_RwdShift_Data2.mat");
-load(epochfile.name)
+try load(epochfile.name); catch; disp('No existing epoched data file'); end
 
 rwdShift = sess.valTrials(find(diff(sess.pos(sess.rwdind)) > 0.1,1)+1);   % Find lap of reward shift
 nUnits = length(root.good);
@@ -40,15 +49,19 @@ lickDIFig = plot_lickDiscrim(sess,[r1pos r2pos]*100,30,10);
 plot([rwdShift rwdShift], [-1 1], 'k--','HandleVisibility','off')
 
 bhvrFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,1,6);
+ppVelFig = plot_prepost_vel(sessFrst,sessLast);
+ppLckFig = plot_prepost_lck(sessFrst,sessLast);
 
 if saveFlag
     saveas(lickDIFig,[root.name '_lickDI'], 'png')
     saveas(bhvrFig,[root.name '_bhvrPrePost'], 'png')
+    saveas(ppVelFig,[root.name '_prepostVel'], 'png')
+    saveas(ppLckFig,[root.name '_prepostLck'], 'png')
 end
 
 %% Plot example pre/post unit
-cc = 248;
-
+cc = 323;
+close all
 rzPosFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,1);
 rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
 rzThMFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,3);
@@ -80,23 +93,35 @@ lastHalf.trueLc = zeros(size(root.good));
 for i = 1:nUnits
     cc = root.good(i);
     lfpInd = root.info.shankID(root.info.cluster_id == cc)+1;   % Account for 0-indexing
-    [frstHalf.trueSI(i),~,frstHalf.truePk(i),frstHalf.trueLc(i),~,~,frstHalf.binfr(i,:),frstHalf.binedges] = get_SI(rootFrst,cc,sessFrst,dbnsz);
-    [lastHalf.trueSI(i),~,lastHalf.truePk(i),lastHalf.trueLc(i),~,~,lastHalf.binfr(i,:),lastHalf.binedges] = get_SI(rootLast,cc,sessLast,dbnsz);
+    [frstHalf.trueSI(i),~,frstHalf.truePk(i),frstHalf.trueLc(i),~,~,frstHalf.posfr(i,:),frstHalf.binedges] = get_SI(rootFrst,cc,sessFrst,dbnsz);
+    [lastHalf.trueSI(i),~,lastHalf.truePk(i),lastHalf.trueLc(i),~,~,lastHalf.posfr(i,:),lastHalf.binedges] = get_SI(rootLast,cc,sessLast,dbnsz);
     frstHalf.frStandRun(i,:) = get_frStandVRun(rootFrst,cc,sessFrst);
     lastHalf.frStandRun(i,:) = get_frStandVRun(rootLast,cc,sessLast);
     [~,~,frstHalf.trueVelMdl(i)] = plot_frXvel(rootFrst,cc,sessFrst,2,0);
     [~,~,lastHalf.trueVelMdl(i)] = plot_frXvel(rootLast,cc,sessLast,2,0);
-    frstHalf.thetastats(i) = plot_thetaMod(rootFrst,cc,lfpInd,2*pi/36,0);
-    lastHalf.thetastats(i) = plot_thetaMod(rootLast,cc,lfpInd,2*pi/36,0);
+    [frstHalf.thetastats(i),frstHalf.thetafr(i,:)] = plot_thetaMod(rootFrst,cc,lfpInd,2*pi/36,0);
+    [lastHalf.thetastats(i),lastHalf.thetafr(i,:)] = plot_thetaMod(rootLast,cc,lfpInd,2*pi/36,0);
+    frstHalf.swrfr(i,:) = plot_frXripple(rootFrst,cc,sessFrst,ripRef,wlen,histoBnsz,0);
+    lastHalf.swrfr(i,:) = plot_frXripple(rootLast,cc,sessLast,ripRef,wlen,histoBnsz,0);
+    [~,frstHalf.rwdfr(i,:),frstHalf.trueRI(i)] = plot_frXrwdtime(rootFrst,cc,sessFrst,0.25,5,0);
+    [~,lastHalf.rwdfr(i,:),lastHalf.trueRI(i)] = plot_frXrwdtime(rootLast,cc,sessLast,0.25,5,0);
 end
 
-frstHalf = subEpoch(sessFrst,rootFrst,frstHalf);
-lastHalf = subEpoch(sessLast,rootLast,lastHalf);
+frstHalf = subEpochSI(sessFrst,rootFrst,frstHalf,10);
+lastHalf = subEpochSI(sessLast,rootLast,lastHalf,10);
 
 frstHalf.ripRate = size(rootFrst.ripStruc(ripRef).ripples,1) / (sum(not(sessFrst.runInds)) / sess.samprate);    %Normalize based on standing periods
 lastHalf.ripRate = size(rootLast.ripStruc(ripRef).ripples,1) / (sum(not(sessLast.runInds)) / sess.samprate);
 frstHalf.binpos = frstHalf.binedges(1:end-1)+0.5*dbnsz;
 lastHalf.binpos = lastHalf.binedges(1:end-1)+0.5*dbnsz;
+
+%% Add lap by lap FR info to epochStrucs
+
+for i = 1:nUnits
+    cc = root.good(i);
+    [~,frstHalf.frMap(:,:,i)] = get_frXpos(rootFrst,cc,sessFrst,0.05,1.85,1);
+    [~,lastHalf.frMap(:,:,i)] = get_frXpos(rootLast,cc,sessLast,0.05,1.85,1);
+end
 
 %% Behavioral comparison
 % Lick discrimination
@@ -145,8 +170,13 @@ for j = 1:nShufs
 
         frstHalf.shufSPWR(j,i,:) = plot_frXripple(shiftFrst,cc,shiftSessFrst,ripRef,wlen,histoBnsz,0);
         lastHalf.shufSPWR(j,i,:) = plot_frXripple(shiftLast,cc,shiftSessLast,ripRef,wlen,histoBnsz,0);
+
+        % [~,~,frstHalf.shufRI(i,j)] = plot_frXrwdtime(shiftFrst,cc,shiftSessFrst,0.25,5,0);
+        % [~,~,lastHalf.shufRI(i,j)] = plot_frXrwdtime(shiftLast,cc,shiftSessLast,0.25,5,0);
     end
 end
+
+toc
 
 frstHalf.sig = sum(frstHalf.shufSI > frstHalf.trueSI,2) / nShufs;
 lastHalf.sig = sum(lastHalf.shufSI > lastHalf.trueSI,2) / nShufs;
@@ -263,7 +293,7 @@ fieldAlignR2 = mod(lastHalf.binpos(lastHalf.trueLc(siUnits))+shiftR2,trackLen)+0
 fieldDistroFrst_Align = histcounts(fieldAlignR1,frstHalf.binedges);
 fieldDistroLast_Align = histcounts(fieldAlignR2,lastHalf.binedges);
 
-peakDistroFig = plotDistroHisto(fieldDistroFrst_Align,fieldDistroLast_Align,binpos-trackLen/2,0);
+rzDistroFig = plotDistroHisto(fieldDistroFrst_Align,fieldDistroLast_Align,binpos-trackLen/2,0);
 xlabel('Distance to RZ (cm)')
 
 % Compare shift in PF peak relative to reward per unit
@@ -341,17 +371,31 @@ r1pos = 0.1;    % 10 cm
 r2pos = 1;      % 100cm
 vColors2 = [0.5 0.5 1; 0.75 0.75 1];
 
+%%
+load('D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\subRwdShift_data2.mat')
+
+nMice = length(siStr);
+mID = unique(recID(:,1));
+nTotal = size(recID,1);
+
+binedges = 0:5:185;
+binpos = 0.025:dbnsz:1.825;
+r1posInd = find(binpos > r1pos,1);
+r2posInd = find(binpos > r2pos,1);
+
 %% 
 frDat = [];     % [frstHalf.standFR, frstHalf.runFR, lastHalf.standFR, lastHalf.runFR]
 recID = [];     % [mouseID, recDay, recUnit ID]
 useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
 lcDat = [];     % [frstHalf.si_p, frstHalf.si, frstHalf.pkFR, frstHalf.pkLoc, lastHalf.si_p, lastHalf.si, lastHalf.pkFR, lastHalf.pkLoc]
-spDat = [];     % [frstHalf.binfr, lastHalf.binfr];
+lcMap = [];     % [frstHalf.posfr, lastHalf.posfr];
 siStr = [];     % Struc containing binned SI data per 10 laps
 vlDat = [];     % [frstHalf sig., frstHalf slope, frstHalf R, lastHalf sig., lastHalf slope, lastHalf R]
 thDat = [];     % [frstHalf.p, frstHalf.mrl, frstHalf.ang, lastHalf.p, lastHalf.mrl, lastHalf.ang]
+thMap = [];     % [frstHalf.thetafr, lastHalf.thetafr];
 rpDat = [];     % [frstHalf.ripParticip, frstHalf.ripModBin, lastHalf.ripParticip, lastHalf.ripModBin]
 rpRat = [];     % [frstHalf.ripRate, lastHalf.ripRate];
+rpMap = [];     % [frstHalf.swrfr, lastHalf.swrfr];
 bvDat = [];     % [frstHalf.lckDI, frstHalf.preRZV, lastHalf.lckDI, lastHalf.preRZV
 
 clear ps stats
@@ -411,16 +455,18 @@ for i = 1:height(subDatT)
         thDat = [thDat; frstHalf.thetastats(j).p, frstHalf.thetastats(j).mrl, frstHalf.thetastats(j).ang,...
             lastHalf.thetastats(j).p, lastHalf.thetastats(j).mrl, lastHalf.thetastats(j).ang];
     end
+    thMap = [thMap; frstHalf.thetafr lastHalf.thetafr];
 
     % === Concatenate SI and Peak data ===
     lcDat = [lcDat; frstHalf.sig, frstHalf.trueSI, frstHalf.truePk, frstHalf.trueLc,...
         lastHalf.sig, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
-    spDat = [spDat; frstHalf.binfr, lastHalf.binfr];
+    lcMap = [lcMap; frstHalf.posfr, lastHalf.posfr];
 
     % === Concatenate SPWR Modulation data ===
     rpDat = [rpDat; frstHalf.ripParticipation', frstHalf.ripModBinCt',...
         lastHalf.ripParticipation', lastHalf.ripModBinCt'];
     rpRat = [rpRat; frstHalf.ripRate, lastHalf.ripRate];
+    rpMap = [rpMap; frstHalf.swrfr lastHalf.swrfr];
 
     % === Concatenate SI over 10-trial blocks ===
     siStr(ct).preBlockSI = frstHalf.subEpochSI;
@@ -441,7 +487,7 @@ end
 
 cd(groupSDir)
 
-save([sbase 'data2'],'frDat','recID','useCC','siStr','lcDat','spDat','thDat','rpDat','rpRat','vlDat','bvDat')
+save([sbase 'data3'],'frDat','recID','useCC','siStr','lcDat','lcMap','thDat','thMap','rpDat','rpRat','rpMap','vlDat','bvDat')
 
 %% Behavior comparisons
 
@@ -579,10 +625,41 @@ if saveFlag
     saveas(thBothCtFig,[sbase 'th_ModCt_bar'],'png')
 end
 
+%% Waterfall by theta phase
+binedges = rad2deg(0:pi/18:2*pi);
+thPeak = find(binedges == 180,1);
+
+[thBothPreSortPreFig,tmpMap,sortPre] = plot_unitWaterfall(thMap(thBothID,1:length(binedges)-1),binedges);
+plot([thPeak thPeak],[0 sum(thBothID)],'w--','LineWidth',2)
+title('Familiar RZ, sort Familiar'); xlabel('Theta Phase')
+thBothPreSortPreHisto = plot_unitPkHisto(tmpMap,binedges);
+xlabel('Theta Phase')
+
+[thBothPstSortPstFig,tmpMap] = plot_unitWaterfall(thMap(thBothID,length(binedges):end),binedges);
+plot([thPeak thPeak],[0 sum(thBothID)],'w--','LineWidth',2)
+title('Novel RZ, sort Novel'); xlabel('Theta Phase')
+thBothPstSortPstHisto = plot_unitPkHisto(tmpMap,binedges);
+xlabel('Theta Phase')
+
+[thBothPstSortPreFig] = plot_unitWaterfall(thMap(thBothID,length(binedges):end),binedges,sortPre);
+plot([thPeak thPeak],[0 sum(thBothID)],'w--','LineWidth',2)
+title('Novel RZ, sort Familiar'); xlabel('Theta Phase')
+
+if saveFlag
+    saveas(thBothPreSortPreFig,[sbase 'th_both_pre_sortPre'],'png')
+    saveas(thBothPstSortPstFig,[sbase 'th_both_pst_sortPst'],'png')
+    saveas(thBothPstSortPreFig,[sbase 'th_both_pst_sortPre'],'png')
+    saveas(thBothPreSortPreHisto,[sbase 'th_both_pre_distro'],'png')
+    saveas(thBothPstSortPstHisto,[sbase 'th_both_pst_distro'],'png')
+end
+
 %% Theta phase figure
-figure; hold on 
-plot(rad2deg(0:pi/36:4*pi),cos(pi:pi/36:5*pi),'k','LineWidth',2)
-xlim([0 720]); xticks([0 180 360 540 720]); xlabel('Theta Phase')
+figure; hold on
+cycleMax = 2*pi;
+set(gcf,'units','normalized','position',[0.4 0.2 0.3 0.12])
+% plot(rad2deg(0:pi/36:cycleMax),cos(pi:pi/36:5*pi),'k','LineWidth',2)    % Trough = 0/360
+plot(rad2deg(0:pi/36:cycleMax),cos(0:pi/36:cycleMax),'k','LineWidth',2)     % Trough = 180
+xlim([0 rad2deg(cycleMax)]); xticks([0 180 360 540 720]); xlabel('Theta Phase')
 yticklabels(''); yticks([])
 set(gca,'FontSize',12,'FontName','Arial')
 
@@ -613,9 +690,10 @@ lcEithPkFig = plotBar2(lcDat(siFrstID & ~siLastID,3),lcDat(siLastID & ~siFrstID,
 ylabel('Peak Field FR (Hz)')
 
 siBothCounts = [groupcounts(recID(siFrstID,1)) groupcounts(recID(siLastID,1))];
+siBothRatio = siBothCounts ./ [groupcounts(recID(~siFrstID,1)) groupcounts(recID(~siLastID,1))];
 [~,ps.lc_SICt_both,~,stats.lc_SICt_both] = ttest(siBothCounts(:,1),siBothCounts(:,2));
-lcBothCtFig = plotBarByMouse(siBothCounts);
-ylabel('# Sig. SI')
+lcBothCtFig = plotBarByMouse(siBothRatio);
+ylabel('P(Units with significant Spatial Info.)')
 
 if saveFlag
     saveas(siPie,[sbase 'si_Mod_pie'],'png')
@@ -626,29 +704,105 @@ if saveFlag
     saveas(lcBothCtFig,[sbase 'si_Mod_both_bar'],'png')
 end
 
-
 %% Waterfall by position
-binedges = 0:dbnsz:1.85;
 
-spBothSortPreFig = plot_unitWaterfall(spDat(siBothID,1:length(binpos)),binedges);
+[spBothPreSortPreFig,tmpMap,sortPre] = plot_unitWaterfall(lcMap(siBothID,1:length(binpos)),binedges);
+plot([r1posInd r1posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Familiar RZ, sort Familiar'); xlabel('Track Position (cm)')
+spBothPreSortPreHisto = plot_unitPkHisto(tmpMap,binedges*100);
+xlabel('Track Position (cm)'); ylim([0 0.15])
+
+[spBothPstSortPstFig,tmpMap] = plot_unitWaterfall(lcMap(siBothID,length(binpos)+1:end),binedges);
+plot([r2posInd r2posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Novel RZ, sort Novel'); xlabel('Track Position (cm)')
+spBothPstSortPstHisto = plot_unitPkHisto(tmpMap,binedges*100);
+xlabel('Track Position (cm)'); ylim([0 0.15])
+%%
+[spBothPstSortPreFig,tmpMap] = plot_unitWaterfall(lcMap(siBothID,length(binpos)+1:end),binedges,sortPre);
+plot([r2posInd r2posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Novel RZ, sort Familiar'); xlabel('Track Position (cm)')
+spBothPstSortPreHisto = plot_unitPkHisto(tmpMap,binedges*100);
+xlabel('Track Position (cm)'); ylim([0 0.15])
+%%
+
+[spEithPreSortPreFig,~,sortPre] = plot_unitWaterfall(lcMap(siFrstID & ~siLastID,1:length(binpos)),binedges);
+plot([r1posInd r1posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Familiar RZ, sort Familiar'); xlabel('Track Position (cm)')
+
+[spEithPstSortPreFig] = plot_unitWaterfall(lcMap(siFrstID & ~siLastID,length(binpos)+1:end),binedges,sortPre);
+plot([r2posInd r2posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Novel RZ, sort Familiar'); xlabel('Track Position (cm)')
+
+[spEithPstSortPstFig,~,Sortpst] = plot_unitWaterfall(lcMap(siLastID & ~siFrstID,length(binpos)+1:end),binedges);
+plot([r2posInd r2posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Novel RZ, sort Novel'); xlabel('Track Position (cm)')
+
+[spEithPreSortPstFig] = plot_unitWaterfall(lcMap(siLastID & ~siFrstID,1:length(binpos)),binedges,Sortpst);
+plot([r1posInd r1posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Familiar RZ, sort Novel'); xlabel('Track Position (cm)')
+
+if saveFlag
+    saveas(spBothPreSortPreFig,[sbase 'sp_both_pre_sortPre'],'png')
+    saveas(spBothPstSortPstFig,[sbase 'sp_both_pst_sortPst'],'png')
+    saveas(spBothPstSortPreFig,[sbase 'sp_both_pst_sortPre'],'png')
+    saveas(spEithPreSortPreFig,[sbase 'sp_eith_pre_sortPre'],'png')
+    saveas(spEithPstSortPreFig,[sbase 'sp_eith_pst_sortPre'],'png')
+    saveas(spEithPstSortPstFig,[sbase 'sp_eith_pst_sortPst'],'png')
+    saveas(spEithPreSortPstFig,[sbase 'sp_eith_pre_sortPst'],'png')
+end
 
 %% SI over 10 trial blocks
 
+cmapcool = cool(nMice);
+siEpochFig = figure; hold on
+for i = 1:nMice
+    subID = siBothID(recID(:,1) == mID(i));
+    siStr(i).meanPreSI = mean(siStr(i).preBlockSI(subID,:));
+    nEpochsPre(i) = size(siStr(i).preBlockSI,2);
+    plot(1:nEpochsPre(i),siStr(i).meanPreSI,'-o','Color',cmapcool(i,:))
+    nEpochsPst(i) = size(siStr(i).pstBlockSI,2);
+end
+maxEpoch = max(nEpochsPre);
+uPreMat = NaN(size(recID,1),maxEpoch);
+uPstMat = NaN(size(recID,1),max(nEpochsPst));
 
+ct = 1;
+for i = 1:nMice
+    nUnits = sum(recID(:,1) == mID(i));
+    uPreMat(ct:nUnits+ct-1,1:nEpochsPre(i)) = siStr(i).preBlockSI;
+    uPstMat(ct:nUnits+ct-1,1:nEpochsPst(i)) = siStr(i).pstBlockSI;
+    ct = ct+nUnits;
+end
+for i = 1:nMice
+    subID = siBothID(recID(:,1) == mID(i));
+    siStr(i).meanPstSI = mean(siStr(i).pstBlockSI(subID,:));
+    nPst(i) = size(siStr(i).pstBlockSI,2);
+    plot(maxEpoch+1:nPst(i)+maxEpoch,siStr(i).meanPstSI,'-o','Color',cmapcool(i,:))
+end
+
+errorbar(1:maxEpoch,mean(uPreMat(siBothID,:),'omitnan'),std(uPreMat(siBothID,:),'omitnan')./sqrt(nTotal),'k-','LineWidth',2)
+errorbar(maxEpoch+1:max(nEpochsPst)+maxEpoch,mean(uPstMat(siBothID,:),'omitnan'),std(uPstMat(siBothID,:),'omitnan')./sqrt(nTotal),'k-','LineWidth',2)
+plot([maxEpoch+0.5 maxEpoch+0.5],[0 max(ylim)],'k--')
+xlabel('10-Trial block #')
+ylabel('Spatial Information (bits/spike)')
+% ylim([0 1])
+set(gca,'FontSize',12,'FontName','Arial')
+
+if saveFlag
+    saveas(siEpochFig,[sbase 'si_both_subEpoch'],'png')
+end
 
 %% Field peak spatial distribution
-binedges = 0:0.05:1.85;
-binpos = 0.025:dbnsz:1.825;
-r1posInd = find(binpos > r1pos,1);
-r2posInd = find(binpos > r2pos,1);
 
 % Familiar vs Novel RZ correlation
+xrand = 2*rand(size(lcDat(siBothID,4)))-1;
+yrand = 2*rand(size(lcDat(siBothID,4)))-1;
 pkPosFig = figure; axis square; hold on
-plot(100*binpos(lcDat(siBothID,4)),100*binpos(lcDat(siBothID,8)),'ko')
+plot(100*binpos(lcDat(siBothID,4))+xrand',100*binpos(lcDat(siBothID,8))+yrand','k.','MarkerSize',10)
 plot([0 100*binpos(end)],[0 100*binpos(end)],'k--')
 plot([r1pos r1pos]*100,[0 100*binpos(end)],'r--',[0 100*binpos(end)],[r2pos r2pos]*100,'r--')
-xlabel('Absolute Peak Loc. (cm) Familiar')
-ylabel('Absolute Peak Loc. (cm) Novel')
+xlabel('Absolute Peak Loc. (cm) Familiar'); xlim([0 100*binpos(end)])
+ylabel('Absolute Peak Loc. (cm) Novel');    ylim([0 100*binpos(end)])
 set(gca,'FontSize',12,'FontName','Arial')
 
 % Familiar vs Novel RZ correlation heatmap
@@ -666,9 +820,36 @@ xticks(1:10:length(binpos)); yticks(1:10:length(binpos))
 xticklabels(binedges(1:10:end)*100); yticklabels(binedges(1:10:end)*100)
 set(gca,'FontSize',12,'FontName','Arial','YDir','normal','XDir','normal')
 
-% Distributions over linearized space
-fieldDstPre = histcounts(binpos(lcDat(siBothID,4)),binedges);
-fieldDstPst = histcounts(binpos(lcDat(siBothID,8)),binedges);
+%% Finding Track Relative or Reward Relative cells
+spPk1 = binpos(lcDat(:,4));
+spPk2 = binpos(lcDat(:,8));
+
+dth = 0.3;  % Distance from peak threshold (m)
+drz = r2pos - r1pos;
+trCells = (spPk2 - spPk1 < dth & spPk2 - spPk1 > -dth)' & siBothID; % threshold 30cm
+rrCells = ((spPk2 - spPk1 > drz-dth & spPk2 - spPk1 < drz+dth)' & siBothID) | ((spPk2 - spPk1 < -drz+dth & spPk2 - spPk1 > -drz-dth)' & siBothID);
+irCells = siBothID & ~trCells & ~rrCells;
+
+figure; hold on; axis square
+patch(100*[0 dth 1.85 1.85 1.85-dth 0 0],100*[0 0 1.85-dth 1.85 1.85 dth 0],...
+    'b','FaceAlpha',0.25,'EdgeColor','none','HandleVisibility','off')
+patch(100*[0 1.25 0.65 0 0],100*[0.6 1.85 1.85 1.2 0.6],...
+    'r','FaceAlpha',0.25,'EdgeColor','none','HandleVisibility','off')
+patch(100*[1.2 1.85 1.85 0.6 1.2],100*[0 0.65 1.25 0 0],...
+    'r','FaceAlpha',0.25,'EdgeColor','none','HandleVisibility','off')
+plot(100*spPk1(siBothID)+xrand',100*spPk2(siBothID)+yrand','k.','MarkerSize',10)
+% plot(100*spPk1(irCells),100*spPk2(irCells),'k.')
+% plot(100*spPk1(trCells),100*spPk2(trCells),'b.')
+% plot(100*spPk1(rrCells),100*spPk2(rrCells),'r.')
+plot([0 100*binpos(end)],[0 100*binpos(end)],'k--')
+plot([r1pos r1pos]*100,[0 100*binpos(end)],'r--',[0 100*binpos(end)],[r2pos r2pos]*100,'r--')
+xlabel('Absolute Peak Loc. (cm) Familiar'); xlim([0 100*binpos(end)])
+ylabel('Absolute Peak Loc. (cm) Novel');    ylim([0 100*binpos(end)])
+set(gca,'FontSize',12,'FontName','Arial')
+
+%% Distributions over linearized space
+fieldDstPre = histcounts(spPk1,binedges);
+fieldDstPst = histcounts(spPk2,binedges);
 
 prepstFieldDstFig = plotDistroHisto(fieldDstPre,fieldDstPst,binpos,[r1pos r2pos]);
 xlabel('Track Position (cm)')
@@ -705,13 +886,206 @@ xlim([-trackLen/2-dbnsz trackLen/2+dbnsz]*100)
 legend({['mean = ' num2str(mean(deltaField_RZAlign))]})
 set(gca,'FontSize',12,'FontName','Arial')
 
+% Shuffle novel RZ peak locations and calculate global confidence bands
+clear deltaField_DistroJit
+for i = 1:250
+    fieldAlignR1 = mod(binpos(lcDat(siBothID,4))+shiftR1,trackLen)+0.5*dbnsz;    % Account for mod() creating 0's
+    % fieldAbsR1 = binpos(lcDat(siBothID,4));
+
+    rShift = 1 + randi(length(binedges) - 2,sum(siBothID),1);
+    jitPost = mod(lcDat(siBothID,8) + rShift, length(binedges)-1)+1;
+    fieldAlignJit = mod(binpos(jitPost)+shiftR2,trackLen)+0.5*dbnsz;
+    fieldDstJit_Align = histcounts(fieldAlignJit,binedges);
+    deltaField_RZJit = fieldAlignJit - fieldAlignR1;
+    circAlignNeg = deltaField_RZJit < -trackLen/2;
+    circAlignPos = deltaField_RZJit > trackLen/2;
+    deltaField_RZJit(circAlignNeg) = -(deltaField_RZJit(circAlignNeg) + trackLen);     % When new field back-shifts
+    deltaField_RZJit(circAlignPos) = -(deltaField_RZJit(circAlignPos) - trackLen);     % When new field forward-shifts
+    deltaField_DistroJit(:,i) = histcounts(deltaField_RZJit,shiftbins);
+    % absField_DistroJit(:,i) = histcounts(binpos(jitPost)-fieldAbsR1,shiftbins);
+end
+[~,fieldShiftRZJitFig] = get_confband(deltaField_DistroJit',deltaField_Distro,1,shiftbins(1:end-1)*100,dbnsz*100);
+xlabel('\Delta RZ-aligned Novel - Familiar (cm)');
+
 if saveFlag
     saveas(pkPosFig,[sbase 'lc_PeakComp'],'png')
     saveas(pkPosMapFig,[sbase 'lc_PeakMap'],'png')
     saveas(prepstFieldDstFig,[sbase 'lc_Distro'],'png')
     saveas(rzDstFig,[sbase 'lc_Align_Distro'],'png')
     saveas(fieldShiftRZFig,[sbase 'lc_Align_Delta'],'png')
+    saveas(fieldShiftRZJitFig,[sbase 'lc_Align_Delta_shuf'],'png')
 end
+
+%% Waterfall by TR or RR
+
+cMap = [0.25 0.15 1; 0.75 0.75 1; 0.25 0.25 0.25];
+
+spTrRrPie = figure;
+p = piechart([sum(trCells), sum(rrCells), sum(siBothID)-sum(trCells)-sum(rrCells)],["Track-Relative","Reward-Relative","Intermediate"]);
+p.LabelStyle = 'namepercent';
+colororder(cMap)
+
+[spTRPreSortPreFig,tmpMap,sortPre] = plot_unitWaterfall(lcMap(trCells,1:length(binpos)),binedges);
+plot([r1posInd r1posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Familiar RZ, sort Familiar'); xlabel('Track Position (cm)')
+spTRPreSortPreHisto = plot_unitPkHisto(tmpMap,binedges*100);
+xlabel('Track Position (cm)'); ylim([0 0.15])
+
+[spTRPstSortPreFig,tmpMap] = plot_unitWaterfall(lcMap(trCells,length(binpos)+1:end),binedges,sortPre);
+plot([r2posInd r2posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Novel RZ, sort Familiar'); xlabel('Track Position (cm)')
+spTRPstSortPreHisto = plot_unitPkHisto(tmpMap,binedges*100);
+xlabel('Track Position (cm)'); ylim([0 0.15])
+
+[spRRPreSortPreFig,tmpMap,sortPre] = plot_unitWaterfall(lcMap(rrCells,1:length(binpos)),binedges);
+plot([r1posInd r1posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Familiar RZ, sort Familiar'); xlabel('Track Position (cm)')
+spRRPreSortPreHisto = plot_unitPkHisto(tmpMap,binedges*100);
+xlabel('Track Position (cm)'); ylim([0 0.15])
+
+[spRRPstSortPreFig,tmpMap] = plot_unitWaterfall(lcMap(rrCells,length(binpos)+1:end),binedges,sortPre);
+plot([r2posInd r2posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+title('Novel RZ, sort Familiar'); xlabel('Track Position (cm)')
+spRRPstSortPreHisto = plot_unitPkHisto(tmpMap,binedges*100);
+xlabel('Track Position (cm)'); ylim([0 0.15])
+
+% [spIRPreSortPreFig,~,sortPre] = plot_unitWaterfall(lcMap(irCells,1:length(binpos)),binedges);
+% plot([r1posInd r1posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+% title('Familiar RZ, sort Familiar'); xlabel('Track Position (cm)')
+% 
+% spIRPstSortPreFig = plot_unitWaterfall(lcMap(irCells,length(binpos)+1:end),binedges,sortPre);
+% plot([r2posInd r2posInd],[0 sum(siBothID)],'r--','LineWidth',2)
+% title('Novel RZ, sort Familiar'); xlabel('Track Position (cm)')
+
+if saveFlag
+    saveas(spTrRrPie,[sbase,'sp_trrr_pie'],'png')
+    saveas(spTRPreSortPreFig,[sbase 'sp_tr_pre_sortPre'],'png')
+    saveas(spTRPstSortPreFig,[sbase 'sp_tr_pst_sortPre'],'png')
+    saveas(spRRPreSortPreFig,[sbase 'sp_rr_pre_sortPre'],'png')
+    saveas(spRRPstSortPreFig,[sbase 'sp_rr_pst_sortPre'],'png')
+    saveas(spTRPreSortPreHisto,[sbase 'sp_tr_pre_sortPre_histo'],'png')
+    saveas(spTRPstSortPreHisto,[sbase 'sp_tr_pst_sortPre_histo'],'png')
+    saveas(spRRPreSortPreHisto,[sbase 'sp_rr_pre_sortPre_histo'],'png')
+    saveas(spRRPstSortPreHisto,[sbase 'sp_rr_pst_sortPre_histo'],'png')
+    % saveas(spIRPreSortPreFig,[sbase 'sp_ir_pre_sortPre'],'png')
+    % saveas(spIRPstSortPreFig,[sbase 'sp_ir_pst_sortPre'],'png')
+end
+
+%% Population Vector analysis
+% Sparseness - P(alpha) From Battaglia et al., 2004
+% Normalize all PF firing rates, sum by bin, and sqaure
+% Divide by sum of squared PF firing rates by bin, and normalize by N cells
+
+activeUnits = siBothID;
+nBins = length(binpos);
+
+posNormPre = lcMap(activeUnits,1:nBins) ./ max(lcMap(activeUnits,1:nBins),[],2);
+posNormPst = lcMap(activeUnits,nBins+1:end) ./ max(lcMap(activeUnits,nBins+1:end),[],2);
+
+% numerPre = sum(posNormPre).^2;
+% denomPre = sum(posNormPre.^2);
+% 
+% pvSparsePre = numerPre ./ denomPre ./ size(posNormPre,1);
+
+pvPrePst = corr(posNormPst,posNormPre);
+
+pvFig = figure; hold on; axis square
+set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+imagesc(pvPrePst,[prctile(pvPrePst,0,'all'), prctile(pvPrePst,99,'all')])
+colormap("turbo")
+cbarLims = [0 1];
+cbar = colorbar('Ticks',cbarLims,'TickLabels',cbarLims); clim(cbarLims); % ,'position', [0.9 0.12 0.05 0.3]
+xlim([-0 nBins+0.5]); xticks([1 nBins]); xticklabels({'0','185'}); xlabel('Position (cm) Familiar RZ')
+ylim([-0 nBins+0.5]); yticks([1 nBins]); yticklabels({'0','185'}); ylabel('Position (cm) Novel RZ')
+% plot([r1posInd r1posInd],[0 nBins],'w--',[0 nBins],[r2posInd r2posInd],'w--')
+plot([0 nBins],[0 nBins],'w--');
+plot([0 nBins/2],[nBins/2 nBins],'w--',[nBins/2 nBins],[0 nBins/2],'w--');
+ylabel(cbar,'Pearson Correlation of PV','FontSize',12,'Rotation',90)
+set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+
+% Compare identity to off-diagonal
+idMat = logical(eye(size(pvPrePst)));
+dgMat = logical(spdiags([1 1],[-round(nBins/2) round(nBins/2)],nBins,nBins));
+
+uPVCorrID = [];
+uPVCorrDG = [];
+
+for i = 1:nMice
+    tmpUnits = activeUnits & recID(:,1) == mID(i);
+
+    posNormPre = lcMap(tmpUnits,1:nBins) ./ max(lcMap(tmpUnits,1:nBins),[],2);
+    posNormPst = lcMap(tmpUnits,nBins+1:end) ./ max(lcMap(tmpUnits,nBins+1:end),[],2);
+    try
+        pvPrePst = corr(posNormPst,posNormPre);
+    catch
+        pvPrePst = NaN(nBins,nBins);
+    end
+    uPVCorrID(i) = mean(pvPrePst(idMat),'all');
+    uPVCorrDG(i) = mean(pvPrePst(dgMat),'all');
+end
+
+[~,ps.lc_pv_tr_idVdg,~,stats.lc_pv_tr_idVdg] = ttest(uPVCorrID,uPVCorrDG);
+ps.lc_pv_tr_idVdg
+
+pvCompFig = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.15 0.4])
+plot([uPVCorrID' uPVCorrDG']','-o','Color',[.5 .5 .5])
+errorbar([1 2],mean([uPVCorrID' uPVCorrDG']),std([uPVCorrID' uPVCorrDG'])./sqrt(nMice),'k.','LineWidth',2,'CapSize',20)
+xlim([0.5 2.5]); xticks([1 2]); xticklabels({'Diagonal','Off-Diag'})
+ylim([-0.25 1]); ylabel('Mean of PV Correlation')
+set(gca,'FontSize',12,'FontName','Arial')
+
+if saveFlag
+    saveas(pvFig,[sbase 'lc_pv_corr_trCells'],'png')
+    saveas(pvCompFig,[sbase 'lc_pv_comp_trCells'],'png')
+end
+
+%% PV analysis through time
+
+lyrUnits = root.info.lyrID(root.goodind) == 1;
+hiFRUnits = root.info.fr(root.goodind) > 0.1;
+useUnits = lyrUnits & hiFRUnits & root.info.uType(root.goodind);
+bothSIUnits = useUnits & (lastHalf.sig <= 0.05 & frstHalf.sig <= 0.05);
+
+posNormPre = frstHalf.posfr(bothSIUnits,:) ./ max(frstHalf.posfr(bothSIUnits,:),[],2);
+posNormPst = lastHalf.posfr(bothSIUnits,:) ./ max(lastHalf.posfr(bothSIUnits,:),[],2);
+
+for i = 1:size(frstHalf.frMap,1)
+    posNormPreLap = squeeze(frstHalf.frMap(i,:,bothSIUnits)) ./ max(squeeze(frstHalf.frMap(i,:,bothSIUnits)),[],1);
+    pvPrePre = corr(posNormPreLap',posNormPre,'rows','complete');
+    pvPrePst = corr(posNormPreLap',posNormPst,'rows','complete');
+    uPVPrePre(i) = mean(pvPrePre(idMat),'all');
+    uPVPrePst(i) = mean(pvPrePst(idMat),'all');
+end
+for i = 1:size(lastHalf.frMap,1)
+    posNormPstLap = squeeze(lastHalf.frMap(i,:,bothSIUnits)) ./ max(squeeze(lastHalf.frMap(i,:,bothSIUnits)),[],1);
+    pvPstPre = corr(posNormPstLap',posNormPre,'rows','complete');
+    pvPstPst = corr(posNormPstLap',posNormPst,'rows','complete');
+    uPVPstPre(i) = mean(pvPstPre(idMat),'all');
+    uPVPstPst(i) = mean(pvPstPst(idMat),'all');
+end
+
+figure; hold on;
+plot(1:size(frstHalf.frMap,1),smoothdata(uPVPrePre),'b',1:size(lastHalf.frMap,1),smoothdata(uPVPstPre),'r')
+plot(1:size(frstHalf.frMap,1),smoothdata(uPVPrePst),'Color',[.6 .6 1])
+plot(1:size(lastHalf.frMap,1),smoothdata(uPVPstPst),'Color',[1 .6 .6]);
+ylim([0 1]); xlabel('Lap'); ylabel('Mean PV Corr. to Familiar RZ PV')
+legend('Fam->Fam','Novel->Fam','Fam->Nov','Nov->Nov')
+set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+
+% pvFig = figure; hold on; axis square
+% set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+% imagesc(pvPreLap,[prctile(pvPreLap,0,'all'), prctile(pvPreLap,99,'all')])
+% colormap("turbo")
+% cbarLims = [0 1];
+% cbar = colorbar('Ticks',cbarLims,'TickLabels',cbarLims); clim(cbarLims); % ,'position', [0.9 0.12 0.05 0.3]
+% xlim([-0 nBins+0.5]); xticks([1 nBins]); xticklabels({'0','185'}); xlabel('Position (cm) Familiar RZ')
+% ylim([-0 nBins+0.5]); yticks([1 nBins]); yticklabels({'0','185'}); ylabel('Position (cm) Novel RZ')
+% % plot([r1posInd r1posInd],[0 nBins],'w--',[0 nBins],[r2posInd r2posInd],'w--')
+% plot([0 nBins],[0 nBins],'w--');
+% plot([0 nBins/2],[nBins/2 nBins],'w--',[nBins/2 nBins],[0 nBins/2],'w--');
+% ylabel(cbar,'Pearson Correlation of PV','FontSize',12,'Rotation',90)
+% set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
 %% SPWR Data
 swrFrstID = useCC & rpDat(:,2) > 1;
@@ -742,6 +1116,34 @@ if saveFlag
     saveas(swrModCtFig,[sbase 'swr_ModCt_bar'],'png')
 end
 
+%% Waterfall by sharp wave ripple peak
+binedges = -wlen:histoBnsz:wlen;
+swrPeak = find(binedges == 0,1);
+
+[swrBothPreSortPreFig,tmpMap,sortPre] = plot_unitWaterfall(rpMap(swrBothID,1:length(binedges)-1),binedges);
+plot([swrPeak swrPeak],[0 sum(swrBothID)],'r--','LineWidth',2)
+title('Familiar RZ, sort Familiar'); xlabel('Time to SWR peak (ms)')
+swrBothPreSortPreHisto = plot_unitPkHisto(tmpMap,binedges);
+xlabel('Time to SWR peak (ms)')
+
+[swrBothPstSortPstFig,tmpMap] = plot_unitWaterfall(rpMap(swrBothID,length(binedges):end),binedges);
+plot([swrPeak swrPeak],[0 sum(swrBothID)],'r--','LineWidth',2)
+title('Novel RZ, sort Novel'); xlabel('Time to SWR peak (ms)')
+swrBothPstSortPstHisto = plot_unitPkHisto(tmpMap,binedges);
+xlabel('Time to SWR peak (ms)')
+
+[swrBothPstSortPreFig] = plot_unitWaterfall(rpMap(swrBothID,length(binedges):end),binedges,sortPre);
+plot([swrPeak swrPeak],[0 sum(swrBothID)],'r--','LineWidth',2)
+title('Novel RZ, sort Familiar'); xlabel('Time to SWR peak (ms)')
+
+if saveFlag
+    saveas(swrBothPreSortPreFig,[sbase 'swr_both_pre_sortPre'],'png')
+    saveas(swrBothPstSortPstFig,[sbase 'swr_both_pst_sortPst'],'png')
+    saveas(swrBothPstSortPreFig,[sbase 'swr_both_pst_sortPre'],'png')
+    saveas(swrBothPreSortPreHisto,[sbase 'swr_both_pre_distro'],'png')
+    saveas(swrBothPstSortPstHisto,[sbase 'swr_both_pst_distro'],'png')
+end
+
 %% Save stats
 
 if saveFlag
@@ -768,23 +1170,6 @@ p.LabelStyle = 'namedata';
 colororder(cMap)
 end
 
-function [halfStruc] = subEpoch(sess,root,halfStruc)
-
-dbnsz = 0.05;
-
-nLaps = length(sess.valTrials);
-epochSubInds = [sess.lapstt(sess.valTrials(1:10:nLaps-mod(nLaps,10))),...
-    sess.lapend(sess.valTrials(1:10:nLaps-mod(nLaps,10))+9)];
-
-for i = 1:size(epochSubInds,1)
-    [sesstmp, roottmp] = epochStruc(sess,root,epochSubInds(i,:));
-    for j = 1:length(root.good)
-        cc = root.good(j);
-        [halfStruc.subEpochSI(j,i)] = get_SI(roottmp,cc,sesstmp,dbnsz);
-    end
-end
-end
-
 function [fhandle] = plotBar2(dat1,dat2)
 
 vColors2 = [0.5 0.5 1; 0.75 0.75 1];
@@ -808,12 +1193,13 @@ vColors2 = [0.5 0.5 1; 0.75 0.75 1];
 
 fhandle = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.12 0.39])
-b = bar(mean(dat),'FaceColor','flat');
+b = bar(mean(dat),'FaceColor','flat','HandleVisibility','off');
 b.CData = vColors2;
-errorbar(1:2,mean(dat),std(dat)/sqrt(size(dat,1)),'k.')
+errorbar(1:2,mean(dat),std(dat)/sqrt(size(dat,1)),'k.','HandleVisibility','off')
 plot(dat','k-o')
 xlim([0.5 2.5])
 xticks(1:2); xticklabels({'Familiar', 'Novel'})
+legend('Mouse')
 set(gca,'FontSize',12,'FontName','Arial')
 end
 
@@ -847,5 +1233,26 @@ ylim([0 max([distro1./sum(distro1); distro2./sum(distro2)+0.02],[],'all')])
 xlim([binpos(1)*100-1 binpos(end)*100+1])
 ylabel('Probability of field peak')
 legend({'Familiar','Novel'},'Location','northeast')
+set(gca,'FontSize',12,'FontName','Arial')
+end
+
+function [fhandle] = plot_unitPkHisto(frMapRaw,binedges)
+nBins = size(frMapRaw,2);
+nUnits = size(frMapRaw,1);
+
+unitMax = max(frMapRaw,[],2);
+frMapPk = zeros(size(frMapRaw));
+
+for i = 1:nUnits
+    tmpbns = find(frMapRaw(i,:) == unitMax(i)); % In case of multiple peak normalized bins
+    frMapPk(i,tmpbns(1)) = 1;
+end
+
+fhandle = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.14])
+plot(binedges(1:end-1) + 0.5*diff(binedges(1:2)),sum(frMapPk)./sum(frMapPk,'all'),'Color',[0.25 0.15 1])
+% bar(binedges(1:end-1) + 0.5*diff(binedges(1:2)),sum(frMapPk)./sum(frMapPk,'all'),'FaceColor',[0.25 0.15 1])
+xlim([0 max(binedges)])
+ylabel('Probability')
 set(gca,'FontSize',12,'FontName','Arial')
 end
