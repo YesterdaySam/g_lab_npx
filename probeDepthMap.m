@@ -63,5 +63,9 @@ else
     catch
         minChan0 = 0;
     end
+    if isempty(minChan0)
+        minChan0 = 0;
+    end
+    
     depthMap = chanDepth + minChan0;
 end

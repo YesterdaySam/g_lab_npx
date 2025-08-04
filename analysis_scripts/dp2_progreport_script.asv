@@ -1,0 +1,35 @@
+% DP2 progress report script
+
+% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05062025_rec_D1_RMed1';
+% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05072025_rec_D2_RLat1';
+spath = 'D:\Data\Kelton\analyses\KW043\KW043_05082025_rec_D3_RLat2';
+% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05092025_rec_D4_RMed2';
+
+cd(spath)
+rootfile = dir("*_root.mat");
+load(rootfile.name)
+sessfile = dir("*_session.mat");
+load(sessfile.name)
+epochfile = dir("*_ec_pilot_dat.mat");
+try load(epochfile.name); catch; disp('No existing epoched data file'); end
+
+%% Example opto tagging
+
+ec2grp = [28, 85, 172, 131, 124];
+ec3grp = [385, 440, 446, 451, 459];
+ec5grp = [520, 546, 612, 665, 675];
+
+ecgrp = ec3grp;
+
+clear("normOptoFR")
+
+for i = 1:length(ecgrp)
+    tmpind = find(root.good == ecgrp(i));
+    normOptoFR(i,:) = normalize(smoothdata(sum(squeeze(datStruc.optoMat(tmpind,:,:)),1),'gaussian',10),'norm');
+end
+
+figure; hold on
+for i = 1:length(ecgrp)
+    plot(datStruc.optoMat, normOptoFR(i,:))
+end
+plot([0 0], [0 0.3], 'k--')

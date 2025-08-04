@@ -1,7 +1,8 @@
 % EC
-spath = 'D:\Data\Kelton\analyses\KW043\KW043_05062025_rec_D1_RMed1';
-% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05072025_rec_D2_RLat1';
+% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05062025_rec_D1_RMed1';
+spath = 'D:\Data\Kelton\analyses\KW043\KW043_05072025_rec_D2_RLat1';
 % spath = 'D:\Data\Kelton\analyses\KW043\KW043_05082025_rec_D3_RLat2';
+% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05092025_rec_D4_RMed2';
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -21,12 +22,17 @@ wlen = 150;
 ripRef = root.ripRef;
 r1pos = 0.9;    % 10 cm
 binpos = 0.025:dbnsz:1.825;
+tmpD = root.info.depth(root.goodind);
 
 sbase = root.name; 
 
 %% Plot example pre/post behavior
 
 lickDIFig = plot_lickDiscrim(sess,[r1pos 1.8]*100,30,10);
+
+if saveFlag
+    saveas(lickDIFig,[sbase '_lickDI'], 'png')
+end
 
 %% Get real unit and epoch parameters
 
@@ -120,12 +126,63 @@ if saveFlag
     saveas(opDepthFig,[sbase '_ec_pilot_opXdepth.png'])
 end
 
+%% Assign putative layer
+
+for i = 1:length(root.good)
+    datStruc.thAng(i) = rad2deg(datStruc.thetastats(i).ang);
+    datStruc.thSig(i) = datStruc.thetastats(i).p < 0.05;
+end
+
+shortLat = datStruc.optoPkT <= 0.01;
+
+figure; hold on
+plot(datStruc.thAng+180,datStruc.optoPkT,'ko')
+plot(datStruc.thAng(shortLat)+180,datStruc.optoPkT(shortLat),'r*')
+
+% PCA attempt
+% clusterDat = [normalize(datStruc.thAng'+180,'range'),normalize(datStruc.optoPkT','range'),normalize(tmpD,'range')];
+% 
+% [coeff,score,latent,tsquare,explained] = pca(clusterDat);
+% 
+% figure; 
+% plot3(score(:,1),score(:,2),score(:,3),'k.')
+
+% moving average of opto pulse plus low latency units
+[sortDepth,sortInd] = sort(tmpD);
+sortOpto = datStruc.optoPkT(sortInd);
+meanOpPk = smoothdata(sortOpto,'movmean',10);
+ec3stt = sortDepth(find(meanOpPk < 0.025,1,'first'));
+ec3end = sortDepth(find(meanOpPk < 0.025,1,'last'));
+
+figure; hold on
+plot(sortOpto)
+plot(meanOpPk)
+xlabel('unit (sorted by depth)')
+ylabel('First opto peak post-pulse (s)')
+legend('Moving Mean','Raw')
+set(gca,'FontSize',12,'FontName','Arial')
+
+ec5inds = tmpD > ec3end;
+ec2inds = tmpD < ec3stt;
+ec3inds = (tmpD >= ec3stt & tmpD <= ec3end) | datStruc.optoPkT' < 0.015;
+
+datStruc.lyrID = zeros(size(datStruc.trueSI));
+datStruc.lyrID(ec5inds) = 5;
+datStruc.lyrID(ec2inds) = 2;
+datStruc.lyrID(ec3inds) = 3;
+
+opDepthFig = plot_datXdepth(root,datStruc,1,0,0,4); % peri-opto peak time
+
+plot(datStruc.optoPkT(datStruc.lyrID == 5)*1000, tmpD(datStruc.lyrID == 5),'k*')
+plot(datStruc.optoPkT(datStruc.lyrID == 3)*1000, tmpD(datStruc.lyrID == 3),'c*')
+plot(datStruc.optoPkT(datStruc.lyrID == 2)*1000, tmpD(datStruc.lyrID == 2),'m*')
+
 %% Descriptive statistics and graphs
 % root.good(sigFrst <= 0.05 & sigLast <= 0.05 & root.info.fr(root.goodind)' > 0.1 & root.info.lyrID(root.goodind)' == 1)
 
 % lyrUnits = root.info.lyrID(root.goodind) == 1;
 hiFRUnits = root.info.fr(root.goodind) > 0.1;
-useUnits = hiFRUnits & root.info.uType(root.goodind);
+useUnits = hiFRUnits & root.info.uType(root.goodind);   % hi FR and not IN
 siUnits = useUnits & datStruc.sig < 0.05;
 
 nUseUnits = sum(useUnits);
@@ -150,45 +207,22 @@ if saveFlag
 end
 
 %% Peak distribution
+datStruc.rwdBin = find(datStruc.binpos > r1pos,1);
+
 ecFieldDistro = histcounts(datStruc.binpos(datStruc.trueLc(siUnits)),datStruc.binedges);
 
+[spWflFig] = plot_unitsXpos(root,sess,root.good(siUnits));
+plot([datStruc.rwdBin datStruc.rwdBin],[0 length(siUnits)+1],'r--','LineWidth',2)
+% plot(normalize(ecFieldDistro,'range').*sum(siUnits)./5,'k','LineWidth',1)
+title(replace(root.name,"_"," "))
+
 peakDistroFig = plotDistroHisto(ecFieldDistro,binpos,r1pos);
+set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.14])
 xlabel('Track Position (cm)')
 
-% % Align field distribution around reward
-% trackLen = max(datStruc.binedges);
-% shiftR1 = trackLen/2 - r1pos;
-% fieldAlignR1 = mod(datStruc.binpos(datStruc.trueLc(siUnits))+shiftR1,trackLen)+0.5*dbnsz;    % Account for mod() creating 0's
-% shiftR2 = trackLen/2 - r2pos;
-% fieldAlignR2 = mod(lastHalf.binpos(lastHalf.trueLc(siUnits))+shiftR2,trackLen)+0.5*dbnsz;
-% 
-% fieldDistroFrst_Align = histcounts(fieldAlignR1,datStruc.binedges);
-% fieldDistroLast_Align = histcounts(fieldAlignR2,lastHalf.binedges);
-% 
-% rzDistroFig = plotDistroHisto(fieldDistroFrst_Align,fieldDistroLast_Align,binpos-trackLen/2,0);
-% xlabel('Distance to RZ (cm)')
-% 
-% Compare shift in PF peak relative to reward per unit
-% deltaField_RZAlign = fieldAlignR2 - fieldAlignR1;
-% circAlignNeg = deltaField_RZAlign < -trackLen/2;
-% circAlignPos = deltaField_RZAlign > trackLen/2;
-% deltaField_RZAlign(circAlignNeg) = deltaField_RZAlign(circAlignNeg) + trackLen;     % When new field forward-shifts
-% deltaField_RZAlign(circAlignPos) = deltaField_RZAlign(circAlignPos) - trackLen;     % When new field back-shifts
-% 
-% deltaField_Distro = histcounts(deltaField_RZAlign,shiftbins);
-% 
-% fieldShiftRZFig = figure; hold on
-% bar((shiftbins(1:end-1)+0.5*dbnsz)*100,deltaField_Distro/sum(deltaField_Distro),'FaceColor',[0.25 0.15 1])
-% plot([0 0]*100,[0 0.15],'k--')
-% xlabel('\Delta RZ-aligned Novel - Familiar (cm)')
-% ylabel('Probability')
-% xlim([-trackLen/2-dbnsz trackLen/2+dbnsz]*100)
-% set(gca,'FontSize',12,'FontName','Arial')
-
 if saveFlag
+    saveas(spWflFig,[sbase '_ec_pilot_waterfall.png'])
     saveas(peakDistroFig,[sbase '_ec_pilot_PeakDistro.png'])
-    % saveas(rzDistroFig,[sbase '_RwdShift_PeakDistroRZ.png'])
-    % saveas(fieldShiftRZFig,[sbase '_RwdShift_PeakShiftRZ.png'])
 end
 
 %% Functions
@@ -232,6 +266,6 @@ plot(binpos*100,distro1./sum(distro1),'Color',vColors2(1,:),'LineWidth',2);
 plot([rzPos rzPos]*100,[0 0.15],'k--')
 ylim([0 max(distro1./sum(distro1),[],'all')])
 xlim([binpos(1)*100-1 binpos(end)*100+1])
-ylabel('Probability of field peak')
+ylabel('P(field peak)')
 set(gca,'FontSize',12,'FontName','Arial')
 end

@@ -1,4 +1,4 @@
-function [fhandle,frMapSort,sortInd] = plot_unitsXpos(root,sess,units,useSort,dbnsz,vthresh,plotflag)
+function [fhandle,frMapSort,sortInd] = plot_unitsXpos(root,sess,units,useSort,dbnsz,dend,plotflag)
 %% Plots the avg binned firing rate by position of a unit
 %
 % Inputs:
@@ -23,7 +23,7 @@ arguments
     units {double}  %Cluster IDs of the root object
     useSort = 0
     dbnsz = 0.05    %m
-    vthresh = 0.04  %m/s; velocity threshold for spikes
+    dend = 1.85     %m
     plotflag = 1    %binary
 end
 
@@ -33,15 +33,15 @@ sess2.lapstt = sess.lapstt(sess.valTrials);
 sess2.lapend = sess.lapend(sess.valTrials);
 
 nUnits = length(units);
-maxpos = max(sess2.pos(sess2.lapstt(1):sess2.lapend(1)));
-binedges = 0:dbnsz:maxpos;    % Base max binsize on first valid trial
+% maxpos = max(sess2.pos(sess2.lapstt(1):sess2.lapend(1)));
+binedges = 0:dbnsz:dend;    % Base max binsize on first valid trial
 nBins = length(binedges)-1;
 frMapRaw = zeros(nUnits, nBins);
 
 for i = 1:nUnits
-    % [~,tmpbnfr] = plot_frXpos(root,units(i),sess,dbnsz,vthresh,0);
-    % [~,~,~,~,tmpbnfr] = get_PF(root,units(i),sess,dbnsz,vthresh);
-    [~,~,~,~,~,~,tmpbnfr] = get_SI(root,units(i),sess,dbnsz,vthresh);
+    % [~,tmpbnfr] = plot_frXpos(root,units(i),sess,dbnsz,0.04,0);
+    % [~,~,~,~,tmpbnfr] = get_PF(root,units(i),sess,dbnsz,0..04);
+    [~,~,~,~,~,~,tmpbnfr] = get_SI(root,units(i),sess,dbnsz,dend);
     % frMapRaw(i,:) = mean(tmpbnfr,1,'omitnan');
     frMapRaw(i,:) = tmpbnfr;
 end

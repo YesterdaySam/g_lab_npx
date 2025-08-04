@@ -20,7 +20,11 @@ sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
 
-binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+try 
+    binedges = 0:dbnsz:sess.maxPos;
+catch
+    binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+end
 nbins           = size(binedges,2);
 
 for i = 1:sess.nlaps

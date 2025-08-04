@@ -1,6 +1,6 @@
 % Batched Import behavior script
 
-mousedir = 'D:\Data\Kelton\analyses\FG044';
+mousedir = 'D:\Data\Kelton\analyses\KW055';
 
 overwriteFlag = 1;
 
@@ -24,7 +24,6 @@ for i = 1:length(dirlist)
 
     try
         sess = importBhvr(fullfile(dirlist(i).folder,dirlist(i).name));
-        % sess = getErrorTrials(sess);
     catch
         cd(mousedir)
         continue

@@ -10,7 +10,12 @@ isgood = histcounts(sess.rwdind,[sess.lapstt(1); sess.lapend]);
 
 % Find long or short laps and exclude
 for i = 1:length(sess.lapstt)
-    trlen = max(sess.pos(sess.lapstt(i):sess.lapend(i)));
+    try
+        trlen = sess.maxPos;
+    catch
+        trlen = max(sess.pos(sess.lapstt(i):sess.lapend(i)));
+    end
+
     if trlen > 2    % in meters
         isgood(i) = 0;
     elseif trlen < 1.75

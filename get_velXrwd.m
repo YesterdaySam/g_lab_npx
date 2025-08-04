@@ -28,7 +28,7 @@ for i = 1:sess.nlaps
     try
         allvel(i,:) = sess.velshft(binedges(1)+sess.rwdind(i):binedges(end)+sess.rwdind(i));
     catch
-        disp(['Skipping lap ' num2str(i)])
+        % disp(['Skipping lap ' num2str(i)]);
     end
 end
 % bnocc = histcounts(sess.pos(sess.lapstt(1):sess.lapend(end)),binedges);

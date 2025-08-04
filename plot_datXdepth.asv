@@ -120,23 +120,23 @@ xlabel(xlabstr)
 legend(legCell)
 set(gca,'FontSize',12,'FontName','Arial')
 
-% ax2 = axes(thandle); hold on;
-% ax2.XAxisLocation = 'top';
-% ax2.YTick = [];
-% for i = 1:nshanks-1
-%     plot(ax2,[i*maxDat i*maxDat], [min(root.info.depth) max(root.info.depth)], 'k--')
-% end
-% 
-% xlim([0 maxDat*nshanks]);
-% 
-% ax2.Color = 'none';
-% ax1.Box = 'off';
-% ax2.Box = 'off';
-% 
-% xticks(maxDat/2:maxDat:nshanks*maxDat)
-% for i = 1:nshanks
-%     xtickcell{i} = sprintf('Shank %d', i-1);
-% end
-% xticklabels(xtickcell)
+ax2 = axes(thandle); hold on;
+ax2.XAxisLocation = 'top';
+ax2.YTick = [];
+for i = 1:nshanks-1
+    plot(ax2,[i*maxDat i*maxDat], [min(root.info.depth) max(root.info.depth)], 'k--')
+end
+
+xlim([0 maxDat*nshanks]);
+
+ax2.Color = 'none';
+ax1.Box = 'off';
+ax2.Box = 'off';
+
+xticks(maxDat/2:maxDat:nshanks*maxDat)
+for i = 1:nshanks
+    xtickcell{i} = sprintf('Shank %d', i-1);
+end
+xticklabels(xtickcell)
 
 end

@@ -56,6 +56,7 @@ for i = 1:size(bhvrFile,1)
     catch
         warning('Failed to import synch pulse (sess.slx)')
     end
+    sess.maxPos     = 1.85; % Hard coded track length
 
     % Digital data; multiplexed from all digital channels; 1 = LapReset; 2 = Reward release
     sess.didat      = dat.(datFields{2}).digitalScans;
@@ -91,5 +92,9 @@ for i = 1:size(bhvrFile,1)
 end
 [~, maxSess] = max(nlaps);
 sess = sessOrg(maxSess).sess;
+
+% Remove extraneous fields
+sess = rmfield(sess,'aidat');
+sess = rmfield(sess,'didat');
 
 end

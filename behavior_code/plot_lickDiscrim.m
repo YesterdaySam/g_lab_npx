@@ -32,7 +32,7 @@ end
 % bnDI = accumarray(loc(:),lckDI) ./ accumarray(loc(:),1);
 
 fhandle = figure; hold on
-plot(lckDI,'k','LineWidth',1)
+plot(lckDI,'k-*','LineWidth',1)
 plot(binedges(1:end-1)+0.5*nBlock,bnDI,'r-o','LineWidth',2)
 legend({'Trial',[num2str(nBlock) ' trial avg.']},'Location','best')
 xlabel('Trial #'); ylabel('Lick DI ((RZ - AZ) / (RZ + AZ)')

@@ -38,7 +38,11 @@ for i = 1:sess.nlaps
     lckmap2(i,1) = histcounts(tmpLckPos,rz2);
 end
 
-lckmapCombine = lckmap1(:,1) + [0; lckmap1(1:end-1,2)];    % Offset by 1 lap to account for licks on prior lap, lose any licks prior to start of valTrial 1
+if size(rz1,1) == 2
+    lckmapCombine = lckmap1(:,1) + [0; lckmap1(1:end-1,2)];    % Offset by 1 lap to account for licks on prior lap, lose any licks prior to start of valTrial 1
+else
+    lckmapCombine = lckmap1;    % If both RZ within same lap
+end
 
 lckmap = [lckmapCombine, lckmap2];
 lickDI = (lckmapCombine - lckmap2) ./ (lckmapCombine + lckmap2);
