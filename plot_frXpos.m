@@ -33,17 +33,15 @@ sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
 sess.valTrials = 1:sess.nlaps;
 
-binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+try 
+    binedges = 0:dbnsz:sess.maxPos;
+catch
+    binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+end
 spkinds = root.tsb(root.cl == unit);
 
-if vFlag
-    % spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
-    spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
-end
-
-% dspk = histcounts(sess.pos(spkinds),binedges);
-% docc = histcounts(sess.pos,binedges)/sess.samprate;
-% binfr = dspk ./ docc;
+% spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
 
 spkmap = [];
 bnoccs = [];
@@ -75,27 +73,29 @@ if plotflag
     fhandle = figure; hold on
     xcoords = (binedges(1:end-1) + 0.5*dbnsz)*100;
 
-    % Plot velocity overlay
-    ax = gca;
-    yyaxis right
-    if ~isfield(sess,'sess.velXpos')
-        [~,bnvel] = plot_trialvel(sess,dbnsz,0);
-    else
-        bnvel = sess.velXpos;
+    if vFlag % Plot velocity overlay
+        ax = gca;
+        yyaxis right
+        if ~isfield(sess,'sess.velXpos')
+            [~,bnvel] = plot_trialvel(sess,dbnsz,0);
+        else
+            bnvel = sess.velXpos;
+        end
+        velmean = mean(bnvel);
+        [vciup, vcidn] = get_CI(bnvel);
+        velsem = std(bnvel)./sqrt(sess.nlaps);
+
+        plot_CIs(xcoords,vciup,vcidn,'r')
+        plot(xcoords,velmean,'r','LineWidth',2)
+        ylim([0 prctile(sess.velshft,99)])
+        ax.YAxis(2).Color = 'r';
+        ylabel('Velocity (cm/s)')
+
+        yyaxis left
     end
-    velmean = mean(bnvel);
-    velsem = std(bnvel)./sqrt(sess.nlaps);
 
-    plot(xcoords,velmean,'r','LineWidth',2)
-    patch([xcoords,fliplr(xcoords)],[velmean-velsem*1.96,fliplr(velmean+velsem*1.96)],'r','FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-    ylim([0 prctile(sess.velshft,99)])
-    ax.YAxis(2).Color = 'r';
-    ylabel('Velocity (cm/s)')
-
-    yyaxis left
-
+    plot_CIs(xcoords,ciup,cidn,'k')
     plot(xcoords, rawfr, 'k-')
-    patch([xcoords,fliplr(xcoords)],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
     plot(xcoords, binfr, 'b-')
     
     xlabel('Position (cm)'); ylabel('Firing Rate (spk/s)')

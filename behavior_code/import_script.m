@@ -1,8 +1,8 @@
 % Batched Import behavior script
 
-mousedir = 'D:\Data\Kelton\analyses\KW055';
+mousedir = 'D:\Data\Kelton\analyses\KW060';
 
-overwriteFlag = 1;
+overwriteFlag = 0;
 
 cd(mousedir)
 
@@ -29,8 +29,12 @@ for i = 1:length(dirlist)
         continue
     end
 
-    [~,sess.velXpos] = plot_trialvel(sess,0.01,0);
-    [~,sess.velXrwd] = get_velXrwd(sess,0.25,5,0);
+    try
+        [~,sess.velXpos] = plot_trialvel(sess,0.01,0);
+        [~,sess.velXrwd] = get_velXrwd(sess,0.25,5,0);
+    catch
+        disp('No bnvel or velxrwd assigned to sess file')
+    end
 
     sbase = sess.name(1:14);
     save([sbase, '_session'], 'sess','-v7.3')

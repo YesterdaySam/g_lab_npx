@@ -17,7 +17,11 @@ rstInd = indrange(1) - 1;
 indrange = indrange(1):indrange(2);
 
 % Analog data
-sess2.aidat     = sess.aidat(indrange,:);
+try
+    sess2.aidat     = sess.aidat(indrange,:);
+    sess2.didat     = sess.didat(indrange);
+catch
+end
 sess2.ind       = sess.ind(indrange) - rstInd;
 sess2.ts        = sess.ts(indrange);
 sess2.vel       = sess.vel(indrange);
@@ -32,7 +36,6 @@ sess2.runInds   = sess.runInds(indrange);
 sess2.lapInclude= sess.lapInclude(indrange);
 
 % Digital data
-sess2.didat     = sess.didat(indrange);
 sess2.rwd       = sess.rwd(indrange);
 sess2.rwdind    = sess.rwdind(sess.rwdind >= indrange(1) & sess.rwdind <= indrange(end)) - rstInd;
 sess2.rst       = sess.rst(indrange);

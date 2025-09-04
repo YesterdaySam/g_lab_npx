@@ -1,4 +1,4 @@
-function [binedges,binfr] = get_frXpos(root,unit,sess,dbnsz,dend,vFlag)
+function [binedges,binfr,spkmap] = get_frXpos(root,unit,sess,dbnsz,dend,vFlag,smFactor)
 %% Collects smoothed firing rate by position and trial of a unit
 %
 % Inputs:
@@ -8,6 +8,7 @@ function [binedges,binfr] = get_frXpos(root,unit,sess,dbnsz,dend,vFlag)
 % dbnsz = size of position bins, default 0.05m = 5cm
 % dend = length of track (m)
 % vFlag = whether or not to remove spikes not coinciding with sess.runInds
+% smFactor = how much to smooth the binned spikes and occupancy data
 %
 % Outputs:
 % binedges = spatial bin edges
@@ -24,6 +25,7 @@ arguments
     dbnsz = 0.05    %m
     dend = 1.85
     vFlag = 1
+    smFactor = 5;
 end
 
 % Only use valid trials
@@ -51,8 +53,8 @@ for i = 1:sess.nlaps
     spkmap  = [spkmap; spkct];              % Save spike counts
 end
 
-spksmooth = smoothdata(spkmap,2,'gaussian',5);
-occsmooth = smoothdata(bnoccs,2,'gaussian',5);
+spksmooth = smoothdata(spkmap,2,'gaussian',smFactor);
+occsmooth = smoothdata(bnoccs,2,'gaussian',smFactor);
 
 binfr = spksmooth ./ occsmooth;
 end

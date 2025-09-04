@@ -45,6 +45,10 @@ elseif contains(dType,'mua')
     nUnits = length(root.mua);
 end
 
+if isempty(sess.optoind)
+    perioptoF = 1;
+end
+
 nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF,rwdTF]);
 
 for i = 1:nUnits

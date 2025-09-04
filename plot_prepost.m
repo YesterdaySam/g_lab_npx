@@ -26,9 +26,9 @@ axisFlag = 0;
 if      plttype == 1
     r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
     r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:30))),1);
-    [~,~,fhandlePre] = plot_frXpos(root1,unit,sess1);
+    [~,~,fhandlePre] = plot_frXpos(root1,unit,sess1,0.05,1);
     plot([r1pos, r1pos], ylim,'k--');
-    [~,~,fhandlePst] = plot_frXpos(root2,unit,sess2);
+    [~,~,fhandlePst] = plot_frXpos(root2,unit,sess2,0.05,1);
     plot([r2pos, r2pos], ylim,'k--');
     titleStr = 'Spatial Tuning ';
     axisFlag = 1;
@@ -54,7 +54,7 @@ elseif  plttype == 6
     [~,bnVelPst] = plot_trialvel(sess2, 0.01, 0);
     fhandlePre = plot_vel_lck(sess1, bnVelPre, 0.01, 0.03);
     fhandlePst = plot_vel_lck(sess2, bnVelPst, 0.01, 0.03);
-    titleStr = 'Velocity & Lick Rate ';
+    titleStr = 'Velocity & Lick Rat e ';
     axisFlag = 1;
 elseif  plttype == 7
     [~,~,fhandlePre] = plot_frXripple(root1,unit,sess1, root1.ripRef,150);

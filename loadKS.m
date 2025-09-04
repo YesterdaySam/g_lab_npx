@@ -140,6 +140,12 @@ elseif length(root.info.cluster_id) > length(spkLabels.cluster_id) %Edge case wh
         end
     end
     root.info(badcls,:) = [];
+elseif ~isempty(strmatch('group',spkInfo.Properties.VariableNames))
+    try
+        root.info.group = spkInfo.group;
+    catch
+        disp(['Tried assigning manual labels from cluster_info.tsv --> spkInfo var, failed'])
+    end
 end
 
 root.good       = root.info.cluster_id(find(strcmp(root.info.group,'good')));
@@ -239,31 +245,35 @@ end
 remainInds = [i, height(root.info)];
 templates2(templateUsed,:,:) = [];  %Get only unused templates
 
-disp(['Waveforms assigned automatically up to cluster: ' num2str(root.info.cluster_id(i))])
-disp(['Assigning waveforms to manually grouped clusters: ' num2str(root.info.cluster_id(remainInds(1):remainInds(2))')])
+if isempty(templates2)
+    disp(['No unassigned templates, deleting remaining clusters: ', num2str(remainInds)])
+    root.info(remainInds,:) = [];
+else
+    disp(['Waveforms assigned automatically up to cluster: ' num2str(root.info.cluster_id(i))])
+    disp(['Assigning waveforms to manually grouped clusters: ' num2str(root.info.cluster_id(remainInds(1):remainInds(2))')])
 
-for i = 1:size(templates2,1)
-    tmp = squeeze(templates2(i,:,:));
-    maxWF = max(tmp,[],'all');
-    minWF = min(tmp,[],'all');
-    if maxWF > abs(minWF)
-        maxAmp = maxWF;
-    else
-        maxAmp = minWF;
+    for i = 1:size(templates2,1)
+        tmp = squeeze(templates2(i,:,:));
+        maxWF = max(tmp,[],'all');
+        minWF = min(tmp,[],'all');
+        if maxWF > abs(minWF)
+            maxAmp = maxWF;
+        else
+            maxAmp = minWF;
+        end
+        [~, templateChans(i)] = find(tmp == maxAmp);
+        templateRemain(i,:) = tmp(:,templateChans(i));
     end
-    [~, templateChans(i)] = find(tmp == maxAmp);
-    templateRemain(i,:) = tmp(:,templateChans(i));
+
+    % Attempt match to remaining templates based on root.info.ch proximity to
+    % biggest magnitude of each template waveform
+
+    ct = 1;
+    for i = remainInds(1):remainInds(2)
+        tmp = min(abs(templateChans - root.info.ch(i)));
+        trymatch(ct) = find(abs(templateChans - root.info.ch(i)) == tmp,1);
+        templateWFs(i,:) = templateRemain(trymatch(ct),:);
+        ct = ct + 1;
+    end
 end
-
-% Attempt match to remaining templates based on root.info.ch proximity to
-% biggest magnitude of each template waveform
-
-ct = 1;
-for i = remainInds(1):remainInds(2)
-    tmp = min(abs(templateChans - root.info.ch(i)));
-    trymatch(ct) = find(abs(templateChans - root.info.ch(i)) == tmp,1);
-    templateWFs(i,:) = templateRemain(trymatch(ct),:);
-    ct = ct + 1;
-end
-
 end

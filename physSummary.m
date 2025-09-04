@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW043\KW043_05092025_rec_D4_RMed2';
-datpath = 'D:\Data\Kelton\probe_data\KW043\KW043_05092025_rec_D4_RMed2_g0';
+spath = 'D:\Data\Kelton\analyses\KW060\KW060_08252025_rec_D3_RMed1';
+datpath = 'D:\Data\Kelton\probe_data\KW060\KW060_08252025_rec_D3_RMed1_g0';
 
 loadKS(datpath,spath,1);
 root = alignBhvrTS(spath,spath,spath);
@@ -53,8 +53,6 @@ xlabel('Good Counts')
 ylabel('Distance from tip (um)');
 set(gca,'FontSize',12,'FontName','Arial')
 
-saveas(tmpCountFig,[root.name '_count_good.png'])
-
 tmpCountShankFig = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.2 0.3 0.15])
 tmpedges = 0:1:length(unique(root.info.shankID));
@@ -69,6 +67,7 @@ set(gca,'FontSize',12,'FontName','Arial')
 text(tmpedges(1:end-1),binCounts,num2str(binCounts'),'vert','bottom','horiz','center','FontSize',12); 
 
 if saveFlag
+    saveas(tmpCountFig,[root.name '_count_good.png'])
     saveas(tmpCountShankFig,[root.name '_shankCount_good.png'])
 end
 

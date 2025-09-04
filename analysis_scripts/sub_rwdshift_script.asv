@@ -1,11 +1,8 @@
 % Subiculum RZ Shift
 % spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2';
 % spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
-% spath = 'D:\Data\Kelton\analyses\KW048\KW048_06172025_rec_D2_RLat2';
+spath = 'D:\Data\Kelton\analyses\KW048\KW048_06172025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\KW058\KW058_08222025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\KW059\KW059_08212025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\KW060\KW060_08242025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';
 
 % CA1 RZ Shift
@@ -38,8 +35,8 @@ binpos = 0.025:dbnsz:1.825;
 sbase = root.name;
 
 % Epoch into pre/post reward shift for reward shift sessions
-frstHalfInds         = [sess.ind(1) sess.lapend(rwdShift)];
-lastHalfInds         = [sess.lapstt(sess.valTrials(rwdShift+1)) sess.ind(end)];
+frstHalfInds         = [sess.ind(1) sess.lapend(rwdShift-1)];
+lastHalfInds         = [sess.lapstt(rwdShift) sess.ind(end)];
 [sessFrst, rootFrst] = epochStruc(sess,root,frstHalfInds);
 [sessLast, rootLast] = epochStruc(sess,root,lastHalfInds);
 
@@ -501,13 +498,6 @@ bursts = spkts(logical([(diff(spkts) < 0.0091), 0]));
 
 figure; hold on; plot(spkts,ones(size(spkts)),'k|')
 plot(bursts,ones(size(bursts)),'r.')
-
-wn = 0.05;
-burstMap = [];
-% for i = 1:length(bursts)
-%     tmpspks = 
-% end
-
 % ========================================================================%
 % ========================================================================%
 % ========================================================================%
@@ -523,7 +513,7 @@ burstMap = [];
 
 parentDir = "D:\Data\Kelton\analyses\group_analyses"; 
 subDatT = import_xldat(parentDir,"dat_include.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort';
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift';
 cd(groupSDir) 
 
 cleanInds = subDatT.include == 0;
@@ -531,7 +521,7 @@ subDatT(cleanInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
 sbase = 'subRwdShift_';
-fname = [sbase 'data4'];
+fname = [sbase 'data3'];
 
 dbnsz = 0.05;
 histoBnsz = 5;
@@ -544,9 +534,6 @@ vColors2 = [0.5 0.5 1; 0.75 0.75 1];
 
 clear ps stats
 
-%% Combine data
-combine_rzShiftDat(subDatT,fname,groupSDir);
-
 %% Load previously saved data
 cd(groupSDir)
 load(fname)
@@ -556,6 +543,9 @@ mID = unique(recID(:,1));
 nTotal = size(recID,1);
 r1posInd = find(binpos > r1pos,1);
 r2posInd = find(binpos > r2pos,1);
+
+%% Combine data
+combine_rzShiftDat(subDatT,fname,groupSDir);
 
 %% Behavior comparisons
 
@@ -671,11 +661,11 @@ xlabel('\Delta Theta MRL (Novel - Familiar)')
 title("Significant units pre & post");
 
 % 0/360 = trough, 180/540 = peak
-thAngFig = plotBar2(thDat(thBothID,3),thDat(thBothID,6));
+thAngFig = plotBar2(rad2deg(thDat(thBothID,3)),rad2deg(thDat(thBothID,6)));
 ylabel('Theta Angle (degree)'); ylim([-180 180])
 
 binedges = rad2deg(-pi/2:pi/36:pi/2);
-thDltAFig = plotDeltaHisto(thDat(thBothID,3),thDat(thBothID,6),binedges);
+thDltAFig = plotDeltaHisto(rad2deg(thDat(thBothID,3)),rad2deg(thDat(thBothID,6)),binedges);
 xlabel('\Delta Theta Angle (Novel - Familiar)')
 title("Significant units pre & post");
 
@@ -773,7 +763,6 @@ if saveFlag
 end
 
 %% Waterfall by position
-binedges = 0:0.05:1.85;
 
 [spBothPreSortPreFig,tmpMap,sortPre] = plot_unitWaterfall(lcMap(siBothID,1:length(binpos)),binedges);
 plot([r1posInd r1posInd],[0 sum(siBothID)],'r--','LineWidth',2)
@@ -810,9 +799,9 @@ xlabel('Track Position (cm)'); ylim([0 0.15])
 % title('Familiar RZ, sort Novel'); xlabel('Track Position (cm)')
 
 if saveFlag
-    saveas(spBothPreSortPreFig,[sbase 'sp_both_pre_sortPre'],'png')
+    saveas(spBothPreSortPreFig,[sbase 'sp_both_pre_sortPre'],'svg')
     saveas(spBothPstSortPstFig,[sbase 'sp_both_pst_sortPst'],'png')
-    saveas(spBothPstSortPreFig,[sbase 'sp_both_pst_sortPre'],'png')
+    saveas(spBothPstSortPreFig,[sbase 'sp_both_pst_sortPre'],'svg')
     % saveas(spEithPreSortPreFig,[sbase 'sp_eith_pre_sortPre'],'png')
     % saveas(spEithPstSortPreFig,[sbase 'sp_eith_pst_sortPre'],'png')
     % saveas(spEithPstSortPstFig,[sbase 'sp_eith_pst_sortPst'],'png')
@@ -888,11 +877,6 @@ xticks(1:10:length(binpos)); yticks(1:10:length(binpos))
 xticklabels(binedges(1:10:end)*100); yticklabels(binedges(1:10:end)*100)
 set(gca,'FontSize',12,'FontName','Arial','YDir','normal','XDir','normal')
 
-if saveFlag
-    saveas(pkPosFig,[sbase 'lc_PeakComp'],'png')
-    saveas(fieldDstPrePst,[sbase 'lc_PeakMap'],'png')
-end
-
 %% Finding Track Relative or Reward Relative cells
 spPk1 = binpos(lcDat(:,4));
 spPk2 = binpos(lcDat(:,8));
@@ -905,7 +889,7 @@ irCells = siBothID & ~trCells & ~rrCells;
 xrand = 2*rand(size(lcDat(siBothID,4)))-1;
 yrand = 2*rand(size(lcDat(siBothID,4)))-1;
 
-pkPosPatchFig = figure; hold on; axis square
+figure; hold on; axis square
 patch(100*[0 dth 1.85 1.85 1.85-dth 0 0],100*[0 0 1.85-dth 1.85 1.85 dth 0],...
     'b','FaceAlpha',0.25,'EdgeColor','none','HandleVisibility','off')
 patch(100*[0 1.25 0.65 0 0],100*[0.6 1.85 1.85 1.2 0.6],...
@@ -921,10 +905,6 @@ plot([r1pos r1pos]*100,[0 100*binpos(end)],'r--',[0 100*binpos(end)],[r2pos r2po
 xlabel('Absolute Peak Loc. (cm) Familiar'); xlim([0 100*binpos(end)])
 ylabel('Absolute Peak Loc. (cm) Novel');    ylim([0 100*binpos(end)])
 set(gca,'FontSize',16,'FontName','Arial')
-
-if saveFlag
-    saveas(pkPosPatchFig,[sbase 'lc_PeakComp_patch'],'png')
-end
 
 %% Distributions over linearized space
 fieldDstPre = histcounts(spPk1,binedges);
@@ -1055,7 +1035,7 @@ end
 % Normalize all PF firing rates, sum by bin, and sqaure
 % Divide by sum of squared PF firing rates by bin, and normalize by N cells
 
-activeUnits = siBothID;     % siBothID (allSICells); trCells; rrCells;
+activeUnits = trCells;     % trCells; rrCells;
 nBins = length(binpos);
 
 posNormPre = lcMap(activeUnits,1:nBins) ./ max(lcMap(activeUnits,1:nBins),[],2);
@@ -1115,8 +1095,8 @@ ylim([-0.25 1]); ylabel('Mean of PV Corr.')
 set(gca,'FontSize',16,'FontName','Arial')
 
 if saveFlag
-    saveas(pvFig,[sbase 'lc_pv_corr_allSICells'],'png')
-    saveas(pvCompFig,[sbase 'lc_pv_comp_allSICells'],'png')
+    saveas(pvFig,[sbase 'lc_pv_corr_trCells'],'png')
+    saveas(pvCompFig,[sbase 'lc_pv_comp_trCells'],'png')
 end
 
 %% PV across time
@@ -1192,13 +1172,13 @@ swrPeak = find(binedges == 0,1);
 [swrBothPreSortPreFig,tmpMap,sortPre] = plot_unitWaterfall(rpMap(swrBothID,1:length(binedges)-1),binedges);
 plot([swrPeak swrPeak],[0 sum(swrBothID)],'r--','LineWidth',2)
 title('Familiar RZ, sort Familiar'); xlabel('Time to SWR peak (ms)')
-swrBothPreSortPreHisto = plot_unitPkHisto(tmpMap,binedges); xlim([-wlen wlen])
+swrBothPreSortPreHisto = plot_unitPkHisto(tmpMap,binedges);
 xlabel('Time to SWR peak (ms)')
 
 [swrBothPstSortPstFig,tmpMap] = plot_unitWaterfall(rpMap(swrBothID,length(binedges):end),binedges);
 plot([swrPeak swrPeak],[0 sum(swrBothID)],'r--','LineWidth',2)
 title('Novel RZ, sort Novel'); xlabel('Time to SWR peak (ms)')
-swrBothPstSortPstHisto = plot_unitPkHisto(tmpMap,binedges); xlim([-wlen wlen])
+swrBothPstSortPstHisto = plot_unitPkHisto(tmpMap,binedges);
 xlabel('Time to SWR peak (ms)')
 
 [swrBothPstSortPreFig] = plot_unitWaterfall(rpMap(swrBothID,length(binedges):end),binedges,sortPre);

@@ -6,6 +6,7 @@ function [fhandle] = plot_datXdepth(root, datStruc, goodflag, muaflag, noiseflag
 %
 % Inputs:
 %   root        = root object. Must have root.tssync and root.tsb fields
+%   datStruc    = 
 %   goodflag    = binary, whether to plot good units
 %   muaflag     = binary, whether to plot mua units
 %   noiseflag   = binary, whether to plot noise units
