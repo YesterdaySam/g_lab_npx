@@ -1,10 +1,10 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW060\KW060_08252025_rec_D3_RMed1';
-datpath = 'D:\Data\Kelton\probe_data\KW060\KW060_08252025_rec_D3_RMed1_g0';
+spath = 'D:\Data\Kelton\analyses\ZM001\ZM001_10022025_rec_D6_LMed1';
+datpath = 'D:\Data\Kelton\probe_data\ZM001\ZM001_10022025_rec_D6_LMed1_g0';
 
-loadKS(datpath,spath,1);
+loadKS(datpath,spath,1); 
 root = alignBhvrTS(spath,spath,spath);
 
 %% Load existing root file
@@ -40,35 +40,6 @@ if saveFlag
     % saveas(frd2,[root.name '_FRDepth_noNoise.png'])
     saveas(frd3,[root.name '_FRDepth_good.png'])
     % saveas(frd4,[root.name '_FRDepth_mua.png'])
-end
-
-%% Summarize counts by shank and depth
-tmpCountFig = figure; hold on
-set(gcf,'units','normalized','position',[0.4 0.2 0.1 0.6])
-tmpedges = min(root.info.depth):20:max(root.info.depth);
-binCounts = histcounts(root.info.depth(root.goodind),tmpedges);
-barh(tmpedges(1:end-1)+10,binCounts,'FaceColor',[0.5 0.7235 0.8705],'EdgeColor',[0 0.4470 0.7410])
-ylim([0 max(root.info.depth)])
-xlabel('Good Counts')
-ylabel('Distance from tip (um)');
-set(gca,'FontSize',12,'FontName','Arial')
-
-tmpCountShankFig = figure; hold on
-set(gcf,'units','normalized','position',[0.4 0.2 0.3 0.15])
-tmpedges = 0:1:length(unique(root.info.shankID));
-binCounts = histcounts(root.info.shankID(root.goodind),tmpedges);
-b = bar(tmpedges(1:end-1),binCounts,'FaceColor',[0.5 0.7235 0.8705],'EdgeColor',[0 0.4470 0.7410]);
-set(get(b,'Parent'),'ydir','reverse')
-ylim([0 max(binCounts)])
-xlim([-0.5 max(root.info.shankID)+0.5])
-xlabel('Shank ID')
-ylabel('Good Counts');
-set(gca,'FontSize',12,'FontName','Arial')
-text(tmpedges(1:end-1),binCounts,num2str(binCounts'),'vert','bottom','horiz','center','FontSize',12); 
-
-if saveFlag
-    saveas(tmpCountFig,[root.name '_count_good.png'])
-    saveas(tmpCountShankFig,[root.name '_shankCount_good.png'])
 end
 
 %% Summarize spike counts across session
@@ -124,6 +95,15 @@ root = get_layerUnits(root);
 
 uTypeDepthFig = plot_layerUnits(root,1,0,0);
 if saveFlag; saveas(uTypeDepthFig,[root.name '_uTypeXDepth.png']); end
+
+%% Summarize counts by shank and depth
+
+[tmpCountFig, tmpCountShankFig] = plot_count_shank(root);
+
+if saveFlag
+    saveas(tmpCountFig,[root.name '_count_good.png'])
+    saveas(tmpCountShankFig,[root.name '_shankCount_good.png'])
+end
 
 %% Get ripples at s. pyr. layer as determined by ripple band peak
 

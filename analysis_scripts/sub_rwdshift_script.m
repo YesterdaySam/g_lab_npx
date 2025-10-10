@@ -8,13 +8,17 @@
 % spath = 'D:\Data\Kelton\analyses\KW060\KW060_08242025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';
 
-% CA1 RZ Shift
-% spath = 'D:\Data\Kelton\analyses\FG044\FG044_20250710_R2';
-
 % Sub RZ Randomization
 % spath = 'D:\Data\Kelton\analyses\KW040\KW040_05012025_rec_D6_LMed1';
 % spath = 'D:\Data\Kelton\analyses\KW049\KW049_06202025_rec_D5_LLat2';
 % spath = 'D:\Data\Kelton\analyses\KW049\KW049_06222025_rec_D6_LMed1';
+spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_10012025_rec_D5_LLat2';
+
+% CA1 RZ Shift
+% spath = 'D:\Data\Kelton\analyses\FG044\FG044_20250710_R2';
+% spath = 'D:\Data\Kelton\analyses\KW062\KW062_09052025_rec_D3_RMed1';
+% spath = 'D:\Data\Kelton\analyses\KW065\KW065_09042025_rec_D2_RLat2';
+% spath = 'D:\Data\Kelton\analyses\KW066\KW066_09122025_rec_D2_RLat2';
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -164,6 +168,11 @@ lastHalf.preRZV = get_periRZVel(sessLast,[r1pos r2pos]*100);
 frstHalf.uPreRZV = mean(frstHalf.preRZV,'omitnan');
 lastHalf.uPreRZV = mean(lastHalf.preRZV,'omitnan');
 
+frstHalf.ulckDI20 = mean(frstHalf.lckDI(end-19:end),'omitnan');
+lastHalf.ulckDI20 = mean(lastHalf.lckDI(end-19:end),'omitnan');
+frstHalf.uPreRZV20 = mean(frstHalf.preRZV(end-19:end,:),'omitnan');
+lastHalf.uPreRZV20 = mean(lastHalf.preRZV(end-19:end,:),'omitnan');
+
 %% Find place cells and SPW-R modulation pre and post shift
 % Methods: 
 % Kitanishi et al. 2021: Exceed 99th percentile of SI shuffle
@@ -206,13 +215,13 @@ end
 
 toc
 
-frstHalf.sig = sum(frstHalf.shufSI > frstHalf.trueSI,2) / nShufs;
-lastHalf.sig = sum(lastHalf.shufSI > lastHalf.trueSI,2) / nShufs;
+frstHalf.sig = sum(frstHalf.shufSI >= frstHalf.trueSI,2) / nShufs;
+lastHalf.sig = sum(lastHalf.shufSI >= lastHalf.trueSI,2) / nShufs;
 
 disp(['First half SI p <= 0.05 ' num2str(sum(frstHalf.sig <= 0.05)) ' of ' num2str(nUnits) ' units'])
 disp(['Last half SI p <= 0.05 ' num2str(sum(lastHalf.sig <= 0.05)) ' of ' num2str(nUnits) ' units'])
 disp(['First and last half SI p <= 0.05 ' num2str(sum(frstHalf.sig <= 0.05 & lastHalf.sig <= 0.05)) ' of ' num2str(nUnits) ' units'])
-
+ 
 %% SPWRs pre and post
 
 for i = 1:nUnits
@@ -465,27 +474,75 @@ end
 %% Bayesian decoding attempt
 
 decodeInfo = struct;
-expectSpk = frstHalf.posfr' + (eps.^8); % pos x cell
+tau = 0.5; % time window, seconds
+newts = sess.ts(sess.runInds & sess.lapInclude);    % Use only run periods
+expectSpk = frstHalf.posfr(bothSIUnits,:)' + (eps.^8); % pos x cell
+expectSpk = expectSpk * tau;
+tic
+for i = 1:sum(sess.runInds & sess.lapInclude)
+    if newts(i) - tau/2 <= 0 || newts(i) + tau/2 >= sess.ts(end)  % Ignore times before/after the minimum window
+        continue
+    end
+    spks = root.ts > newts(i) - tau/2 & root.ts < newts(i) + tau/2;
+    spkIds = root.cl(spks);
+    nSpks = histcounts(spkIds,0:max(root.good)+1);  % Don't use groupcounts - about 2x slower!
+    curSpk = nSpks(root.good);   % Spike counts in window for good units only
+    curSpk = curSpk(bothSIUnits);
+    useTmp = curSpk > 0;
+    % tmpSpk = groupcounts(spkIds,0:max(root.good)+1,'IncludeEmptyGroups',true);
+    % curSpk = tmpSpk(root.good)';   % Spike counts in window for good units only
+    % curSpk = curSpk(bothSIUnits);
+    % useTmp = curSpk > 0;
 
-trId = 60;
-for i = 1:length(frstHalf.binpos)
-    decodeInfo(i).truebin = frstHalf.binpos(i);
-
-    curSpk = squeeze(frstHalf.spkMap(trId,i,:)); % Rate for trial, bin as [1,Cells]
-    
-    % Bayes rule, decode curent location
-    tmp = bsxfun(@power, expectSpk, curSpk'); % [nPos x nTbin x nCell]
+    % Bayes rule, decode current location
+    tmp = bsxfun(@power, expectSpk(:,useTmp), curSpk(useTmp)); % [nPos x nTbin x nCell]
     tmp = prod(tmp,2);
-    expon = exp(-sum(expectSpk,2));
+    expon = exp(-sum(expectSpk(:,useTmp),2));     % Sum rate map for 1:N cells
     post = bsxfun(@times, tmp, expon);
-    post(isnan(post)) = 0;
     post = post./sum(post); % Normalization
     [~,id] = max(post); % decoded position is the one with max posterior prob
-    decodeInfo(i).errorpos = frstHalf.binpos(id) - frstHalf.binpos(i);% error is the linearized distance between est. and actual
-    decodeInfo(i).decodedpos = frstHalf.binpos(id);
-    decodeInfo(i).pMat = post;
-    decodepos(i) = frstHalf.binpos(id);
+    decodedpos(i) = frstHalf.binpos(id);
 end
+toc
+
+figure; plot(decodedpos)
+hold on; plot(sess.pos(sess.runInds & sess.lapInclude))
+
+% errAll = sess.pos(sess.runInds & sess.lapInclude) - decodedpos1';
+% tmpUp = errAll > 1.85/2;
+% errAll(tmpUp) = errAll(tmpUp) - 1.85;
+% tmpUp = errAll < -1.85/2;
+% errAll(tmpUp) = errAll(tmpUp) + 1.85;
+% 
+% errSpk = sess.pos(sess.runInds & sess.lapInclude) - decodedpos';
+% tmpUp = errSpk > 1.85/2;
+% errSpk(tmpUp) = errSpk(tmpUp) - 1.85;
+% tmpUp = errSpk < -1.85/2;
+% errSpk(tmpUp) = errSpk(tmpUp) + 1.85;
+% 
+% figure;
+% violinplot([abs(errAll); abs(errSpk)],[zeros(size(errAll)), ones(size(errSpk))],'ShowData',false)
+
+% 
+% trId = 60;
+% for i = 1:length(frstHalf.binpos)
+%     decodeInfo(i).truebin = frstHalf.binpos(i);
+% 
+%     curSpk = squeeze(frstHalf.spkMap(trId,i,:)); % Rate for trial, bin as [1,Cells]
+% 
+%     % Bayes rule, decode curent location
+%     tmp = bsxfun(@power, expectSpk, curSpk'); % [nPos x nTbin x nCell]
+%     tmp = prod(tmp,2);
+%     expon = exp(-sum(expectSpk,2));
+%     post = bsxfun(@times, tmp, expon);
+%     post(isnan(post)) = 0;
+%     post = post./sum(post); % Normalization
+%     [~,id] = max(post); % decoded position is the one with max posterior prob
+%     decodeInfo(i).errorpos = frstHalf.binpos(id) - frstHalf.binpos(i);% error is the linearized distance between est. and actual
+%     decodeInfo(i).decodedpos = frstHalf.binpos(id);
+%     decodeInfo(i).pMat = post;
+%     decodepos(i) = frstHalf.binpos(id);
+% end
 
 
 %% Burst analysis attempt
@@ -526,12 +583,12 @@ subDatT = import_xldat(parentDir,"dat_include.xlsx");
 groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort';
 cd(groupSDir) 
 
-cleanInds = subDatT.include == 0;
+cleanInds = subDatT.include ~= 1;
 subDatT(cleanInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
 sbase = 'subRwdShift_';
-fname = [sbase 'data4'];
+fname = [sbase 'data5'];
 
 dbnsz = 0.05;
 histoBnsz = 5;
@@ -545,7 +602,7 @@ vColors2 = [0.5 0.5 1; 0.75 0.75 1];
 clear ps stats
 
 %% Combine data
-combine_rzShiftDat(subDatT,fname,groupSDir);
+combine_rzShiftDat(subDatT,fname,'sub',groupSDir);
 
 %% Load previously saved data
 cd(groupSDir)
@@ -579,6 +636,29 @@ if saveFlag
     saveas(uLckDIFig,[sbase 'bhv_LckDI_bar'],'png')
     saveas(uRZ1VlFig,[sbase 'bhv_RZ1Vl_bar'],'png')
     saveas(uRZ2VlFig,[sbase 'bhv_RZ2Vl_bar'],'png')
+end
+
+%% Behavior comparisons for last 20 laps in each RZ 
+uLckDI20 = [vertcat(bvDat.uPreLckDI20), vertcat(bvDat.uPstLckDI20)];
+uRZVel20 = [vertcat(bvDat.uPreRZVel20), vertcat(bvDat.uPstRZVel20)];
+
+[~,ps.bhv_PPLckDI20,~,stats.bhv_PPLckDI20] = ttest(uLckDI20(:,1),uLckDI20(:,2));
+[~,ps.bhv_PPRZ120,~,stats.bhv_PPRZ120] = ttest(uRZVel20(:,1),uRZVel20(:,3));
+[~,ps.bhv_PPRZ220,~,stats.bhv_PPRZ220] = ttest(uRZVel20(:,2),uRZVel20(:,4));
+
+uLckDIFig = plotBarByMouse(uLckDI20);
+ylabel('Lick DI ((RZ - AZ) / (RZ + AZ))'); ylim([-1 1])
+
+uRZ1VlFig = plotBarByMouse(uRZVel20(:,[1,3]));
+ylabel('Velocity (cm/s) 30cm Pre RZ1')
+
+uRZ2VlFig = plotBarByMouse(uRZVel20(:,[2,4]));
+ylabel('Velocity (cm/s) 30cm Pre RZ2')
+
+if saveFlag
+    saveas(uLckDIFig,[sbase 'bhv_LckDI20_bar'],'png')
+    saveas(uRZ1VlFig,[sbase 'bhv_RZ1Vl20_bar'],'png')
+    saveas(uRZ2VlFig,[sbase 'bhv_RZ2Vl20_bar'],'png')
 end
 
 %% Velocity coding
@@ -757,7 +837,7 @@ ylabel('Spatial Information (Bits/spike)')
 lcEithPkFig = plotBar2(lcDat(siFrstID & ~siLastID,3),lcDat(siLastID & ~siFrstID,7));
 ylabel('Peak Field FR (Hz)')
 
-siBothCounts = [groupcounts(recID(siFrstID,1)) groupcounts(recID(siLastID,1))];
+siBothCounts = [groupcounts(recID(siFrstID,1),[mID;mID(end)+1],'IncludeEmptyGroups',true) groupcounts(recID(siLastID,1),[mID;mID(end)+1],'IncludeEmptyGroups',true)];
 siBothRatio = siBothCounts ./ [groupcounts(recID(useCC,1)) groupcounts(recID(useCC,1))];
 [~,ps.lc_SICt_both,~,stats.lc_SICt_both] = ttest(siBothCounts(:,1),siBothCounts(:,2));
 lcBothCtFig = plotBarByMouse(siBothRatio);
@@ -1157,6 +1237,9 @@ if saveFlag
 end
 
 %% SPWR Data
+% rpDat: 2&4 = sig.; 1&3 = participation; 
+% rpRat: 1&2 = rate by mouse
+
 swrFrstID = useCC & rpDat(:,2) > 1;
 swrLastID = useCC & rpDat(:,4) > 1;
 swrBothID = swrFrstID & swrLastID;
@@ -1177,6 +1260,11 @@ swrBothCounts = [groupcounts(recID(swrFrstID,1)) groupcounts(recID(swrLastID,1))
 [~,ps.swr_ModCt_both,~,stats.swr_ModCt_both] = ttest(swrBothCounts(:,1),swrBothCounts(:,2));
 swrModCtFig = plotBarByMouse(swrBothCounts);
 ylabel('# SPW-R Modulated')
+
+% swrBothCounts = [groupcounts(recID(swrFrstID,1)) groupcounts(recID(swrLastID,1))];
+% swrBothRatio = swrBothCounts ./ [groupcounts(recID(useCC,1)) groupcounts(recID(useCC,1))];
+% swrModCtFig = plotBarByMouse(swrBothRatio); ylim([0 1])
+% ylabel('P(Sig. Ripple Mod.)')
 
 if saveFlag
     saveas(tmpSWPie,[sbase 'swr_Mod_pie'],'png')
@@ -1211,6 +1299,28 @@ if saveFlag
     saveas(swrBothPstSortPreFig,[sbase 'swr_both_pst_sortPre'],'png')
     saveas(swrBothPreSortPreHisto,[sbase 'swr_both_pre_distro'],'png')
     saveas(swrBothPstSortPstHisto,[sbase 'swr_both_pst_distro'],'png')
+end
+
+%% Compare Ripples across tr, ir, and rr cells
+
+% [~,ps.swr_postMod_trVrr,~,stats.swr_postMod_trVrr] = ttest(rpDat(:,1),rpDat(:,2));
+[~,ps.swr_prePrt_trVrr,~,stats.swr_prePrt_trVrr] = ttest2(rpDat(trCells,1),rpDat(rrCells,1));
+[~,ps.swr_pstPrt_trVrr,~,stats.swr_pstPrt_trVrr] = ttest2(rpDat(trCells,3),rpDat(rrCells,3));
+
+swPartPreTRVRRFig = plotBar2(rpDat(trCells,1),rpDat(rrCells,1));
+ylabel('P(SPW-R Participation)'); xticklabels(["TR","RR"]); xlabel('Familiar')
+
+swPartPstTRVRRFig = plotBar2(rpDat(trCells,3),rpDat(rrCells,3));
+ylabel('P(SPW-R Participation)'); xticklabels(["TR","RR"]); xlabel('Novel')
+
+% swrTRRRCounts = [groupcounts(recID(trCells,1)) groupcounts(recID(rrCells,1))];
+% swrBothRatio = swrBothCounts ./ [groupcounts(recID(useCC,1)) groupcounts(recID(useCC,1))];
+% swrModCtFig = plotBarByMouse(swrBothRatio); ylim([0 1])
+% ylabel('P(Sig. Ripple Mod.)')
+
+if saveFlag
+    saveas(swPartPreTRVRRFig,[sbase 'swr_trVrr_preParticip'],'png')
+    saveas(swPartPstTRVRRFig,[sbase 'swr_trVrr_pstParticip'],'png')
 end
 
 %% Plot units by anatomical position and other data

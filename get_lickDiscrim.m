@@ -28,14 +28,16 @@ if rz1(1) < 0   % if RZ length puts the start of RZ in previous lap
 end
 rz2 = [rzPos(2) - rzLen, rzPos(2)];
 
-for i = 1:sess.nlaps
+ct = 1;
+for i = sess.valTrials
     tmpLckPos = sess.pos(sess.lckind(sess.lckind > sess.lapstt(i) & sess.lckind < sess.lapend(i)));
     
     for j = 1:size(rz1,1)
         tmpRZ1lcks(j,:) = histcounts(tmpLckPos,rz1(j,:)); % Account for anticipatory licks on previous lap
     end
-    lckmap1(i,:) = tmpRZ1lcks;
-    lckmap2(i,1) = histcounts(tmpLckPos,rz2);
+    lckmap1(ct,:) = tmpRZ1lcks;
+    lckmap2(ct,1) = histcounts(tmpLckPos,rz2);
+    ct = ct+1;
 end
 
 if size(rz1,1) == 2

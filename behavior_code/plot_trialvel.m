@@ -59,7 +59,7 @@ if plotflag
     % plot(bnvel','Color',[.5 .5 .5])
     xlabel('Position'); % xlim([0 200])
     ylabel('Average Velocity'); ylim([0 prctile(sess.velshft,99)])
-    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    set(gca,'FontSize',12,'FontName','Arial','YDir','reverse')
 end
 
 end

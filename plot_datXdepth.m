@@ -1,4 +1,4 @@
-function [fhandle] = plot_datXdepth(root, datStruc, goodflag, muaflag, noiseflag, typeFlag)
+function [fhandle] = plot_datXdepth(root, datStruc, goodflag, muaflag, noiseflag, typeflag)
 %% Plots a metric, like Firing Rate, by depth of each unit
 % Separates colormaps by unit classification (noise/mua/good)
 % dot size indicates firing rate (normalized)
@@ -6,10 +6,11 @@ function [fhandle] = plot_datXdepth(root, datStruc, goodflag, muaflag, noiseflag
 %
 % Inputs:
 %   root        = root object. Must have root.tssync and root.tsb fields
-%   datStruc    = 
+%   datStruc    = created by ec_pilot_script.m with various fields
 %   goodflag    = binary, whether to plot good units
 %   muaflag     = binary, whether to plot mua units
 %   noiseflag   = binary, whether to plot noise units
+%   typeflag    = 1: Firing Rate; 2: theta; 3: spatial info; 4: opto peak T
 %
 % Outputs:
 %   fhandle = handle to figure
@@ -23,7 +24,7 @@ arguments
     goodflag  = 1   % Plot good/mua/noise units
     muaflag   = 1
     noiseflag = 1
-    typeFlag  = 1   % 1 = FR; 2 = Theta phase;
+    typeflag  = 1   % 1 = FR; 2 = Theta phase;
 end
 
 ngood   = length(root.good);
@@ -38,14 +39,14 @@ catch
     return
 end
 
-if typeFlag == 1
+if typeflag == 1
     % normfr      = root.info.fr / max(root.info.fr);
     maxDat      = max(root.info.fr);
     datGood     = root.info.fr(root.goodind);
     datMUA      = root.info.fr(root.muaind);
     datNoise    = root.info.fr(root.noiseind);
     xlabstr     = 'Avg Firing Rate (Hz)';
-elseif typeFlag == 2
+elseif typeflag == 2
     maxDat      = 360;
     for i = 1:length(root.good)
         datGood(i) = rad2deg(datStruc.thetastats(i).ang);
@@ -53,13 +54,13 @@ elseif typeFlag == 2
     end
     datGood = datGood' + 180;
     xlabstr     = 'Theta Angle (180 = trough)';
-elseif typeFlag == 3
+elseif typeflag == 3
     maxDat      = max(datStruc.trueSI);
     datGood     = datStruc.trueSI;
     datSig      = datStruc.sig <= 0.05;
     % binSig      = histcounts(datGood(datSig),spBins); %Do accumulator instead
     xlabstr     = 'Spatial Information (bits/spike)';
-elseif typeFlag == 4
+elseif typeflag == 4
     maxDat      = max(datStruc.optoPkT).*1000;
     datGood     = datStruc.optoPkT'.*1000;
     xlabstr     = 'First post-opto peak (ms)';    
@@ -88,7 +89,7 @@ if muaflag
     legCell(legCt) = {'MUA'}; legCt = legCt +1;
 end
 if goodflag
-    if typeFlag == 2 | typeFlag == 3
+    if typeflag == 2 | typeflag == 3
         tmpID = root.info.shankID(root.goodind);
         tmpD = root.info.depth(root.goodind);
         sgnsig = scatter(ax1, datGood(~datSig) + tmpID(~datSig).*maxDat, tmpD(~datSig), 'filled');

@@ -1,6 +1,5 @@
-function [] = combine_rzShiftDat(datT,fname,sdir)
+function [] = combine_rzShiftDat(datT,fname,region,sdir)
 
-%% 
 frDat = [];     % [frstHalf.standFR, frstHalf.runFR, lastHalf.standFR, lastHalf.runFR]
 recID = [];     % [mouseID, recDay, recUnit ID, dist2center, dist2border]
 useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
@@ -41,9 +40,17 @@ for i = 1:height(datT)
     for j = 1:nShanks
         tmpUnits = root.info.shankID == j-1;
         if datT{i,6+j}{1} == 'ca1'
-            roiUnits(tmpUnits) = 0;
+            if region == 'ca1'
+                roiUnits(tmpUnits) = 1;
+            else
+                roiUnits(tmpUnits) = 0;
+            end
         elseif datT{i,6+j}{1} == 'sub'
-            roiUnits(tmpUnits) = 1;
+            if region == 'sub'
+                roiUnits(tmpUnits) = 1;
+            else
+                roiUnits(tmpUnits) = 0;
+            end
         elseif datT{i,6+j}{1} == 'bdr'
             roiUnits(tmpUnits) = 0;
         end
@@ -106,7 +113,11 @@ for i = 1:height(datT)
     bvDat(ct).uPstLckDI = lastHalf.ulckDI;
     bvDat(ct).pstRZVel = lastHalf.preRZV;
     bvDat(ct).uPstRZVel = lastHalf.uPreRZV;
-    
+    bvDat(ct).uPreRZVel20 = frstHalf.uPreRZV20;
+    bvDat(ct).uPreLckDI20 = frstHalf.ulckDI20;
+    bvDat(ct).uPstRZVel20 = lastHalf.uPreRZV20;
+    bvDat(ct).uPstLckDI20 = lastHalf.ulckDI20;
+
     ct = ct + 1;
 end
 
