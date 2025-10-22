@@ -1,4 +1,4 @@
-% Subiculum RZ Shift
+% Old Subiculum RZ Shift
 % spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2';
 % spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
 % spath = 'D:\Data\Kelton\analyses\KW048\KW048_06172025_rec_D2_RLat2';
@@ -8,17 +8,26 @@
 % spath = 'D:\Data\Kelton\analyses\KW060\KW060_08242025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';
 
-% Sub RZ Randomization
+% Old Sub RZ Randomization
 % spath = 'D:\Data\Kelton\analyses\KW040\KW040_05012025_rec_D6_LMed1';
 % spath = 'D:\Data\Kelton\analyses\KW049\KW049_06202025_rec_D5_LLat2';
 % spath = 'D:\Data\Kelton\analyses\KW049\KW049_06222025_rec_D6_LMed1';
-spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_10012025_rec_D5_LLat2';
 
-% CA1 RZ Shift
+% Old CA1 RZ Shift
 % spath = 'D:\Data\Kelton\analyses\FG044\FG044_20250710_R2';
 % spath = 'D:\Data\Kelton\analyses\KW062\KW062_09052025_rec_D3_RMed1';
 % spath = 'D:\Data\Kelton\analyses\KW065\KW065_09042025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW066\KW066_09122025_rec_D2_RLat2';
+
+% New Sub RZ Randomization
+% spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_10012025_rec_D5_LLat2';
+
+% New CA1 RZ Shift
+% spath = 'D:\Data\Kelton\analyses\ZM001\ZM001_10012025_rec_D5_LLat2';
+% spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_09262025_rec_D2_RLat2';
+
+% Operant RZ Shift
+spath = 'D:\Data\Kelton\analyses\KW073\KW073_10132025_rec_D1_RLat1';
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -28,7 +37,7 @@ load(sessfile.name)
 epochfile = dir("*_RwdShift_Data2.mat");
 try load(epochfile.name); catch; disp('No existing epoched data file'); end
 
-rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.1,1);   % Find lap of reward shift
+rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
 nUnits = length(root.good);
 saveFlag = 1;
 
@@ -47,9 +56,9 @@ lastHalfInds         = [sess.lapstt(sess.valTrials(rwdShift+1)) sess.ind(end)];
 [sessFrst, rootFrst] = epochStruc(sess,root,frstHalfInds);
 [sessLast, rootLast] = epochStruc(sess,root,lastHalfInds);
 
-%% Plot example pre/post behavior
+%% Plot pre/post behavior
 
-lickDIFig = plot_lickDiscrim(sess,[r1pos r2pos]*100,30,10);
+lickDIFig = plot_lickDiscrim(sess,[r1pos r2pos]*100,15,10);
 plot([rwdShift rwdShift], [-1 1], 'k--','HandleVisibility','off')
 
 bhvrFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,1,6);
@@ -62,6 +71,18 @@ if saveFlag
     saveas(ppVelFig,[root.name '_prepostVel'], 'png')
     saveas(ppLckFig,[root.name '_prepostLck'], 'png')
 end
+
+%% Velocity correlation by lap
+
+preVelMap = plot_lap_velCCorr(sessFrst,0.01,0.002,0);
+pstVelMap = plot_lap_velCCorr(sessLast,0.01,0.002,0);
+preVelAvg = mean(preVelMap);
+pstVelAvg = mean(pstVelMap);
+
+preVCorXLap = corr(preVelMap',preVelAvg','rows','complete');
+pstVCorXLap = corr(pstVelMap',pstVelAvg','rows','complete');
+
+figure; hold on; plot(preVCorXLap), plot(pstVCorXLap);
 
 %% Plot example pre/post unit
 cc = 323;
@@ -269,6 +290,7 @@ set(gca,'FontSize',12,'FontName','Arial')
 lyrUnits = root.info.lyrID(root.goodind) == 1;
 hiFRUnits = root.info.fr(root.goodind) > 0.1;
 useUnits = lyrUnits & hiFRUnits & root.info.uType(root.goodind);
+frstHalf.useUnits = useUnits; lastHalf.useUnits = useUnits;
 siUnits = useUnits & (frstHalf.sig <= 0.05 | lastHalf.sig <= 0.05);
 frstSIUnits = useUnits & (frstHalf.sig <= 0.05);
 lastSIUnits = useUnits & (lastHalf.sig <= 0.05);
@@ -1412,6 +1434,78 @@ if saveFlag
     save([sbase, 'stats'],'ps','stats')
 end
 
+%% Compare old data to new
+
+% Sub Comparisons
+% load('D:\Data\Kelton\analyses\ZM002\ZM002_10012025_rec_D5_LLat2\ZM002_10012025_rec_D5_LLat2_RwdShift_Data2.mat');
+% load('D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort\subRwdShift_data5.mat');
+
+% CA1 comparisons
+% load('D:\Data\Kelton\analyses\ZM001\ZM001_10012025_rec_D5_LLat2\ZM001_10012025_rec_D5_LLat2_RwdShift_Data2.mat');
+load('D:\Data\Kelton\analyses\ZM002\ZM002_09262025_rec_D2_RLat2\ZM002_09262025_rec_D2_RLat2_RwdShift_Data2.mat');
+load('D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\ca1shift\ca1RwdShift_data.mat');
+
+sbase = 'ca1Compare_';
+% cd('D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort\compareRest')
+% cd('D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\ca1shift\compareRest_ZM001')
+cd('D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\ca1shift\compareRest_ZM002')
+
+ps = struct;
+stats = struct;
+
+[~,ps.FRstand,~,stats.FRstand] = ttest2(frDat(useCC,1), frstHalf.frStandRun(useUnits,1));
+frStandFig = plotBar2(frDat(useCC,1), frstHalf.frStandRun(useUnits,1));
+xticklabels({'10m Rest', '20m Rest'}); text2bar(frStandFig,'FR Stand (Hz)',ps.FRstand);
+
+[~,ps.FRrun,~,stats.FRrun] = ttest2(frDat(useCC,2), frstHalf.frStandRun(useUnits,2));
+frRunFig = plotBar2(frDat(useCC,2), frstHalf.frStandRun(useUnits,2));
+xticklabels({'10m Rest', '20m Rest'}); text2bar(frRunFig,'FR Run (Hz)',ps.FRrun);
+
+[~,ps.si,~,stats.si] = ttest2(lcDat(useCC & lcDat(:,1) < 0.05,2), frstHalf.trueSI(useUnits & frstHalf.sig < 0.05));
+siFig = plotBar2(lcDat(useCC & lcDat(:,1) < 0.05,2), frstHalf.trueSI(useUnits & frstHalf.sig < 0.05));
+xticklabels({'10m Rest', '20m Rest'}); text2bar(siFig,'Spatial Info.',ps.si);
+
+[~,ps.pkFR,~,stats.pkFR] = ttest2(lcDat(useCC & lcDat(:,1) < 0.05,3), frstHalf.truePk(useUnits & frstHalf.sig < 0.05));
+pkFRFig = plotBar2(lcDat(useCC & lcDat(:,1) < 0.05,3), frstHalf.truePk(useUnits & frstHalf.sig < 0.05));
+xticklabels({'10m Rest', '20m Rest'}); text2bar(pkFRFig,'Peak FR (Hz)',ps.pkFR);
+
+[thAng, thMRL, thP] = get_thAng(frstHalf.thetastats);
+[~,ps.thMRL,~,stats.thMRL] = ttest2(thDat(useCC & thDat(:,1) < 0.05,2), thMRL(useUnits & thP' < 0.05));
+thMRLFig = plotBar2(thDat(useCC & thDat(:,1) < 0.05,2), thMRL(useUnits & thP' < 0.05)');
+xticklabels({'10m Rest', '20m Rest'}); text2bar(thMRLFig,'Theta MRL',ps.thMRL);
+
+[~,ps.thAng,~,stats.thAng] = ttest2(thDat(useCC & thDat(:,1) < 0.05,3), thAng(useUnits & thP' < 0.05));
+thAngFig = plotBar2(thDat(useCC & thDat(:,1) < 0.05,3), thAng(useUnits & thP' < 0.05)');
+xticklabels({'10m Rest', '20m Rest'}); ylim([-180 180]); text2bar(thAngFig,'Theta Angle',ps.thAng);
+
+vlSesDat = [];
+for j = 1:length(root.good)
+    vlSesDat = [vlSesDat; frstHalf.trueVelMdl(j).p, frstHalf.trueVelMdl(j).b, frstHalf.trueVelMdl(j).r];
+end
+[~,ps.vlb,~,stats.vlb] = ttest2(vlDat(useCC & vlDat(:,1) < 0.05,2), vlSesDat(useUnits & vlSesDat(:,1) < 0.05,2));
+vlbFig = plotBar2(vlDat(useCC & vlDat(:,1) < 0.05,2), vlSesDat(useUnits & vlSesDat(:,1) < 0.05,2));
+xticklabels({'10m Rest', '20m Rest'}); ylim([-1 1]); text2bar(vlbFig,'Velocity Slope',ps.vlb);
+
+[~,ps.vlr,~,stats.vlr] = ttest2(vlDat(useCC & vlDat(:,1) < 0.05,3), vlSesDat(useUnits & vlSesDat(:,1) < 0.05,3));
+vlrFig = plotBar2(vlDat(useCC & vlDat(:,1) < 0.05,3), vlSesDat(useUnits & vlSesDat(:,1) < 0.05,3));
+xticklabels({'10m Rest', '20m Rest'}); text2bar(vlrFig,'Velocity R^2',ps.vlr);
+
+[~,ps.swrPart,~,stats.swrPart] = ttest2(rpDat(useCC & rpDat(:,2) > 1,1), frstHalf.ripParticipation(useUnits' & frstHalf.ripModBinCt > 1)');
+swrPFig = plotBar2(rpDat(useCC & rpDat(:,2) > 1,1), frstHalf.ripParticipation(useUnits' & frstHalf.ripModBinCt > 1)');
+xticklabels({'10m Rest', '20m Rest'}); text2bar(swrPFig,'SPWR Particip. Rate',ps.swrPart);
+
+if saveFlag
+    saveas(frStandFig,[sbase 'frStand'],'png')
+    saveas(frRunFig,[sbase 'frRun'],'png')
+    saveas(siFig,[sbase 'spatialinfo'],'png')
+    saveas(pkFRFig,[sbase 'peakFieldFR'],'png')
+    saveas(thMRLFig,[sbase 'thetaMRL'],'png')
+    saveas(thAngFig,[sbase 'thetaAngle'],'png')
+    saveas(vlbFig,[sbase 'velocityB'],'png')
+    saveas(vlrFig,[sbase 'velocityR'],'png')
+    saveas(swrPFig,[sbase 'spwrParticipation'],'png')
+end
+
 %% Functions
 
 function [fhandle] = prepostPie(preSig,postSig,useCCs)
@@ -1582,4 +1676,26 @@ else
 end
 set(gca,'FontSize',12,'FontName','Arial')
 
+end
+
+function [fhandle] = text2bar(fhandle,textstring,tmpP)
+
+figure(fhandle)     % Make fhandle active
+
+ylabel(textstring)
+ylims = ylim;
+xlims = xlim;
+
+if tmpP < 0.001
+    sigStr = '***';
+elseif tmpP < 0.01
+    sigStr = '**'; 
+elseif tmpP < 0.05 
+    sigStr = '*';
+else
+    sigStr = 'n.s.';
+end
+
+text(xlims(2) - .6*diff(xlims), ylims(2)-.1*diff(ylims), sigStr, 'FontSize', 12)
+text(xlims(2) - .6*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(tmpP, 3)], 'FontSize', 12)
 end

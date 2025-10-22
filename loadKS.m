@@ -71,13 +71,13 @@ if length(syncfile) > 1 % i.e. for 2.0 recordings
     meta      = SGLX_readMeta.ReadMeta(syncfile(2).name, syncfile(2).folder);
     chanCt    = SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
     dataArray = SGLX_readMeta.ReadBin(0, nSamp, meta, syncfile(2).name, syncfile(2).folder);
-    dataArray = dataArray(1:chSubsamp:chanCt,1:lfSubsamp:length(dataArray)); %Subsample to 1250KHz and 1/chSubsamp channels
+    dataArray = dataArray(1:chSubsamp:chanCt,1:lfSubsamp:length(dataArray)); %Subsample to 1250 Hz and 1/chSubsamp channels
     dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:size(dataArray,1), meta).*1000; %Outputs channels in mVolts
 else
     chSubsamp = 4;
     lfSubsamp = 2;
     [~,chanCt]= SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
-    dataArray = dataArray(1:chSubsamp:chanCt,1:lfSubsamp:length(dataArray)); %Subsample to 1250kHz and 1/chSubsamp channels
+    dataArray = dataArray(1:chSubsamp:chanCt,1:lfSubsamp:length(dataArray)); %Subsample to 1250 Hz and 1/chSubsamp channels
     dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:size(dataArray,1), meta).*1000; %Outputs channels in mVolts    
 end
 

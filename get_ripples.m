@@ -32,7 +32,7 @@ arguments
     dThresh = [15 250] % Min and Max ripple duration
 end
 
-% Get Analytic siganl envelope
+% Get Analytic signal envelope
 rawlf = root.lfp(chan,:); 
 riplf = bandpass(rawlf, [150, 250], root.fs_lfp);
 ripEnv = abs(hilbert(riplf));

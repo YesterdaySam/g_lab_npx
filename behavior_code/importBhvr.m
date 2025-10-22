@@ -63,11 +63,20 @@ for i = 1:size(bhvrFile,1)
     sess.rwd        = double(sess.didat == 2);
     [~,sess.rwdind] = findpeaks(sess.rwd);
     sess.rst        = double(sess.didat == 1);
-    [~,sess.lapstt] = findpeaks(sess.rst); sess.lapstt = sess.lapstt + 1; % Account for position reset lagged by 1 index
+
+    [~,sess.lapstt] = findpeaks(sess.rst);
+    % Account for position holding steady for a few timestamps after reset
+    for j = 1:length(sess.lapstt)
+        tmp = find(sess.pos(sess.lapstt(j):end) < 0.1,1,'first');
+        if tmp > 10; tmp = 1; disp('Extra long post-reset delay at track end in importBhvr'); end
+        sess.lapstt(j) = sess.lapstt(j) + tmp -1;
+    end
+    % sess.lapstt     = sess.lapstt + 1;  % Account for position reset lagged by 1 index
     sess.lapstt     = [sess.ind(1); sess.lapstt];   %use first ts as first lap start
     sess.lapend     = [sess.lapstt(2:end) - 1; sess.ind(end)];     %Use last ts as last lap end
+
     sess.nlaps      = size(sess.lapend,1);
-    sess            = getErrorTrials(sess);     % Identify non-rewarded trials and trials >2m long
+    sess            = getErrorTrials(sess);     % Identify trials of the right length and rewarded trials
     sess            = get_RunInds(sess,0.04,2); % Add runInds variable with binary of running (1) or standing (0)
 
     if sess.nlaps == 1      % In case of reset error
