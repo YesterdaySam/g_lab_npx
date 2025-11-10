@@ -1,4 +1,4 @@
-function [ripSpkZ, binedges, fhandle] = plot_frXripple(root,unit,sess,ripref,wlen,bnsz,plotflag)
+function [binSpkCts, binedges, ripSpkZ, fhandle] = plot_frXripple(root,unit,sess,ripref,wlen,bnsz,plotflag)
 %% Plots the avg binned firing rate by position of a unit
 %
 % Inputs:
@@ -57,11 +57,11 @@ for i = 1:nRips
     ripRast = [ripRast; tmpspks, i*ones(numel(tmpspks),1)];
 end
 
-ripSpkPr  = sum(ripFRMap) ./ sum(ripFRMap,'all');
+% ripSpkPr  = sum(ripFRMap) ./ sum(ripFRMap,'all');
 muRipFR = mean(sum(ripFRMap),'all');
 sdRipFR = std(sum(ripFRMap),0,'all');
-% ripSpkZ = (sum(ripFRMap) - muRipFR)/sdRipFR;
-ripSpkZ = sum(ripFRMap);
+ripSpkZ = (sum(ripFRMap) - muRipFR)/sdRipFR;
+binSpkCts = sum(ripFRMap);
 
 if plotflag
     fhandle = figure; hold on;
@@ -72,16 +72,16 @@ if plotflag
     currlims = ylim;
     ylim([currlims(1) currlims(2)*1.10])
     xlim([-wlen wlen])
-    yyaxis right
-    plot((-wlen:bnsz:wlen-1), ripSpkPr, 'r')
-    ylabel('Spike Probability'); ylim([0 1])
-    ax = gca;
-    ax.YAxis(2).Color = 'r';
-    % legend({'Spike Raster','Spike Probability'})
+    % yyaxis right
+    % plot((-wlen:bnsz:wlen-1), ripSpkPr, 'r')
+    % ylabel('Spike Probability'); ylim([0 1])
+    % ax = gca;
+    % ax.YAxis(2).Color = 'r';
+    % % legend({'Spike Raster','Spike Probability'})
     set(gca,'FontSize',12,'FontName','Arial')
-    if exist("tmpind")
-        title(['Unit ' num2str(unit) ', Shank ' num2str(root.info.shankID(tmpind)), ', Depth ', num2str(root.info.depth(tmpind)) 'um'])
-    end
+    % if exist("tmpind")
+    %     title(['Unit ' num2str(unit) ', Shank ' num2str(root.info.shankID(tmpind)), ', Depth ', num2str(root.info.depth(tmpind)) 'um'])
+    % end
 end
 
 end

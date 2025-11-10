@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\ZM006\ZM006_10142025_rec_D2_RLat2';
-datpath = 'D:\Data\Kelton\probe_data\ZM006\ZM006_10142025_rec_D2_RLat2_g0';
+spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_09252025_rec_D1_RLat1';
+datpath = 'D:\Data\Kelton\probe_data\ZM002\ZM002_09252025_rec_D1_RLat1_g0';
 
 loadKS(datpath,spath,1); 
 root = alignBhvrTS(spath,spath,spath);

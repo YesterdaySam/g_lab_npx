@@ -1,4 +1,4 @@
-function [fhandle] = plot_prepost_vel(sess1,sess2,dbnsz,plotflag)
+function [preHeatmapF,pstHeatmapF,averageSumF] = plot_prepost_vel(sess1,sess2,dbnsz,plotflag)
 %% Overlay linearized velocity (binned by space) pre and post
 % Inputs
 %   sess        = struct from importBhvr.m
@@ -18,7 +18,33 @@ end
 r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
 r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:30))),1);
 
+vspbnsz = 0.01;
+vMap1 = plot_lap_velCCorr(sess1,vspbnsz,0.002,0);
+vMap2 = plot_lap_velCCorr(sess2,vspbnsz,0.002,0);
+
 if plotflag
+    preHeatmapF = figure;
+    set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.45])
+    imagesc(vMap1,[prctile(vMap1,1,'all'), prctile(vMap1,99,'all')]);
+    colormap("hot")
+    cbar = colorbar; clim([0 prctile(vMap1,99,'all')]);
+    xlabel('Position (cm)'); % xlim([0 200])
+    xticks(1:90:length(binedges1)); xticklabels(binedges1(1:90:length(binedges1))*100);
+    yticks(30:30:size(vMap1,1));
+    ylabel('Trial #'); ylabel(cbar,'Velocity (cm/s)','FontSize',12,'Rotation',90)
+    set(gca,'FontSize',12,'FontName','Arial')
+
+    pstHeatmapF = figure;
+    set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.45])
+    imagesc(vMap2,[prctile(vMap2,1,'all'), prctile(vMap2,99,'all')]);
+    colormap("hot")
+    cbar = colorbar; clim([0 prctile(vMap1,99,'all')]);
+    xlabel('Position (cm)'); % xlim([0 200])
+    ylabel('Trial #'); ylabel(cbar,'Velocity (cm/s)','FontSize',12,'Rotation',90)
+    xticks(1:90:length(binedges2)); xticklabels(binedges2(1:90:length(binedges2))*100);
+    yticks(30:30:size(vMap2,1));
+    set(gca,'FontSize',12,'FontName','Arial')
+
     sem1 = std(bnvel1,'omitnan')/sqrt(sess1.nlaps);
     ciup1 = rmmissing(mean(bnvel1,1,'omitnan') + sem1*1.96);
     cidn1 = rmmissing(mean(bnvel1,1,'omitnan') - sem1*1.96);
@@ -26,7 +52,7 @@ if plotflag
     ciup2 = rmmissing(mean(bnvel2,1,'omitnan') + sem2*1.96);
     cidn2 = rmmissing(mean(bnvel2,1,'omitnan') - sem2*1.96);
 
-    fhandle = figure; hold on
+    averageSumF = figure; hold on
     ylim([0 prctile(sess1.velshft,99)])
     cmapwinter = winter(2);
     set(gcf,'units','normalized','position',[0.4 0.35 0.22 0.35])

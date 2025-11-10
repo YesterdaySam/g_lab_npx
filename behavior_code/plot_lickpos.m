@@ -21,7 +21,9 @@ sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 nlaps       = length(sess.lapstt);
 
-binedges = 0:bnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+sess.maxPos = 1.85;
+% binedges = 0:bnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+binedges = 0:bnsz:sess.maxPos;
 
 nbins           = size(binedges,2);
 
@@ -44,8 +46,13 @@ end
 % Find rewards after valid lap starts
 rwdmap = [];
 for i = 1:nlaps
-    tmprwd = sess.pos(sess.rwdind(find(sess.rwdind > sess.lapstt(i),1)));
-    rwdmap = [rwdmap; tmprwd, i];
+    try
+        tmprwd = sess.pos(sess.rwdind(find(sess.rwdind > sess.lapstt(i),1)));
+        rwdmap = [rwdmap; tmprwd, i];
+    catch
+        tmprwd = NaN;
+        rwdmap = [rwdmap; tmprwd, i];
+    end
 end
 
 if plotflag

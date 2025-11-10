@@ -57,14 +57,16 @@ if plotflag
     if normflag
         spkmap = normalize(spkmap,'range');
         imagesc(spkmap,[prctile(spkmap,1,'all'), prctile(spkmap,99,'all')]);
+        xticks([1,length(binedges)-1]); xticklabels(binedges([1 end])*100);
+        yticks(0:30:size(spkmap,1));
     else
         imagesc(spkmap,[prctile(spkmap,1,'all'), prctile(spkmap,99,'all')]);
         cbar = colorbar;
         ylabel(cbar,'FR (Hz)','FontSize',12,'Rotation',90)
+        xticks(1:10:length(binedges)+1)
+        xticklabels(binedges(1:10:end)*100)
     end
     clim([prctile(spkmap,1,'all'), prctile(spkmap,99,'all')]);
-    xticks(1:10:length(binedges))
-    xticklabels(binedges(1:10:end)*100)
     xlabel('Position (cm)');
     ylabel('Trial #');
     set(gca,'FontSize',12,'FontName','Arial','YDir','normal')

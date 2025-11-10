@@ -65,6 +65,7 @@ for i = 1:size(bhvrFile,1)
     sess.rst        = double(sess.didat == 1);
 
     [~,sess.lapstt] = findpeaks(sess.rst);
+    
     % Account for position holding steady for a few timestamps after reset
     for j = 1:length(sess.lapstt)
         tmp = find(sess.pos(sess.lapstt(j):end) < 0.1,1,'first');

@@ -55,6 +55,20 @@ for i = 1:height(datT)
             roiUnits(tmpUnits) = 0;
         end
     end
+    if sum(roiUnits) == 0
+        continue
+    end
+
+    % Redundant remake first/last root and sess
+    rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
+    if isfield(sess,'rwdTrials')
+        rwdShift = sess.rwdTrials(rwdShift);
+    end
+
+    frstHalfInds         = [sess.ind(1) sess.lapend(rwdShift)];
+    lastHalfInds         = [sess.lapstt(sess.valTrials(rwdShift+1)) sess.ind(end)];
+    [sessFrst, rootFrst] = epochStruc(sess,root,frstHalfInds);
+    [sessLast, rootLast] = epochStruc(sess,root,lastHalfInds);
 
     pkExclude = frstHalf.truePk < 1 & lastHalf.truePk < 1;
     useUnits = root.info.lyrID(root.goodind) == 1 & root.info.fr(root.goodind) > 0.1 ...
@@ -91,6 +105,12 @@ for i = 1:height(datT)
     lcMap = [lcMap; frstHalf.posfr, lastHalf.posfr];
 
     % === Concatenate SPWR Modulation data ===
+    for j = 1:nUnits
+        cc = root.good(j);
+        [~,~,frstHalf.swrz(j,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,150,5,0);
+        [~,~,lastHalf.swrz(j,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,wlen,histoBnsz,0);
+    end
+
     rpDat = [rpDat; frstHalf.ripParticipation', frstHalf.ripModBinCt', ...
         lastHalf.ripParticipation', lastHalf.ripModBinCt'];
     rpRat = [rpRat; frstHalf.ripRate, lastHalf.ripRate];
@@ -105,19 +125,36 @@ for i = 1:height(datT)
     pvStr(ct).pstBlockPV = lastHalf.pvXlap;
     
     % === Concatenate Behavior data ===
-    bvDat(ct).preLckDI = frstHalf.lckDI;
-    bvDat(ct).uPreLckDI = frstHalf.ulckDI;
-    bvDat(ct).preRZVel = frstHalf.preRZV;
-    bvDat(ct).uPreRZVel = frstHalf.uPreRZV;
-    bvDat(ct).pstLckDI = lastHalf.lckDI;
-    bvDat(ct).uPstLckDI = lastHalf.ulckDI;
-    bvDat(ct).pstRZVel = lastHalf.preRZV;
-    bvDat(ct).uPstRZVel = lastHalf.uPreRZV;
+    [~,~,preLckMap] = plot_lickpos(sessFrst,0.03,0);
+    [~,~,pstLckMap] = plot_lickpos(sessLast,0.03,0);
+
+    bvDat(ct).preLckDI    = frstHalf.lckDI;
+    bvDat(ct).uPreLckDI   = frstHalf.ulckDI;
+    bvDat(ct).preRZVel    = frstHalf.preRZV;
+    bvDat(ct).uPreRZVel   = frstHalf.uPreRZV;
+    bvDat(ct).pstLckDI    = lastHalf.lckDI;
+    bvDat(ct).uPstLckDI   = lastHalf.ulckDI;
+    bvDat(ct).pstRZVel    = lastHalf.preRZV;
+    bvDat(ct).uPstRZVel   = lastHalf.uPreRZV;
     bvDat(ct).uPreRZVel20 = frstHalf.uPreRZV20;
     bvDat(ct).uPreLckDI20 = frstHalf.ulckDI20;
     bvDat(ct).uPstRZVel20 = lastHalf.uPreRZV20;
     bvDat(ct).uPstLckDI20 = lastHalf.ulckDI20;
-
+    bvDat(ct).preVMap     = frstHalf.spVelMap;
+    bvDat(ct).pstVMap     = lastHalf.spVelMap;
+    bvDat(ct).uPreVF20    = mean(frstHalf.spVelMap(1:20,:),'omitnan');
+    bvDat(ct).uPreVL20    = mean(frstHalf.spVelMap(end-19:end,:),'omitnan');
+    bvDat(ct).uPstVF20    = mean(lastHalf.spVelMap(1:20,:),'omitnan');
+    bvDat(ct).uPstVL20    = mean(lastHalf.spVelMap(end-19:end,:),'omitnan');
+    bvDat(ct).preLMap     = preLckMap;
+    bvDat(ct).pstLMap     = pstLckMap;
+    bvDat(ct).uPreLF20    = mean(preLckMap(1:20,:),'omitnan');
+    bvDat(ct).uPreLL20    = mean(preLckMap(end-19:end,:),'omitnan');
+    bvDat(ct).uPstLF20    = mean(pstLckMap(1:20,:),'omitnan');
+    bvDat(ct).uPstLL20    = mean(pstLckMap(end-19:end,:),'omitnan');
+    bvDat(ct).vCorPre     = frstHalf.vCorXLap;
+    bvDat(ct).vCorPst     = lastHalf.vCorXLap;
+    
     ct = ct + 1;
 end
 

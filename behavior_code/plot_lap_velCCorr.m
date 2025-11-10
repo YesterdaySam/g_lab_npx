@@ -28,7 +28,11 @@ sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
 
-binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+if isfield(sess,'maxPos')
+    binedges = 0:dbnsz:sess.maxPos;    % Base max binsize on first valid trial
+else    
+    binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+end
 nbins = length(binedges)-1;
 
 spVelMat = zeros(sess.nlaps,nbins);

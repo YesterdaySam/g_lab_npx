@@ -46,7 +46,7 @@ if plotflag
     xlabel('Position'); % xlim([0 200])
     % xticks(1:45:length(binedges)); xticklabels(binedges(1:45:length(binedges))*100);
     ylabel('Trial #'); ylabel(cbar,'cm/s','FontSize',12,'Rotation',90)
-    set(gca,'FontSize',12,'FontName','Arial','YDir','reverse')
+    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
     sem = std(bnvel,'omitnan')/sqrt(sess.nlaps);
     ciup = rmmissing(mean(bnvel,1,'omitnan') + sem*1.96);
@@ -59,7 +59,7 @@ if plotflag
     % plot(bnvel','Color',[.5 .5 .5])
     xlabel('Position'); % xlim([0 200])
     ylabel('Average Velocity'); ylim([0 prctile(sess.velshft,99)])
-    set(gca,'FontSize',12,'FontName','Arial','YDir','reverse')
+    set(gca,'FontSize',12,'FontName','Arial')
 end
 
 end

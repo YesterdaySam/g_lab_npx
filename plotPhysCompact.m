@@ -77,7 +77,7 @@ for i = 1:nUnits
         if thetaF
             tmpInd = find(root.info.cluster_id == cc);
             lfpInd = root.info.shankID(tmpInd) + 1; % Account for 0-indexing
-            [~,~,tmptheta] = plot_thetaMod(root,cc,lfpInd,2*pi/36);   % Plot theta modulation relative to local theta, 10 degree bin size (Quilichini et al., 2010)
+            [~,~,tmptheta] = plot_thetaMod(root,cc,lfpInd);   % Plot theta modulation relative to local theta, 10 degree bin size (Quilichini et al., 2010)
         end
 
         if acgF

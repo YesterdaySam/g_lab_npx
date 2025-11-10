@@ -30,6 +30,9 @@ end
 sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
+if isfield(sess,'rwdTrials')
+    sess.nlaps = length(sess.rwdTrials);
+end
 
 binedges = -wlen:tbnsz:wlen;
 spkinds = root.tsb(root.cl == unit);

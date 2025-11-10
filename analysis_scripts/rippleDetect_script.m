@@ -15,7 +15,8 @@ saveFlag = 1;
 % chan = find(root.lfpinfo.lfpch == 336);
 chan = root.uPSDMax(2,3);
 
-root.ripples = get_ripples(root,chan,sess,3,5,[15 250]);
+% root.ripples = get_ripples(root,chan,sess,3,5,[15 250]);
+root.ripples = root.ripStruc(chan).ripples;
 
 rawlf = root.lfp(chan,:);
 riplf = bandpass(rawlf, [150, 250], root.fs_lfp);

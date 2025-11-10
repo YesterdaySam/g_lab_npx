@@ -26,14 +26,16 @@ rng(2); % For repeatability in plotting
 
 if plotflag
     fhandle = figure; hold on
+    set(gcf,'units','normalized','position',[0.4 0.35 0.24 0.39])
     plot([min(anatDists(datInclude,2)) max(anatDists(datInclude,2))], [0 0], 'k--')
+    plot([0.5 0.5],[min(anatDists(datInclude,1)) max(anatDists(datInclude,1))],'k--')
     xrand = 0.05*(rand(sum(datInclude),1)-0.5);
     scatter(anatDists(datInclude,2)+xrand, anatDists(datInclude,1),[],dat(datInclude),'filled')
     colormap(mapcol)
-    colorbar;
+    % colorbar;
     xlabel('% Distance to CA1/Sub border')
     ylabel('Distance to layer center (um)')
-    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    set(gca,'FontSize',16,'FontName','Arial','YDir','normal')
 end
 
 end
