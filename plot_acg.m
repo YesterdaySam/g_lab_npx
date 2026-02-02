@@ -1,4 +1,4 @@
-function [fhandle] = plot_acg(root,unit,bnsz,winlen,plotflag)
+function [fhandle,countMat,binedges] = plot_acg(root,unit,bnsz,winlen,plotflag)
 %% Calculates waveform width and FWHM and automatically assigns
 %
 % Inputs:
@@ -40,6 +40,8 @@ if plotflag
     xlabel('Lag (ms)')
     ylabel('Count')
     set(gca,'FontSize',12,'FontName','Arial')
+else
+    fhandle = 0;
 end
 
 end

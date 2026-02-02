@@ -46,12 +46,11 @@ end
 % Find rewards after valid lap starts
 rwdmap = [];
 for i = 1:nlaps
-    try
-        tmprwd = sess.pos(sess.rwdind(find(sess.rwdind > sess.lapstt(i),1)));
+    tmprwd = sess.pos(sess.rwdind(find(sess.rwdind > sess.lapstt(i) & sess.rwdind < sess.lapend(i),1)));
+    if ~isempty(tmprwd)
         rwdmap = [rwdmap; tmprwd, i];
-    catch
-        tmprwd = NaN;
-        rwdmap = [rwdmap; tmprwd, i];
+    else
+        rwdmap = [rwdmap; NaN, i];
     end
 end
 

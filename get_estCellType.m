@@ -33,6 +33,7 @@ unitcls  = [];
 unitprhp = []; % pre-hyperpolarization
 unitpohp = []; % post-hyperpolarization
 unitPkVy = []; % Peak to valley time
+unituACG = []; % average acg time
 
 for i = 1:height(root.info)
     % unit = root.info.cluster_id == i;
@@ -85,6 +86,10 @@ for i = 1:height(root.info)
     unitFW   = [unitFW; (lowind(2) + length(firsthalf)) - lowind(1)];
     unitProm = [unitProm; tmpprom(maxind)];
     unitPkVy = [unitPkVy; lowind(2)-1]; % Difference between trough point (lowind(2)) and peak point (lasthalf(1))
+
+    % Csicsvari et al., 199 https://www.sciencedirect.com/science/article/pii/S0896627300805255?via%3Dihub
+    % [~,countMat,tmpedges] = plot_acg(root,root.info.cluster_id(i),1,50,0);
+    % unituACG = [unituACG; mean(nonzeros(countMat(:,51:end) .* (1:50)))];    % Average of nonzero elements of the acg mat * bin
 end
 
 % Convert to ms

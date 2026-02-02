@@ -1,11 +1,16 @@
 % EC
 % spath = 'D:\Data\Kelton\analyses\KW043\KW043_05062025_rec_D1_RMed1';
-spath = 'D:\Data\Kelton\analyses\KW043\KW043_05072025_rec_D2_RLat1';
+% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05072025_rec_D2_RLat1';
 % spath = 'D:\Data\Kelton\analyses\KW043\KW043_05082025_rec_D3_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW043\KW043_05092025_rec_D4_RMed2';
 % spath = 'D:\Data\Kelton\analyses\KW054\KW054_07292025_rec_D1_RMed1';
 % spath = 'D:\Data\Kelton\analyses\KW054\KW054_07302025_rec_D2_RLat1';
 % spath = 'D:\Data\Kelton\analyses\KW054\KW054_07312025_rec_D3_RMed2';
+% spath = 'D:\Data\Kelton\analyses\KW084\KW084_12172025_rec_D1_RMed1';
+% spath = 'D:\Data\Kelton\analyses\KW084\KW084_12182025_rec_D2_RMed1';
+% spath = 'D:\Data\Kelton\analyses\KW083\KW083_12172025_rec_D1_RMed1';
+% spath = 'D:\Data\Kelton\analyses\KW083\KW083_12182025_rec_D2_RMed1';
+% spath = 'D:\Data\Kelton\analyses\KW083\KW083_12192025_rec_D3_RLat2';
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -23,7 +28,7 @@ dbnsz = 0.05;
 histoBnsz = 5;
 wlen = 150;
 ripRef = root.ripRef;
-r1pos = 0.9;    % 10 cm
+r1pos = 0.9;    % 90 cm
 binpos = 0.025:dbnsz:1.825;
 tmpD = root.info.depth(root.goodind);
 
@@ -113,8 +118,7 @@ if saveFlag
     save([root.name '_ec_pilot_dat'],'datStruc')
 end
 
-%% Future analyses
-% Plot spatial frequency of each cell for 1D grid cells
+%% Plot unit parameters by depth
 
 for i = 1:length(root.good)
     tmp = get_firstPk(datStruc,i);
@@ -131,6 +135,17 @@ if saveFlag
     saveas(opDepthFig,[sbase '_ec_pilot_opXdepth.png'])
 end
 
+%% Splitting by gamma and depth
+% Fernandez-Ruiz et al., 2021 Gamma-S = 30-50; Gamma-M = 60-80; Gamma-L = 100-150
+
+root = addRootLFP(spath);
+root = get_lfpXdepth(root,[6 10; 150 250; 30 50; 60 80; 100 150]);
+tmpLFPDensityFig = plot_lfpXdepth(root);
+ylim([0 max(root.lfpinfo.lfpDepth)])
+set(gcf,'units','normalized','position',[0.4 0.2 0.3 0.6])
+
+saveas(tmpLFPDensityFig,[sbase '_LFPPower.png'])
+
 %% Assign putative layer
 
 for i = 1:length(root.good)
@@ -140,9 +155,9 @@ end
 
 shortLat = datStruc.optoPkT <= 0.01;
 
-figure; hold on
-plot(datStruc.thAng+180,datStruc.optoPkT,'ko')
-plot(datStruc.thAng(shortLat)+180,datStruc.optoPkT(shortLat),'r*')
+% figure; hold on
+% plot(datStruc.thAng+180,datStruc.optoPkT,'ko')
+% plot(datStruc.thAng(shortLat)+180,datStruc.optoPkT(shortLat),'r*')
 
 % PCA attempt
 % clusterDat = [normalize(datStruc.thAng'+180,'range'),normalize(datStruc.optoPkT','range'),normalize(tmpD,'range')];
@@ -180,13 +195,33 @@ opDepthFig = plot_datXdepth(root,datStruc,1,0,0,4); % peri-opto peak time
 plot(datStruc.optoPkT(datStruc.lyrID == 5)*1000, tmpD(datStruc.lyrID == 5),'k*')
 plot(datStruc.optoPkT(datStruc.lyrID == 3)*1000, tmpD(datStruc.lyrID == 3),'c*')
 plot(datStruc.optoPkT(datStruc.lyrID == 2)*1000, tmpD(datStruc.lyrID == 2),'m*')
-legend('Data','EC5','EC3','EC2')
+% legend('Data','EC5','EC3','EC2')
+set(gcf,'units','normalized','position',[0.4 0.2 0.15 0.6]); xlim([0 100]); xticks([0 100]); xticklabels([0 100])
 
 thDepthFig = plot_datXdepth(root,datStruc,1,0,0,2); % theta
 plot(datStruc.thAng(datStruc.lyrID == 5)+180, tmpD(datStruc.lyrID == 5),'k*')
 plot(datStruc.thAng(datStruc.lyrID == 3)+180, tmpD(datStruc.lyrID == 3),'c*')
 plot(datStruc.thAng(datStruc.lyrID == 2)+180, tmpD(datStruc.lyrID == 2),'m*')
-legend('Data','EC5','EC3','EC2')
+% legend('Data','EC5','EC3','EC2')
+set(gcf,'units','normalized','position',[0.4 0.2 0.15 0.6]);
+
+saveas(opDepthFig,[sbase '_opXdepth.png'])
+saveas(thDepthFig,[sbase '_thXdepth.png'])
+
+%% Plot theta filtered lfp by depth over time window
+thlfp = bandpass(root.lfp', [6 10], root.fs_lfp);
+twin = [600 630];
+indwin = twin*root.fs_lfp ;
+
+thXdepthFig = figure; hold on
+set(gcf,'units','normalized','position',[0.45 0.05 0.14 0.6])
+for i = 1:size(thlfp,2)
+    plot(sess.ts(root.lfp_tsb(indwin(1):indwin(2))), 100*thlfp(indwin(1):indwin(2),i) + root.lfpinfo.lfpDepth(i),'k')
+end
+ylim([-30 2600]); xlim([615 616]); xlabel('Time (s)'); ylabel('Depth (um)')
+set(gca,'FontSize',12,'FontName','Arial')
+grid on
+saveas(thXdepthFig,[sbase '_thLFPXdepth.png'])
 
 %% Descriptive statistics and graphs
 % root.good(sigFrst <= 0.05 & sigLast <= 0.05 & root.info.fr(root.goodind)' > 0.1 & root.info.lyrID(root.goodind)' == 1)
@@ -547,36 +582,6 @@ end
 
 %% Functions
 
-function [firstPkT] = get_firstPk(datStruc,unit)
-
-tmpOpto = squeeze(datStruc.optoMat(unit,:,:));
-
-baseInds = datStruc.optobins < 0;
-counts = sum(tmpOpto);
-baseMu = mean(counts(baseInds));
-baseSD = std(counts(baseInds));
-
-countZ = (counts - baseMu) ./ baseSD;
-smoothZ = smoothdata(countZ,'gaussian',10);
-
-[tmppks, tmplocs] = findpeaks(smoothZ);
-
-% figure; hold on
-% plot(datStruc.optobins,countZ)
-% plot(datStruc.optobins,smoothZ)
-% plot(datStruc.optobins(tmplocs),tmppks,'v')
-
-% first peak >2 Z score
-postPulsePks = datStruc.optobins(tmplocs) > 0;
-hiPks = tmppks > 2;
-
-firstPkT = datStruc.optobins(tmplocs(find(postPulsePks & hiPks, 1)));
-
-if isempty(firstPkT)
-    firstPkT = NaN;
-end
-
-end
 
 function [fhandle] = plotDistroHisto(distro1,binpos,rzPos)
 vColors2 = [0.5 0.5 1; 0.75 0.75 1];

@@ -1,4 +1,4 @@
-function [fhandle] = plot_trialraster(root,unit,sess,vthresh,plotflag)
+function [fhandle] = plot_burstSpkRaster(root,unit,sess,vFlag,plotflag)
 %% Plots the spatially linearized spike raster for each trial of one unit
 %
 % Inputs:
@@ -18,7 +18,7 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
-    vthresh = 0.04  %meters/s; velocity threshold
+    vFlag = 1  %meters/s; velocity threshold
     plotflag = 1    %binary
 end
 
@@ -28,24 +28,28 @@ sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
 
 spkinds = root.tsb(root.cl == unit);
-spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+bstinds = get_bursts(root,sess,unit);
+if vFlag
+    spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
+    bstinds = bstinds(sess.runInds(bstinds));
+end
 
 spkpos = [];
+bstpos = [];
 rwdpos = [];
 
 for i = 1:sess.nlaps
     tmpspks = sess.pos(spkinds(spkinds > sess.lapstt(i) & spkinds < sess.lapend(i)));
+    tmpbsts = sess.pos(bstinds(bstinds > sess.lapstt(i) & bstinds < sess.lapend(i)));
     tmprwd  = sess.pos(sess.rwdind(sess.rwdind > sess.lapstt(i) & sess.rwdind < sess.lapend(i)));
 
     spkpos  = [spkpos; tmpspks, i*ones(length(tmpspks),1)];
-    if ~isempty(tmprwd)
-        try
-            rwdpos  = [rwdpos; tmprwd, i];
-        catch
-            rwdpos = [rwdpos; NaN, i];
-        end
-    else
+    bstpos  = [bstpos; tmpbsts, i*ones(length(tmpbsts),1)];
+
+    if isempty(tmprwd)
         rwdpos = [rwdpos; NaN, i];
+    else
+        rwdpos  = [rwdpos; tmprwd, i];
     end
 end
 
@@ -54,8 +58,9 @@ end
 if plotflag
     fhandle = figure;      % Positional Lick Raster
     hold on
-    set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+    set(gcf,'units','normalized','position',[0.4 0.35 0.21 0.36])
     plot(spkpos(:,1)*100,spkpos(:,2),'k|')
+    plot(bstpos(:,1)*100,bstpos(:,2),'ro')
     plot(rwdpos(:,1)*100,rwdpos(:,2),'b*')
     xlabel('Position (cm)'); xlim([0 100*max(sess.pos(sess.lapstt(1):sess.lapend(1)))])
     ylabel('Trial #'); ylim([0 sess.nlaps])

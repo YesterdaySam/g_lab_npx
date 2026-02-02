@@ -1,8 +1,8 @@
 % 10m rest Subiculum RZ Shift
 % spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2';
-% spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
+spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
 % spath = 'D:\Data\Kelton\analyses\KW048\KW048_06172025_rec_D2_RLat2';
-spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2';
+% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW058\KW058_08222025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW059\KW059_08212025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW060\KW060_08242025_rec_D2_RLat2';
@@ -15,7 +15,7 @@ spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2';
 
 % 10m rest CA1 RZ Shift
 % spath = 'D:\Data\Kelton\analyses\FG044\FG044_20250710_R2';
-% spath = 'D:\Data\Kelton\analyses\KW062\KW062_09052025_rec_D3_RMed1';
+% spath = 'D:\Data\Kelton\analyses\KW062\KW062_09052025_rec_D3_RMed1';  % One sub shank
 % spath = 'D:\Data\Kelton\analyses\KW065\KW065_09042025_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW066\KW066_09122025_rec_D2_RLat2';
 
@@ -59,6 +59,9 @@ r2pos = 1;      % 100cm
 binpos = dbnsz/2:dbnsz:1.85-dbnsz/2;
 sbase = root.name;
 vColors2 = [.35 .35 .35; 1 .25 .25];
+
+root = burst2root(root,sess);
+saveRoot(root);
 
 % Epoch into pre/post reward shift for reward shift sessions
 frstHalfInds         = [sess.ind(1) sess.lapend(rwdShift)];
@@ -120,11 +123,13 @@ lastHalf.spVelMap = plot_lap_velCCorr(sessLast,vspbnsz,0.002,0);
 
 % Full circular shift of old RZ vel to match new
 frstHalf.alnVelMap = [frstHalf.spVelMap(1:end-1,(1.85-0.90)/vspbnsz:1.85/vspbnsz) frstHalf.spVelMap(2:end,0.01/vspbnsz:(1.85-0.90)/vspbnsz-1)];
-frstHalf.vCorXLap = corr(frstHalf.alnVelMap',mean(frstHalf.alnVelMap)','rows','complete');
-lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(frstHalf.alnVelMap)','rows','complete');
-tmp = [frstHalf.vCorXLap; NaN(5-mod(size(frstHalf.vCorXLap,1),5),1)]; 
+% frstHalf.vCorXLap = corr(frstHalf.alnVelMap',mean(frstHalf.alnVelMap)','rows','complete');
+% lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(frstHalf.alnVelMap)','rows','complete');
+frstHalf.vCorXLap = corr(frstHalf.spVelMap', mean(frstHalf.spVelMap(end-29:end,:))','rows','complete');
+lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(lastHalf.spVelMap(31:60,:))','rows','complete');
+tmp = [frstHalf.vCorXLap; NaN(5-mod(size(frstHalf.vCorXLap,1),5),1)]; % Get average every 5 laps
 frstHalf.vCorAvg = nanmean(reshape(tmp,5,size(tmp,1)/5));
-tmp = [lastHalf.vCorXLap; NaN(5-mod(size(lastHalf.vCorXLap,1),5),1)]; 
+tmp = [lastHalf.vCorXLap; NaN(5-mod(size(lastHalf.vCorXLap,1),5),1)]; % Get average every 5 laps
 lastHalf.vCorAvg = nanmean(reshape(tmp,5,size(tmp,1)/5));
 
 vXCorLapsFig = figure; hold on; 
@@ -142,8 +147,27 @@ if saveFlag
     save([root.name '_RwdShift_Data2'],'frstHalf','lastHalf')
 end
 
+%% Use top 20 laps
+% Take top 20 correlated laps to epoch average
+[~,tmpi] = maxk(frstHalf.vCorXLap,20);
+frstHalf.vCorXLap20 = corr(frstHalf.alnVelMap',mean(frstHalf.alnVelMap(tmpi,:))','rows','complete');
+lastHalf.vCorXLap20 = corr(lastHalf.spVelMap', mean(frstHalf.alnVelMap(tmpi,:))','rows','complete');
+tmp = [frstHalf.vCorXLap20; NaN(5-mod(size(frstHalf.vCorXLap20,1),5),1)]; % Get average every 5 laps
+frstHalf.vCorAvg20 = nanmean(reshape(tmp,5,size(tmp,1)/5));
+tmp = [lastHalf.vCorXLap20; NaN(5-mod(size(lastHalf.vCorXLap20,1),5),1)]; % Get average every 5 laps
+lastHalf.vCorAvg20 = nanmean(reshape(tmp,5,size(tmp,1)/5));
+
+vXCorLapsFig = figure; hold on; 
+plot(frstHalf.vCorXLap20,'Color',vColors2(1,:)); 
+plot(lastHalf.vCorXLap20,'Color',vColors2(2,:)); % plot(smooth(preVCorXLap),'r','LineWidth',2); plot(smooth(pstVCorXLap),'b','LineWidth',2);
+plot(2.5:5:length(frstHalf.vCorAvg20)*5,frstHalf.vCorAvg20,'Color',vColors2(1,:),'LineWidth',2); 
+plot(2.5:5:length(lastHalf.vCorAvg20)*5,lastHalf.vCorAvg20,'Color',vColors2(2,:),'LineWidth',2)
+legend({'Pre-shift','Post-shift'},'Location','se'); 
+ylabel('Velocity Correlation'); xlabel('Lap'); 
+set(gca,'FontSize',16,'FontName','Arial')
+
 %% Plot example pre/post unit
-cc = 230;
+cc = 270;
 close all
 rzPosFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,1);
 rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
@@ -161,6 +185,19 @@ if saveFlag
     saveas(rzSWRFig,[sbase 'spwrMod'], 'png')
 end
 
+%% Plot pre/post acg
+cc = 270;
+[acgpre,countpre,binedges] = plot_acg(rootFrst,cc,5,250);
+[acgpst,countpst] = plot_acg(rootLast,cc,5,250);
+halfInd = round(250/5)+1;
+
+fhandle = figure; hold on
+bar(1000*(binedges(halfInd:end-1)+2/1000/5),sum(countpre(:,halfInd:end)) ./ sum(countpre,'all'),'FaceColor',vColors2(1,:),'EdgeColor',vColors2(1,:),'FaceAlpha',0.5);
+bar(1000*(binedges(halfInd:end-1)+2/1000/5),sum(countpst(:,halfInd:end)) ./ sum(countpst,'all'),'FaceColor',vColors2(2,:),'EdgeColor',vColors2(2,:),'FaceAlpha',0.5);
+xlabel('Lag (ms)')
+ylabel('Spike Probability')
+set(gca,'FontSize',12,'FontName','Arial')
+
 %% Plot example behavior traces
 
 laps = [63:66,106:107];
@@ -169,11 +206,18 @@ if saveFlag
     fsave(exBhvrTracesFig,[sbase '_exampleBhvrTraces'])
 end
 
-%% Plot heatmap and combined average traces
-cc = 342;
-% sess.valTrials = sess.rwdTrials;
+%% Plot heatmap, burst raster and combined average traces
+cc = 366;
+sess.valTrials = sess.rwdTrials;
+sessFrst.valTrials = sessFrst.rwdTrials;
+sessLast.valTrials = sessLast.rwdTrials;
 
 hmFig = plot_trialHeatmap(root,cc,sess,dbnsz,0,1,1,3); hold on;
+plot([1 length(binpos)],[rwdShift rwdShift],'w--','LineWidth',2);
+set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.4])
+set(gca,'FontSize',16,'FontName','Arial')
+
+[rasFig] = plot_burstSpkRaster(root,cc,sess);
 plot([1 length(binpos)],[rwdShift rwdShift],'w--','LineWidth',2);
 set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.4])
 set(gca,'FontSize',16,'FontName','Arial')
@@ -197,16 +241,37 @@ xlabel('Position (cm)'); ylabel({'Firing Rate'; '(spk/s)'})
 set(gca,'FontSize',16,'FontName','Arial')
 % legend('Familiar', 'Novel')
 
+[~,bsMap1] = get_burstsXpos(rootFrst,cc,sessFrst,dbnsz);
+[ciup1, cidn1] = get_CI(bsMap1);
+[~,bsMap2] = get_burstsXpos(rootLast,cc,sessLast,dbnsz);
+[ciup2, cidn2] = get_CI(bsMap2);
+
+bsFig = figure; hold on
+xcoords = 100*binpos;
+set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.20])
+plot_CIs(xcoords,ciup1,cidn1,'k')
+plot(xcoords,mean(bsMap1),'k')
+plot_CIs(xcoords,ciup2,cidn2,'r')
+plot(xcoords,mean(bsMap2),'r')
+ymax = round(max([max(mean(bsMap1),[],'all') max(mean(bsMap2),[],'all')]))+0.25;
+ylim([0 ymax]); yticks([0 round(ymax)]);
+xlim([0 max(xcoords)])
+xlabel('Position (cm)'); ylabel({'Burst Rate'; '(burst/s)'})
+set(gca,'FontSize',16,'FontName','Arial')
+legend('Familiar', 'Novel')
+
 disp(['Unit ' num2str(cc) ' Peak FR: ', num2str(max([max(frMap1,[],'all') max(frMap2,[],'all')]))])
 if saveFlag
     sbase = [root.name '_cc' num2str(cc) '_rwdshift_'];
     fsave(hmFig,[sbase 'heatmap'])
     fsave(frFig,[sbase 'frXpos'])
+    fsave(rasFig,[sbase 'raster'])
+    fsave(bsFig,[sbase 'burstXpos'])
 end
 
 sess = getErrorTrials(sess);
 
-%% Plot example units relative to ripples
+%% Plot example units relative to ripples and bursts
 cc = 488;
 
 ripref = root.ripRef; % Index of ripStruc to use as reference ripples
@@ -245,12 +310,15 @@ for i = 1:nUnits
     % [~,~,lastHalf.trueVelMdl(i)] = plot_frXvel(rootLast,cc,sessLast,2,0);
     % [frstHalf.thetastats(i),frstHalf.thetafr(i,:)] = plot_thetaMod(rootFrst,cc,lfpInd,2*pi/36,0);
     % [lastHalf.thetastats(i),lastHalf.thetafr(i,:)] = plot_thetaMod(rootLast,cc,lfpInd,2*pi/36,0);
-    % frstHalf.swrfr(i,:) = plot_frXripple(rootFrst,cc,sessFrst,ripRef,wlen,histoBnsz,0);
-    % lastHalf.swrfr(i,:) = plot_frXripple(rootLast,cc,sessLast,ripRef,wlen,histoBnsz,0);
+    % [spwr_frst,~,frstHalf.swrz(j,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,wlen,histoBnsz,0);
+    % [spwr_last,~,lastHalf.swrz(j,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,wlen,histoBnsz,0);
     % [~,frstHalf.rwdfr(i,:),frstHalf.trueRI(i)] = plot_frXrwdtime(rootFrst,cc,sessFrst,0.25,5,0);
     % [~,lastHalf.rwdfr(i,:),lastHalf.trueRI(i)] = plot_frXrwdtime(rootLast,cc,sessLast,0.25,5,0);
-    [~,frstHalf.frMap(:,:,i),frstHalf.spkMap(:,:,i)] = get_frXpos(rootFrst,cc,sessFrst,0.05,1.85,1);
-    [~,lastHalf.frMap(:,:,i),lastHalf.spkMap(:,:,i)] = get_frXpos(rootLast,cc,sessLast,0.05,1.85,1);
+    % [~,frstHalf.frMap(:,:,i),frstHalf.spkMap(:,:,i)] = get_frXpos(rootFrst,cc,sessFrst,0.05,1.85,1);
+    % [~,lastHalf.frMap(:,:,i),lastHalf.spkMap(:,:,i)] = get_frXpos(rootLast,cc,sessLast,0.05,1.85,1);
+    frstHalf.burstIndex(i) = get_burstIndex(rootFrst,sessFrst,cc);
+    lastHalf.burstIndex(i) = get_burstIndex(rootLast,sessLast,cc);
+    [binedges,binBR,bstmap,uBR] = get_burstsXpos(root,unit,sess);
 end
 
 % frstHalf = subEpochSI(sessFrst,rootFrst,frstHalf,10);
@@ -336,8 +404,8 @@ for i = 1:nUnits
     frstHalf.ripParticipation(i) = get_RipParticipation(rootFrst,cc,sessFrst,ripRef,wlen);
     spwr_last = plot_frXripple(rootLast,cc,sessLast,ripRef,wlen,histoBnsz,0);
     lastHalf.ripParticipation(i) = get_RipParticipation(rootLast,cc,sessLast,ripRef,wlen);
-    p_frst = get_confband(squeeze(frstHalf.shufSPWR(:,i,:)),spwr_frst);
-    p_last = get_confband(squeeze(lastHalf.shufSPWR(:,i,:)),spwr_last);
+    frstHalf.ripModBins = get_confband(squeeze(frstHalf.shufSPWR(:,i,:)),spwr_frst);
+    lastHalf.ripModBins = get_confband(squeeze(lastHalf.shufSPWR(:,i,:)),spwr_last);
     frstHalf.ripModBinCt(i) = sum(p_frst);
     lastHalf.ripModBinCt(i) = sum(p_last);
 end
@@ -413,6 +481,9 @@ set(gca,'FontSize',12,'FontName','Arial')
 
 lcBothSIFig = plotBar2(frstHalf.trueSI(siUnits), lastHalf.trueSI(siUnits));
 ylabel('Spatial Information (Bits/spike)')
+
+burstFig = plotBar2(frstHalf.burstIndex(useUnits)', lastHalf.burstIndex(useUnits)');
+ylabel('Burst Index')
 
 if saveFlag
     sbase = root.name;
@@ -507,12 +578,12 @@ bothSIUnits = useUnits & (lastHalf.sig <= 0.05 & frstHalf.sig <= 0.05);
 idMat = logical(eye(nBins));
 % dgMat = logical(spdiags([1 1],[-round(nBins/2) round(nBins/2)],nBins,nBins));
 
-uPVPrePre = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothSIUnits,idMat);
+uPVPrePre = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothSIUnits);
 uPVPrePst = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothSIUnits,idMat);
 frstHalf.pvXlap = [uPVPrePre, uPVPrePst];
 
 uPVPstPre = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothSIUnits,idMat);
-uPVPstPst = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothSIUnits,idMat);
+uPVPstPst = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothSIUnits);
 lastHalf.pvXlap = [uPVPstPre, uPVPstPst];
 
 pvXtimeFig = figure; hold on;
@@ -677,27 +748,6 @@ end
 % %     decodepos(i) = frstHalf.binpos(id);
 % % end
 
-
-%% Burst analysis attempt
-% Bursts >2 spikes in <6ms interleaved Simonnet et al 2019 (Juxtacellular patch) https://www.jneurosci.org/content/39/19/3651
-% Bursts >2 spikes in <9ms Royer et al 2016 https://pmc.ncbi.nlm.nih.gov/articles/PMC4919905/
-% 
-% cc = 130; 
-% 
-% spkind = root.tsb(root.cl == cc);
-% spkts = sess.ts(spkind(sess.runInds(spkind)));
-% 
-% bursts = spkts(logical([(diff(spkts) < 0.0091), 0]));
-% 
-% figure; hold on; plot(spkts,ones(size(spkts)),'k|')
-% plot(bursts,ones(size(bursts)),'r.')
-% 
-% wn = 0.05;
-% burstMap = [];
-% % for i = 1:length(bursts)
-% %     tmpspks = 
-% % end
-
 % ========================================================================%
 % ========================================================================%
 % ========================================================================%
@@ -747,6 +797,22 @@ mID = unique(recID(:,1));
 nTotal = size(recID,1);
 r1posInd = find(binpos > r1pos,1);
 r2posInd = find(binpos > r2pos,1);
+
+vlFrstID = useCC & vlDat(:,1) <= 0.05;
+vlLastID = useCC & vlDat(:,4) <= 0.05;
+vlBothID = vlFrstID & vlLastID;
+thFrstID = useCC & thDat(:,1) <= 0.05;
+thLastID = useCC & thDat(:,4) <= 0.05;
+thBothID = thFrstID & thLastID;
+siFrstID = useCC & lcDat(:,1) <= 0.05;
+siLastID = useCC & lcDat(:,5) <= 0.05;
+siBothID = siFrstID & siLastID;
+swrFrstID = useCC & rpDat(:,2) > 1;
+swrLastID = useCC & rpDat(:,4) > 1;
+swrBothID = swrFrstID & swrLastID;
+bstFrstID = useCC & bsDat(:,1) > 0;
+bstLastID = useCC & bsDat(:,2) > 0;
+bstBothID = bstFrstID & bstLastID;
 
 %% Behavior comparisons
 
@@ -813,17 +879,36 @@ for i = 1:length(mID)
     uPstLL20(i,:) = bvDat(i).uPstLL20;
 end
 
-uPreVelF = plot_bhvrTraceXmouse(uPreVel,uPreVF20,uPreVL20,[0.45 0.45 0.45; 0 0 0]);
-ylabel('Velocity (cm/s)'); ylim([0 50])
+xcoordsPre = [10 40];
+xcoordsPst = [100 130];
+ycoords = [0 50];
+uPreVelF = plot_bhvrTraceXmouse(circshift(uPreVel,30,2),uPreVF20,uPreVL20,[0.45 0.45 0.45; 0 0 0]);
+xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
+patch([xcoordsPre,fliplr(xcoordsPre)],[0 0 50 50],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+patch([xcoordsPst,fliplr(xcoordsPst)],[0 0 50 50],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+plot([40 40],[0 50],'--','Color',vColors2(1,:)); plot([130 130],[0 50],'--','Color',vColors2(2,:))
+ylabel('Velocity (cm/s)'); ylim([0 50]); xlim([0 186])
 
-uPstVelF = plot_bhvrTraceXmouse(uPstVel,uPstVF20,uPstVL20,[1 .65 .65; 1 0 0]);
-ylabel('Velocity (cm/s)'); ylim([0 50])
+uPstVelF = plot_bhvrTraceXmouse(circshift(uPstVel,30,2),uPstVF20,uPstVL20,[1 .65 .65; 1 0 0]);
+xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
+ylabel('Velocity (cm/s)'); ylim([0 50]); xlim([0 186])
+patch([xcoordsPre,fliplr(xcoordsPre)],[0 0 50 50],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+patch([xcoordsPst,fliplr(xcoordsPst)],[0 0 50 50],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+plot([40 40],[0 50],'--','Color',vColors2(1,:)); plot([130 130],[0 50],'--','Color',vColors2(2,:))
 
-uPreLckF = plot_bhvrTraceXmouse(uPreLck,uPreLF20,uPreLL20,[0.45 0.45 0.45; 0 0 0]);
-ylabel('Licks/spatial bin'); ylim([0 12])
+uPreLckF = plot_bhvrTraceXmouse(circshift(uPreLck,10,2),uPreLF20,uPreLL20,[0.45 0.45 0.45; 0 0 0]);
+xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
+ylabel('Licks/spatial bin'); ylim([0 12]); xlim([0 186])
+patch([xcoordsPre,fliplr(xcoordsPre)],[0 0 12 12],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+patch([xcoordsPst,fliplr(xcoordsPst)],[0 0 12 12],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+plot([40 40],[0 12],'--','Color',vColors2(1,:)); plot([130 130],[0 12],'--','Color',vColors2(2,:))
 
-uPstLckF = plot_bhvrTraceXmouse(uPstLck,uPstLF20,uPstLL20,[1 .65 .65; 1 0 0]);
-ylabel('Licks/spatial bin'); ylim([0 12])
+uPstLckF = plot_bhvrTraceXmouse(circshift(uPstLck,10,2),uPstLF20,uPstLL20,[1 .65 .65; 1 0 0]);
+xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
+ylabel('Licks/spatial bin'); ylim([0 12]); xlim([0 186])
+patch([xcoordsPre,fliplr(xcoordsPre)],[0 0 12 12],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+patch([xcoordsPst,fliplr(xcoordsPst)],[0 0 12 12],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+plot([40 40],[0 12],'--','Color',vColors2(1,:)); plot([130 130],[0 12],'--','Color',vColors2(2,:))
 
 if saveFlag
     fsave(uPreVelF,[sbase 'bhv_meanVelPre'])
@@ -862,11 +947,23 @@ if saveFlag
     fsave(frStndRunFig,[sbase 'fr_bar'])
 end
 
+%% Burst Rate pre/post
+% bsDat: 1 = familiar; 2 = novel
+
+[~,ps.bs_BI_both,~,stats.bs_BI_both] = ttest(bsDat(bstBothID,1), bsDat(bstBothID,2));
+
+% Units with bursts in both epochs
+bsFig = plotBar2(bsDat(bstBothID,1),bsDat(bstBothID,2)); ylim([0 6])
+text2bar(bsFig,'Burst Index',ps.bs_BI_both);
+bsFigZoom = plotBar2(bsDat(bstBothID,1),bsDat(bstBothID,2)); ylim([0 1.2])
+
+if saveFlag
+    fsave(bsFig,[sbase 'bs_BI_both'])
+    fsave(bsFigZoom,[sbase 'bs_BI_both_zoom'])
+end
+
 %% Velocity coding
 % vlDat: 1&4 = sig.; 2&5 = Slope/B; 3&6 = Corr/R
-vlFrstID = useCC & vlDat(:,1) <= 0.05;
-vlLastID = useCC & vlDat(:,4) <= 0.05;
-vlBothID = vlFrstID & vlLastID;
 
 % Summary of quantities
 [velPieFig, vlprcts] = prepostPie(vlFrstID,vlLastID,useCC);
@@ -894,15 +991,15 @@ vlREithFig = plotBar2(vlDat(vlFrstID & ~vlLastID,3),vlDat(vlLastID & ~vlFrstID,6
 text2bar(vlREithFig,'Velocity Corr. R^2',ps.vl_PPR_eith); xticklabels({'F-Only', 'N-Only'})
 
 % Delta histograms
-% vlDltB  = vlDat(vlBothID,5) - vlDat(vlBothID,2);
-% vlDltR  = vlDat(vlBothID,6) - vlDat(vlBothID,3);
-% binedges = -1:0.05:1;
-% vlDltRFig = plotDeltaHisto(vlDat(vlBothID,3),vlDat(vlBothID,6),binedges);
-% ylabel('Probability'); xlabel('\Delta R (Novel - Familiar)')
-% title("Significant units pre & post");
-% vlDltBFig = plotDeltaHisto(vlDat(vlBothID,2),vlDat(vlBothID,5),binedges);
-% xlabel('\Delta Slope (Novel - Familiar)')
-% title("Significant units pre & post");
+vlDltB  = vlDat(vlBothID,5) - vlDat(vlBothID,2);
+vlDltR  = vlDat(vlBothID,6) - vlDat(vlBothID,3);
+binedges = -1:0.05:1;
+vlDltRFig = plotDeltaHisto(vlDat(vlBothID,3),vlDat(vlBothID,6),binedges);
+ylabel('Probability'); xlabel('\Delta R (Novel - Familiar)')
+title("Significant units pre & post");
+vlDltBFig = plotDeltaHisto(vlDat(vlBothID,2),vlDat(vlBothID,5),binedges);
+xlabel('\Delta Slope (Novel - Familiar)')
+title("Significant units pre & post");
 
 if saveFlag
     fsave(velPieFig,[sbase 'vel_ModCt_pie'])
@@ -917,9 +1014,6 @@ end
 
 %% Theta Modulation
 % thDat: 1&4 = sig.; 2&5 = MRL; 3&6 = Angle
-thFrstID = useCC & thDat(:,1) <= 0.05;
-thLastID = useCC & thDat(:,4) <= 0.05;
-thBothID = thFrstID & thLastID;
 
 [~,ps.th_PPM_both,~,stats.th_PPM_both] = ttest(thDat(thBothID,2),thDat(thBothID,5));
 [~,ps.th_PPA_both,~,stats.th_PPA_both] = ttest(thDat(thBothID,3),thDat(thBothID,6));
@@ -1008,9 +1102,6 @@ set(gca,'FontSize',12,'FontName','Arial')
 
 %% Spatial Information, peak rate
 % lcDat: 1&5 = sig.; 2&6 = SI; 3&7 = pkRate; 4&8 = pkLoc
-siFrstID = useCC & lcDat(:,1) <= 0.05;
-siLastID = useCC & lcDat(:,5) <= 0.05;
-siBothID = siFrstID & siLastID;
 
 [~,ps.lc_PPSI_both,~,stats.lc_PPSI_both] = ttest(lcDat(siBothID,2), lcDat(siBothID,6));
 [~,ps.lc_PPPk_both,~,stats.lc_PPPk_both] = ttest(lcDat(siBothID,3), lcDat(siBothID,7));
@@ -1399,10 +1490,18 @@ set(gca,'FontSize',12,'FontName','Arial')
 [~,ps.si_pre_trrr,~,stats.si_pre_trrr] = ttest2(lcDat(trCells,2),lcDat(rrCells,2));
 [~,ps.si_pst_trrr,~,stats.si_pst_trrr] = ttest2(lcDat(trCells,6),lcDat(rrCells,6));
 
-siTRRRPreFig = plotBar2(lcDat(trCells,2),lcDat(rrCells,2),[0 0 1; 1 0 0]);
+siTRRRPreFig = plotMiniBar(lcDat(trCells,2),lcDat(rrCells,2),[0 0 1; 1 0 0]);
 xticklabels({'TR','RR'}); ylim([0 5]); text2bar(siTRRRPreFig,'Spatial Info.',ps.si_pre_trrr);
-siTRRRPstFig = plotBar2(lcDat(trCells,6),lcDat(rrCells,6),[0 0 1; 1 0 0]);
-xticklabels({'TR','RR'}); text2bar(siTRRRPstFig,'Spatial Info.',ps.si_pst_trrr);
+siTRRRPstFig = plotMiniBar(lcDat(trCells,6),lcDat(rrCells,6),[0 0 1; 1 0 0]);
+xticklabels({'TR','RR'}); ylim([0 5]); text2bar(siTRRRPstFig,'Spatial Info.',ps.si_pst_trrr);
+
+% SI Delta histogram
+[~,ps.si_dlt_tr,~,stats.si_dlt_tr] = ttest(lcDat(trCells & siBothID,2) - lcDat(trCells & siBothID,6));
+[~,ps.si_dlt_rr,~,stats.si_dlt_rr] = ttest(lcDat(rrCells & siBothID,2) - lcDat(rrCells & siBothID,6));
+binedges = -2:0.2:2;
+siTRRRDltFig = plotDeltaHisto2(lcDat(trCells,2), lcDat(trCells,6),...
+    lcDat(rrCells,2), lcDat(rrCells,6), [ps.si_dlt_tr, ps.si_dlt_rr], binedges, [0 0 1; 1 0 0]);
+xlim(binedges([1,end])); xlabel('\Delta Spatial Info (N - F)')
 
 % Theta MRL and angle
 [~,ps.thA_pre_trrr,~,stats.thA_pre_trrr] = ttest2(thDat(trCells,3),thDat(rrCells,3));
@@ -1410,57 +1509,52 @@ xticklabels({'TR','RR'}); text2bar(siTRRRPstFig,'Spatial Info.',ps.si_pst_trrr);
 [~,ps.thM_pre_trrr,~,stats.thM_pre_trrr] = ttest2(thDat(trCells,2),thDat(rrCells,2));
 [~,ps.thM_pst_trrr,~,stats.thM_pst_trrr] = ttest2(thDat(trCells,5),thDat(rrCells,5));
 
-thATRRRPreFig = plotBar2(thDat(trCells,3),thDat(rrCells,3),[0 0 1; 1 0 0]);
+thATRRRPreFig = plotMiniBar(thDat(trCells,3),thDat(rrCells,3),[0 0 1; 1 0 0]);
 xticklabels({'TR','RR'}); ylim([-180 180]); text2bar(thATRRRPreFig,'Theta angle',ps.thA_pre_trrr);
-thATRRRPstFig = plotBar2(thDat(trCells,6),thDat(rrCells,6),[0 0 1; 1 0 0]);
+thATRRRPstFig = plotMiniBar(thDat(trCells,6),thDat(rrCells,6),[0 0 1; 1 0 0]);
 xticklabels({'TR','RR'}); ylim([-180 180]); text2bar(thATRRRPstFig,'Theta angle',ps.thA_pst_trrr);
-thMTRRRPreFig = plotBar2(thDat(trCells,2),thDat(rrCells,2),[0 0 1; 1 0 0]);
-xticklabels({'TR','RR'}); text2bar(thMTRRRPreFig,'Theta MRL',ps.thM_pre_trrr);
-thMTRRRPstFig = plotBar2(thDat(trCells,4),thDat(rrCells,4),[0 0 1; 1 0 0]);
-xticklabels({'TR','RR'}); text2bar(thMTRRRPstFig,'Theta MRL',ps.thM_pst_trrr);
+% thMTRRRPreFig = plotMiniBar(thDat(trCells,2),thDat(rrCells,2),[0 0 1; 1 0 0]);
+% xticklabels({'TR','RR'}); text2bar(thMTRRRPreFig,'Theta MRL',ps.thM_pre_trrr);
+% thMTRRRPstFig = plotMiniBar(thDat(trCells,4),thDat(rrCells,4),[0 0 1; 1 0 0]);
+% xticklabels({'TR','RR'}); text2bar(thMTRRRPstFig,'Theta MRL',ps.thM_pst_trrr);
+
+% Theta Delta histograms
+[~,ps.thA_dlt_tr,~,stats.thA_dlt_tr] = ttest(thDat(trCells & thBothID,3) - thDat(trCells & thBothID,6));
+[~,ps.thA_dlt_rr,~,stats.thA_dlt_rr] = ttest(thDat(rrCells & thBothID,3) - thDat(rrCells & thBothID,6));
+binedges = rad2deg(-pi/2:pi/36:pi/2);
+thATRRRDltFig = plotDeltaHisto2(thDat(trCells & thBothID,3), thDat(trCells & thBothID,6),...
+    thDat(rrCells & thBothID,3), thDat(rrCells & thBothID,6), [ps.thA_dlt_tr, ps.thA_dlt_rr], binedges, [0 0 1; 1 0 0]);
+xlim([-50 50]); xlabel('\Delta Theta Angle (N - F)')
 
 % Velocity coding
 [~,ps.vlB_pre_trrr,~,stats.vlB_pre_trrr] = ttest2(vlDat(trCells,2),vlDat(rrCells,2));
 [~,ps.vlB_pst_trrr,~,stats.vlB_pst_trrr] = ttest2(vlDat(trCells,5),vlDat(rrCells,5));
 
-vlTRRRPreFig = plotBar2(vlDat(trCells,2),vlDat(rrCells,2),[0 0 1; 1 0 0]);
+vlTRRRPreFig = plotMiniBar(vlDat(trCells,2),vlDat(rrCells,2),[0 0 1; 1 0 0]);
 xticklabels({'TR','RR'}); ylim([-0.5 1]); text2bar(vlTRRRPreFig,'Velocity Slope',ps.vlB_pre_trrr);
-vlTRRRPstFig = plotBar2(vlDat(trCells,5),vlDat(rrCells,5),[0 0 1; 1 0 0]);
+vlTRRRPstFig = plotMiniBar(vlDat(trCells,5),vlDat(rrCells,5),[0 0 1; 1 0 0]);
 xticklabels({'TR','RR'}); ylim([-0.5 1]); text2bar(vlTRRRPstFig,'Velocity Slope',ps.vlB_pst_trrr);
 
-% SPWR Participation
-[~,ps.swr_PPPre_trrr,~,stats.swr_PPPre_trrr] = ttest2(rpDat(trCells,2),rpDat(rrCells,2));
-[~,ps.swr_PPPst_trrr,~,stats.swr_PPPst_trrr] = ttest2(rpDat(trCells,4),rpDat(rrCells,4));
-
-swPartcpTRRRPreFig = plotBar2(rpDat(trCells,1),rpDat(rrCells,1));
-xticklabels({'TR','RR'}); text2bar(swPartcpTRRRPreFig,'P(SPW-R Participation)',ps.swr_PPPre_trrr);
-swPartcpTRRRPstFig = plotBar2(rpDat(trCells,3),rpDat(rrCells,3));
-xticklabels({'TR','RR'}); text2bar(swPartcpTRRRPstFig,'P(SPW-R Participation)',ps.swr_PPPst_trrr);
-
-bardat = histoBnsz*[mean(rpDat(trCells,2)), mean(rpDat(trCells,4)); mean(rpDat(rrCells,2)), mean(rpDat(rrCells,4))];
-errdat = histoBnsz*[std(rpDat(trCells,2))./sqrt(sum(trCells)), std(rpDat(trCells,4))./sqrt(sum(trCells)); std(rpDat(rrCells,2))./sqrt(sum(rrCells)), std(rpDat(rrCells,4))./sqrt(sum(rrCells))];
-
-swrMpdTRRRFig = figure; hold on
-set(gcf,'units','normalized','position',[0.4 0.35 0.15 0.27])
-b1 = bar(bardat','FaceColor','flat');
-b1(1).CData = vColors2(1,:);
-b1(2).CData = vColors2(2,:);
-errorbar([0.85 1.15 1.85 2.15],reshape(bardat,4,1),reshape(errdat,4,1),'k.')
-xlim([0.5 2.5]); xticks(1:2); xticklabels({'Pre', 'Post'})
-ylabel('Ripple Mod. Duration (ms)'); legend({'TR','RR'},'Location','northwest')
-set(gca,'FontSize',12,'FontName','Arial')
+% Vl Delta histogram
+[~,ps.vlB_dlt_tr,~,stats.vlB_dlt_tr] = ttest(vlDat(trCells & vlBothID,2) - vlDat(trCells & vlBothID,5));
+[~,ps.vlB_dlt_rr,~,stats.vlB_dlt_rr] = ttest(vlDat(rrCells & vlBothID,2) - vlDat(rrCells & vlBothID,5));
+binedges = -.5:0.05:.5;
+vlBTRRRDltFig = plotDeltaHisto2(vlDat(trCells & vlBothID,2), vlDat(trCells & vlBothID,5),...
+    vlDat(rrCells & vlBothID,2), vlDat(rrCells & vlBothID,5), [ps.vlB_dlt_tr, ps.vlB_dlt_rr], binedges, [0 0 1; 1 0 0]);
+xlim(binedges([1,end])); xlabel('\Delta Velocity Slope (N - F)')
 
 if saveFlag
     fsave(siTRRRPreFig,[sbase 'si_prebar_trrr'])
     fsave(siTRRRPstFig,[sbase 'si_pstbar_trrr'])
+    fsave(siTRRRDltFig,[sbase 'si_dlta_trrr'])
     fsave(thATRRRPreFig,[sbase 'thA_prebar_trrr'])
     fsave(thATRRRPstFig,[sbase 'thA_pstbar_trrr'])
-    fsave(thMTRRRPreFig,[sbase 'thM_prebar_trrr'])
-    fsave(thMTRRRPstFig,[sbase 'thM_pstbar_trrr'])
+    fsave(thATRRRDltFig,[sbase 'thA_dlta_trrr'])
+    % fsave(thMTRRRPreFig,[sbase 'thM_prebar_trrr'])
+    % fsave(thMTRRRPstFig,[sbase 'thM_pstbar_trrr'])
     fsave(vlTRRRPreFig,[sbase 'vl_prebar_trrr'])
     fsave(vlTRRRPstFig,[sbase 'vl_pstbar_trrr'])
-    fsave(swPartcpTRRRPreFig,[sbase 'swr_prePartbar_trrr'])
-    fsave(swPartcpTRRRPstFig,[sbase 'swr_pstPartbar_trrr'])
+    fsave(vlBTRRRDltFig,[sbase 'vlB_dlta_trrr'])
     fsave(frSTRRRFig,[sbase 'fr_bar_trrr'])
 end
 
@@ -1535,6 +1629,7 @@ end
 
 %% PV across time
 
+lapcutoff = 65;
 for i = 1:nMice
     nTrialsPre(i) = size(pvStr(i).preBlockPV,1);
     nTrialsPst(i) = size(pvStr(i).pstBlockPV,1);
@@ -1569,16 +1664,19 @@ end
 % legend('Mice')
 % set(gca,'FontSize',16,'FontName','Arial')
 
+pvXlapPrePre = pvXlapPrePre(1:lapcutoff,:);
+pvXlapPstPst = pvXlapPstPst(1:lapcutoff,:);
+
 pvXlapFig = figure; hold on;
-set(gcf,'units','normalized','position',[0.4 0.35 0.30 0.35])
+set(gcf,'units','normalized','position',[0.4 0.35 0.24 0.30])
 [preCIup,preCIdn] = get_CI(pvXlapPrePre'); 
 [pstCIup,pstCIdn] = get_CI(pvXlapPstPst'); 
-plot_CIs(1:maxTr(1),preCIup,preCIdn,vColors2(1,:))
-plot_CIs(1:maxTr(2),pstCIup,pstCIdn,vColors2(2,:))
-plot(1:maxTr(1),nanmean(pvXlapPrePre'),'Color',vColors2(1,:),'LineWidth',2)
-plot(1:maxTr(2),nanmean(pvXlapPstPst'),'Color',vColors2(2,:),'LineWidth',2)
-ylim([0 1]); ylabel('PV Corr.'); xlabel('Lap #')
-legend({'PVC Pre-->Pre','PVC Pst-->Pst'},'location','nw')
+plot_CIs(1:lapcutoff,preCIup,preCIdn,vColors2(1,:)); % 1:maxTr(1)
+plot_CIs(1:lapcutoff,pstCIup,pstCIdn,vColors2(2,:)); % 1:maxTr(2)
+plot(1:lapcutoff,nanmean(pvXlapPrePre'),'Color',vColors2(1,:),'LineWidth',2)
+plot(1:lapcutoff,nanmean(pvXlapPstPst'),'Color',vColors2(2,:),'LineWidth',2)
+ylim([0 1]); ylabel('PV Corr.'); xlabel('Lap #'); xlim([0 lapcutoff]);
+legend({'F-->F','N-->N'},'location','nw')
 set(gca,'FontSize',16,'FontName','Arial')
 
 if saveFlag
@@ -1587,6 +1685,7 @@ end
 
 %% Velocity Corr across time
 
+lapcutoff = 65;
 for i = 1:nMice
     nTrialsPre(i) = size(bvDat(i).vCorPre,1);
     nTrialsPst(i) = size(bvDat(i).vCorPst,1);
@@ -1600,21 +1699,25 @@ for i = 1:nMice
     vcXlapPst(1:nTrialsPst(i),i) = bvDat(i).vCorPst(:,1);
 end
 
+vcXlapPre = vcXlapPre(1:lapcutoff,:);
+vcXlapPst = vcXlapPst(1:lapcutoff,:);
+
 vcXlapFig = figure; hold on;
-set(gcf,'units','normalized','position',[0.4 0.35 0.30 0.35])
+set(gcf,'units','normalized','position',[0.4 0.35 0.24 0.30])
 [preCIup,preCIdn] = get_CI(vcXlapPre'); 
 [pstCIup,pstCIdn] = get_CI(vcXlapPst'); 
-plot_CIs(1:maxTr(1),preCIup,preCIdn,vColors2(1,:))
-plot_CIs(1:maxTr(2),pstCIup,pstCIdn,vColors2(2,:))
-plot(1:maxTr(1),nanmean(vcXlapPre'),'Color',vColors2(1,:),'LineWidth',2)
-plot(1:maxTr(2),nanmean(vcXlapPst'),'Color',vColors2(2,:),'LineWidth',2)
-ylim([-0.05 1]); ylabel('PV Corr.'); xlabel('Lap #')
-legend({'Vel. Corr. Pre','Vel. Corr. Pst'},'location','nw')
+plot_CIs(1:lapcutoff,preCIup,preCIdn,vColors2(1,:))
+plot_CIs(1:lapcutoff,pstCIup,pstCIdn,vColors2(2,:))
+plot(1:lapcutoff,nanmean(vcXlapPre'),'Color',vColors2(1,:),'LineWidth',2)
+plot(1:lapcutoff,nanmean(vcXlapPst'),'Color',vColors2(2,:),'LineWidth',2)
+ylim([-0.05 1]); ylabel('Velocity Corr.'); xlabel('Lap #'); xlim([0 lapcutoff]);
+legend({'F-->F','N-->N'},'location','nw')
 set(gca,'FontSize',16,'FontName','Arial')
 
 if saveFlag
     fsave(vcXlapFig,[sbase 'bhv_v_corr_laps'])
 end
+
 %% Behavior vs PV Corr analysis
 
 vcXpvcPrePre = [];
@@ -1623,9 +1726,11 @@ vcXpvcPstPre = [];
 vcXpvcPstPst = [];
 
 for i = 1:nMice
-    vcXpvcPrePre = [vcXpvcPrePre; vcXlapPre(:,i), pvXlapPrePre(2:end,i)];   % [Vcorr, PVC] concatenated for all mice
-    vcXpvcPrePst = [vcXpvcPrePst; vcXlapPre(:,i), pvXlapPrePst(2:end,i)];
-    vcXpvcPstPre = [vcXpvcPstPre; vcXlapPst(:,i), pvXlapPstPre(:,i)];
+    % vcXpvcPrePre = [vcXpvcPrePre; vcXlapPre(:,i), pvXlapPrePre(2:end,i)];   % [Vcorr, PVC] concatenated for all mice
+    % vcXpvcPrePst = [vcXpvcPrePst; vcXlapPre(:,i), pvXlapPrePst(2:end,i)];
+    vcXpvcPrePre = [vcXpvcPrePre; vcXlapPre(:,i), pvXlapPrePre(:,i)];   % [Vcorr, PVC] concatenated for all mice
+    % vcXpvcPrePst = [vcXpvcPrePst; vcXlapPre(:,i), pvXlapPrePst(:,i)];
+    % vcXpvcPstPre = [vcXpvcPstPre; vcXlapPst(:,i), pvXlapPstPre(:,i)];
     vcXpvcPstPst = [vcXpvcPstPst; vcXlapPst(:,i), pvXlapPstPst(:,i)];
 end
 preNans = isnan(vcXpvcPrePre); preNans = sum(preNans,2) > 0;
@@ -1643,7 +1748,7 @@ plot(vcXpvcPrePre(:,1),mdlVPreXPVCprepre.ypred,'Color',vColors2(1,:),'LineWidth'
 plot(vcXpvcPstPst(:,1),mdlVPreXPVCpstpst.ypred,'Color',vColors2(2,:),'LineWidth',2)
 xlim([-1 1]); xlabel('Velocity Correlation');
 ylim([0 1]); ylabel('PV Correlation');
-legend({'preV->PrePrePVC','pstV->PstPstPVC'},'location','ne')
+legend({'F-F Vel -> F-F PVC','N-N Vel -> N-N PVC'},'location','ne')
 set(gca,'FontSize',16,'FontName','Arial')
 xlims = xlim;
 ylims = ylim;
@@ -1659,10 +1764,6 @@ end
 %% SPWR Data
 % rpDat: 2&4 = sig.; 1&3 = participation; 
 % rpRat: 1&2 = rate by mouse
-
-swrFrstID = useCC & rpDat(:,2) > 1;
-swrLastID = useCC & rpDat(:,4) > 1;
-swrBothID = swrFrstID & swrLastID;
 
 % Summary of quantities
 [tmpSWPie, swprcts] = prepostPie(swrFrstID,swrLastID,useCC);
@@ -1696,31 +1797,33 @@ if saveFlag
     fsave(swPartcpFig,[sbase 'swr_Partcp_bar'])
     fsave(swrModCtFig,[sbase 'swr_ModCt_bar'])
     fsave(swPartcpEithFig,[sbase 'swr_Partcp_eith'])
-    fsave(swrMpdTRRRFig,[sbase 'swr_ModDur_trrr'])
 end
 
 %% Waterfall by sharp wave ripple peak
 binedges = -wlen:histoBnsz:wlen;
 nBins = length(binedges)-1;
-swrPeak = find(binedges == 0,1);
+ca1RipPk = find(binedges == 0,1);
 
-[swrBothPreSortPreFig,preMap,sortPre] = plot_unitWaterfall(rpMap(swrBothID,1:length(binedges)-1),binedges);
-plot([swrPeak swrPeak],[0 sum(swrBothID)],'r--','LineWidth',2)
+% [swrBothPreSortPreFig,preMap,sortPre] = plot_unitWaterfall(rpMap(swrBothID,1:length(binedges)-1),binedges);
+[swrBothPreSortPreFig,preMap,sortPre] = plot_unitWaterfall(rpMapZ(swrBothID,1:length(binedges)-1),binedges,0,1,0,0);
+xticks([1,round(length(binedges)/2),nBins]); xticklabels(binedges([1,round(length(binedges)/2),length(binedges)]));
+plot([ca1RipPk ca1RipPk],[0 sum(swrBothID)],'r--','LineWidth',2)
 title('Familiar RZ, sort Familiar'); xlabel('Time to SWR peak (ms)')
 [swrBothPreSortPreHisto,pkMapPre] = plot_unitPkHisto(preMap,binedges); xlim([-wlen wlen])
 [~, ~, prePkBins] = pkChi2(pkMapPre,binedges);
 xlabel('Time to SWR peak (ms)')
 
 [swrBothPstSortPstFig,pstMap] = plot_unitWaterfall(rpMap(swrBothID,length(binedges):end),binedges);
-plot([swrPeak swrPeak],[0 sum(swrBothID)],'r--','LineWidth',2)
+plot([ca1RipPk ca1RipPk],[0 sum(swrBothID)],'r--','LineWidth',2)
 title('Novel RZ, sort Novel'); xlabel('Time to SWR peak (ms)')
 [swrBothPstSortPstHisto,pkMapPst] = plot_unitPkHisto(pstMap,binedges); xlim([-wlen wlen])
 [~, ~, pstPkBins] = pkChi2(pkMapPst,binedges);
 xlabel('Time to SWR peak (ms)')
 
-[swrBothPstSortPreFig,pstMap] = plot_unitWaterfall(rpMap(swrBothID,length(binedges):end),binedges,sortPre,1,0);
+% [swrBothPstSortPreFig,pstMap] = plot_unitWaterfall(rpMap(swrBothID,length(binedges):end),binedges,sortPre,1,0);
+[swrBothPstSortPreFig,pstMap] = plot_unitWaterfall(rpMapZ(swrBothID,length(binedges):end),binedges,sortPre,1,0,0);
 xticks([1,round(length(binedges)/2),nBins]); xticklabels(binedges([1,round(length(binedges)/2),length(binedges)]));
-plot([swrPeak swrPeak],[0 sum(swrBothID)],'r--','LineWidth',2)
+plot([ca1RipPk ca1RipPk],[0 sum(swrBothID)],'r--','LineWidth',2)
 title('Novel RZ, sort Familiar'); xlabel('Time to SWR peak (ms)')
 
 % Plot overlay pre to post
@@ -1734,6 +1837,8 @@ xticks([binedges(1), binedges(round(nBins/2)+1), binedges(nBins+1)]);
 set(gca,'FontSize',12,'FontName','Arial')
 text2bar(swrBothPkDistroHisto,'',ps.swr_PPPk_both,0.9);
 
+swrCbar = plotColorbar(round([prctile(rpMapZ(swrBothID,length(binedges):end),1,'all'), prctile(rpMapZ(swrBothID,length(binedges):end),98,'all')],1),'parula');
+
 if saveFlag
     fsave(swrBothPreSortPreFig,[sbase 'swr_both_pre_sortPre'])
     fsave(swrBothPstSortPstFig,[sbase 'swr_both_pst_sortPst'])
@@ -1741,28 +1846,87 @@ if saveFlag
     fsave(swrBothPreSortPreHisto,[sbase 'swr_both_pre_distro'])
     fsave(swrBothPstSortPstHisto,[sbase 'swr_both_pst_distro'])
     fsave(swrBothPkDistroHisto,[sbase 'swr_both_prepst_distro'])
+    fsave(swrCbar,[sbase 'swr_Z_Cbar'])
 end
 
 %% Compare Ripples across tr, ir, and rr cells
 
-% [~,ps.swr_postMod_trVrr,~,stats.swr_postMod_trVrr] = ttest(rpDat(:,1),rpDat(:,2));
-[~,ps.swr_prePrt_trVrr,~,stats.swr_prePrt_trVrr] = ttest2(rpDat(trCells,1),rpDat(rrCells,1));
-[~,ps.swr_pstPrt_trVrr,~,stats.swr_pstPrt_trVrr] = ttest2(rpDat(trCells,3),rpDat(rrCells,3));
+% SPWR Participation
+[~,ps.swr_PPPre_trrr,~,stats.swr_PPPre_trrr] = ttest2(rpDat(trCells,2),rpDat(rrCells,2));
+[~,ps.swr_PPPst_trrr,~,stats.swr_PPPst_trrr] = ttest2(rpDat(trCells,4),rpDat(rrCells,4));
+[~,ps.swr_PPPrePst_tr,~,stats.swr_PPPrePst_tr] = ttest2(rpDat(trCells,2),rpDat(trCells,4));
+[~,ps.swr_PPPrePst_rr,~,stats.swr_PPPrePst_rr] = ttest2(rpDat(rrCells,2),rpDat(rrCells,4));
 
-swPartPreTRVRRFig = plotBar2(rpDat(trCells,1),rpDat(rrCells,1));
-ylabel('P(SPW-R Participation)'); xticklabels(["TR","RR"]); xlabel('Familiar')
+swPartcpTRRRPreFig = plotBar2(rpDat(trCells,1),rpDat(rrCells,1));
+xticklabels({'TR','RR'}); text2bar(swPartcpTRRRPreFig,'P(SPW-R Participation)',ps.swr_PPPre_trrr);
+swPartcpTRRRPstFig = plotBar2(rpDat(trCells,3),rpDat(rrCells,3));
+xticklabels({'TR','RR'}); text2bar(swPartcpTRRRPstFig,'P(SPW-R Participation)',ps.swr_PPPst_trrr);
 
-swPartPstTRVRRFig = plotBar2(rpDat(trCells,3),rpDat(rrCells,3));
-ylabel('P(SPW-R Participation)'); xticklabels(["TR","RR"]); xlabel('Novel')
+bardat = histoBnsz*[mean(rpDat(trCells,2)), mean(rpDat(trCells,4)); mean(rpDat(rrCells,2)), mean(rpDat(rrCells,4))];
+errdat = histoBnsz*[std(rpDat(trCells,2))./sqrt(sum(trCells)), std(rpDat(trCells,4))./sqrt(sum(trCells)); std(rpDat(rrCells,2))./sqrt(sum(rrCells)), std(rpDat(rrCells,4))./sqrt(sum(rrCells))];
 
-% swrTRRRCounts = [groupcounts(recID(trCells,1)) groupcounts(recID(rrCells,1))];
-% swrBothRatio = swrBothCounts ./ [groupcounts(recID(useCC,1)) groupcounts(recID(useCC,1))];
-% swrModCtFig = plot_barXmouse(swrBothRatio); ylim([0 1])
-% ylabel('P(Sig. Ripple Mod.)')
+swrModTRRRFig = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.12 0.27])
+b1 = bar(bardat','FaceColor','flat');
+b1(1).CData = [0 0 1];
+b1(2).CData = [1 0 0];
+errorbar([0.85 1.15 1.85 2.15],reshape(bardat,4,1),reshape(errdat,4,1),'k.')
+xlim([0.5 2.5]); xticks(1:2); xticklabels({'Familiar', 'Novel'})
+ylabel('Ripple Mod. Duration (ms)'); legend({'TR','RR'},'Location','northwest')
+set(gca,'FontSize',12,'FontName','Arial')
+
+zmaxTRpre = max(abs(rpMapZ(trCells,1:length(binedges)-1)),[],2);
+zmaxRRpre = max(abs(rpMapZ(rrCells,1:length(binedges)-1)),[],2);
+zmaxTRpst = max(abs(rpMapZ(trCells,length(binedges):end)),[],2);
+zmaxRRpst = max(abs(rpMapZ(rrCells,length(binedges):end)),[],2);
+
+[~,ps.swr_ZPre_trrr,~,stats.swr_PPPre_trrr] = ttest2(zmaxTRpre,zmaxRRpre);
+[~,ps.swr_ZPst_trrr,~,stats.swr_PPPst_trrr] = ttest2(zmaxTRpst,zmaxRRpst);
+[~,ps.swr_ZPrePst_tr,~,stats.swr_PPPrePst_tr] = ttest2(zmaxTRpre, zmaxTRpst);
+[~,ps.swr_ZPrePst_rr,~,stats.swr_PPPrePst_rr] = ttest2(zmaxRRpre, zmaxRRpst);
+
+bardat = [mean(zmaxTRpre), mean(zmaxTRpst); mean(zmaxRRpre), mean(zmaxRRpst)];
+errdat = [std(zmaxTRpre)./sqrt(sum(trCells)), std(zmaxTRpst)./sqrt(sum(trCells)); std(zmaxRRpre)./sqrt(sum(rrCells)), std(zmaxRRpst)./sqrt(sum(rrCells))];
+
+% tdat = table([zeros(size(zmaxTRpre)); ones(size(zmaxRRpst))],[zmaxTRpre; zmaxRRpre],[zmaxTRpst; zmaxRRpst],...
+% [rpDat(trCells,2); rpDat(rrCells,2)], [rpDat(trCells,4); rpDat(rrCells,4)],...
+% 'VariableNames',{'unit_type','zPre','zPst','tPre','tPst'});
+% tphase = table([1 2]','VariableNames',{'Phase'});
+% rmZ = fitrm(tdat,'zPre-zPst~unit_type','WithinDesign',tphase);
+% rmT = fitrm(tdat,'tPre-tPst~unit_type','WithinDesign',tphase);
+
+swrZTRRRFig = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.12 0.27])
+b1 = bar(bardat','FaceColor','flat');
+b1(1).CData = [0 0 1];
+b1(2).CData = [1 0 0];
+errorbar([0.85 1.15 1.85 2.15],reshape(bardat,4,1),reshape(errdat,4,1),'k.')
+xlim([0.5 2.5]); xticks(1:2); xticklabels({'Familiar', 'Novel'})
+ylabel('Peak Z-score'); legend({'TR','RR'},'Location','northwest')
+set(gca,'FontSize',12,'FontName','Arial')
+
+% % [~,ps.swr_postMod_trVrr,~,stats.swr_postMod_trVrr] = ttest(rpDat(:,1),rpDat(:,2));
+% [~,ps.swr_prePrt_trVrr,~,stats.swr_prePrt_trVrr] = ttest2(rpDat(trCells,1),rpDat(rrCells,1));
+% [~,ps.swr_pstPrt_trVrr,~,stats.swr_pstPrt_trVrr] = ttest2(rpDat(trCells,3),rpDat(rrCells,3));
+% 
+% swPartPreTRVRRFig = plotBar2(rpDat(trCells,1),rpDat(rrCells,1));
+% ylabel('P(SPW-R Participation)'); xticklabels(["TR","RR"]); xlabel('Familiar')
+% 
+% swPartPstTRVRRFig = plotBar2(rpDat(trCells,3),rpDat(rrCells,3));
+% ylabel('P(SPW-R Participation)'); xticklabels(["TR","RR"]); xlabel('Novel')
+% 
+% % swrTRRRCounts = [groupcounts(recID(trCells,1)) groupcounts(recID(rrCells,1))];
+% % swrBothRatio = swrBothCounts ./ [groupcounts(recID(useCC,1)) groupcounts(recID(useCC,1))];
+% % swrModCtFig = plot_barXmouse(swrBothRatio); ylim([0 1])
+% % ylabel('P(Sig. Ripple Mod.)')
 
 if saveFlag
-    saveas(swPartPreTRVRRFig,[sbase 'swr_trVrr_preParticip'],'png')
-    saveas(swPartPstTRVRRFig,[sbase 'swr_trVrr_pstParticip'],'png')
+    % saveas(swPartPreTRVRRFig,[sbase 'swr_trVrr_preParticip'],'png')
+    % saveas(swPartPstTRVRRFig,[sbase 'swr_trVrr_pstParticip'],'png')
+    fsave(swPartcpTRRRPreFig,[sbase 'swr_prePartbar_trrr'])
+    fsave(swPartcpTRRRPstFig,[sbase 'swr_pstPartbar_trrr'])
+    fsave(swrModTRRRFig,[sbase 'swr_ModDur_trrr'])
+    fsave(swrZTRRRFig,[sbase 'swr_ModZ_trrr'])
 end
 
 %% Plot units by anatomical position and other data
@@ -1784,46 +1948,67 @@ vtrlCC = recID(:,4) < 0;
 
 % Compare theta pre shift for significant units pre-shift only
 thBothID = useCC & thDat(:,1) <= 0.05; % & thDat(:,4) <= 0.05;
+pdCMap = make_custom_cmap([0.063 0.322 0.255], [0.353 0.612 0.223],sum(thBothID));
+dvCMap = make_custom_cmap([0.353 0.835 0.772], [0.063 0.482 0.416],sum(thBothID));
 datXanatThAngFig = plot_group_datXlyr(thDat(:,3)+180,thBothID,recID(:,4:5),hsv(sum(thBothID)));
 xlim([0 0.8]); ylim([-200 250]); % datXanatThAngFig.Children(1).Label.String = 'Theta phase \circ'; clim([0 360])
-thCbar = plotColorbar([-180 180],'hsv');
-thAngProxDistFig = plot_proxVdist(thDat(:,3)+180,thBothID & proxCC,thBothID & distCC);
-text2bar(thAngProxDistFig,'Theta phase \circ',ps.th_ang_proxdist); ylim([0 360]);
-thAngDrslVtrlFig = plot_drslVvtrl(thDat(:,3)+180,thBothID & drslCC,thBothID & vtrlCC);
-xlabel('Theta phase \circ'); xlim([0 360]); text2bar(thAngDrslVtrlFig,'',ps.th_ang_drslvtrl);
-thAngPDCorrFig = plot_anatCorr(thDat(thBothID,3)+180,recID(thBothID,5),1,winter(sum(thBothID)));
-ylabel('Theta phase \circ'); ylim([0 360])
-thAngDVCorrFig = plot_anatCorr(thDat(thBothID,3)+180,recID(thBothID,4),2,parula(sum(thBothID)));
-xlabel('Firing Rate (Hz)')
+% thCbar = plotColorbar([-180 180],'hsv');
+% thAngProxDistFig = plot_proxVdist(thDat(:,3)+180,thBothID & proxCC,thBothID & distCC);
+% text2bar(thAngProxDistFig,'Theta phase \circ',ps.th_ang_proxdist); ylim([0 360]);
+% thAngDrslVtrlFig = plot_drslVvtrl(thDat(:,3)+180,thBothID & drslCC,thBothID & vtrlCC);
+% xlabel('Theta phase \circ'); xlim([0 360]); text2bar(thAngDrslVtrlFig,'',ps.th_ang_drslvtrl);
+[thAngPDCorrFig,mdlparams] = plot_anatCorr(thDat(thBothID,3)+180,recID(thBothID,5),1,pdCMap);
+ylim([0 360]); text2corr(thAngPDCorrFig,'Theta phase \circ',mdlparams); 
+[thAngDVCorrFig,mdlparams] = plot_anatCorr(thDat(thBothID,3)+180,recID(thBothID,4),2,dvCMap);
+xlabel('Theta phase \circ'); xlim([0 360]); text2corr(thAngDVCorrFig,'',mdlparams);
 
-% Compare run FR pre shift
+%Compare run FR pre shift
+pdCMap = make_custom_cmap([0.063 0.322 0.255], [0.353 0.612 0.223],sum(useCC));
+dvCMap = make_custom_cmap([0.353 0.835 0.772], [0.063 0.482 0.416],sum(useCC));
 datXanatFRFig = plot_group_datXlyr(frDat(:,2),useCC,recID(:,4:5),hot(sum(useCC)));
 xlim([0 0.8]); ylim([-200 250]); % datXanatFRFig.Children(1).Label.String = 'Firing Rate (Hz)';
-frCbar = plotColorbar([0 round(max(frDat(useCC,2)))],'hot');
-frProxDistFig = plot_proxVdist(frDat(:,2),useCC & proxCC,useCC & distCC);
-text2bar(frProxDistFig,'Firing Rate (Hz)',ps.fr_runn_proxdist);
-frDrslVtrlFig = plot_drslVvtrl(frDat(:,2),useCC & drslCC,useCC & vtrlCC);
-xlabel('Firing Rate (Hz)'); text2bar(frDrslVtrlFig,'',ps.fr_runn_drslvtrl);
-frPVCorrFig = plot_anatCorr(frDat(useCC,2),recID(useCC,5),1,winter(sum(useCC)));
-ylabel('Firing Rate (Hz)')
-frDVCorrFig = plot_anatCorr(frDat(useCC,2),recID(useCC,4),2,parula(sum(useCC)));
-xlabel('Firing Rate (Hz)')
+% frCbar = plotColorbar([0 round(max(frDat(useCC,2)))],'hot');
+% frProxDistFig = plot_proxVdist(frDat(:,2),useCC & proxCC,useCC & distCC);
+% text2bar(frProxDistFig,'Firing Rate (Hz)',ps.fr_runn_proxdist);
+% frDrslVtrlFig = plot_drslVvtrl(frDat(:,2),useCC & drslCC,useCC & vtrlCC);
+% xlabel('Firing Rate (Hz)'); text2bar(frDrslVtrlFig,'',ps.fr_runn_drslvtrl);
+[frPVCorrFig,mdlparams] = plot_anatCorr(frDat(useCC,2),recID(useCC,5),1,pdCMap);
+text2corr(frPVCorrFig,'Running FR (Hz)',mdlparams);
+[frDVCorrFig,mdlparams] = plot_anatCorr(frDat(useCC,2),recID(useCC,4),2,dvCMap);
+xlabel('Running FR (Hz)'); text2corr(frDVCorrFig,'',mdlparams);
 
 % Compare SI pre shift for significant units pre-shift only
-siBothID = useCC & lcDat(:,1) <= 0.05; % & lcDat(:,5) <= 0.05;
-datXanatSIFig = plot_group_datXlyr(lcDat(:,2),siBothID,recID(:,4:5),hot(sum(siBothID)));
-clim([0 prctile(lcDat(siBothID,2),99)])
+pdCMap = make_custom_cmap([0.063 0.322 0.255], [0.353 0.612 0.223],sum(siFrstID));
+dvCMap = make_custom_cmap([0.353 0.835 0.772], [0.063 0.482 0.416],sum(siFrstID));
+datXanatSIFig = plot_group_datXlyr(lcDat(:,2),siFrstID,recID(:,4:5),hot(sum(siFrstID)));
+clim([0 prctile(lcDat(siFrstID,2),99)])
 xlim([0 0.8]); ylim([-200 250]); % datXanatSIFig.Children(1).Label.String = 'Spatial Info. (bits/spike)';
-siCbar = plotColorbar([0 round(prctile(lcDat(siBothID,2),99))],'hot');
-siProxDistFig = plot_proxVdist(lcDat(:,2),siBothID & proxCC,siBothID & distCC); ylim([0 prctile(lcDat(siBothID,2),99)]);
-text2bar(siProxDistFig,'Spatial Info. (bits/spike)',ps.si_proxdist);
-siDrslVtrlFig = plot_drslVvtrl(lcDat(:,2),siBothID & drslCC,siBothID & vtrlCC);
-xlabel('Spatial Info. (bits/spike)'); text2bar(siDrslVtrlFig,'',ps.si_drslvtrl); xlim([0 prctile(lcDat(siBothID,2),99)]);
-siPDCorrFig = plot_anatCorr(lcDat(siBothID,2),recID(siBothID,5),1,winter(sum(siBothID)));
-ylabel('Spatial Info. (bits/spike)')
-siDVCorrFig = plot_anatCorr(lcDat(siBothID,2),recID(siBothID,4),2,parula(sum(siBothID)));
-xlabel('Spatial Info. (bits/spike)')
-
+% siCbar = plotColorbar([0 round(prctile(lcDat(siBothID,2),99))],'hot');
+% siProxDistFig = plot_proxVdist(lcDat(:,2),siBothID & proxCC,siBothID & distCC); ylim([0 prctile(lcDat(siBothID,2),99)]);
+% text2bar(siProxDistFig,'Spatial Info. (bits/spike)',ps.si_proxdist);
+% siDrslVtrlFig = plot_drslVvtrl(lcDat(:,2),siBothID & drslCC,siBothID & vtrlCC);
+% xlabel('Spatial Info. (bits/spike)'); text2bar(siDrslVtrlFig,'',ps.si_drslvtrl); xlim([0 prctile(lcDat(siBothID,2),99)]);
+[siPDCorrFig,mdlparams] = plot_anatCorr(lcDat(siFrstID,2),recID(siFrstID,5),1,pdCMap);
+ylim([0 4]); text2corr(siPDCorrFig,'Spatial Info. (bits/spike)',mdlparams);
+[siDVCorrFig,mdlparams] = plot_anatCorr(lcDat(siFrstID,2),recID(siFrstID,4),2,dvCMap);
+xlim([0 4]); xlabel('Spatial Info. (bits/spike)'); text2corr(siDVCorrFig,'',mdlparams);
+%%
+% Compare BI pre shift for significant units pre-shift only
+pdCMap = make_custom_cmap([0.063 0.322 0.255], [0.353 0.612 0.223],sum(bstFrstID));
+dvCMap = make_custom_cmap([0.353 0.835 0.772], [0.063 0.482 0.416],sum(bstFrstID));
+datXanatBIFig = plot_group_datXlyr(bsDat(:,1),bstFrstID,recID(:,4:5),hot(sum(bstFrstID)));
+clim([0 prctile(bsDat(bstFrstID,2),99)])
+xlim([0 0.8]); ylim([-200 250]); % datXanatSIFig.Children(1).Label.String = 'Spatial Info. (bits/spike)';
+% siCbar = plotColorbar([0 round(prctile(lcDat(siBothID,2),99))],'hot');
+% siProxDistFig = plot_proxVdist(lcDat(:,2),siBothID & proxCC,siBothID & distCC); ylim([0 prctile(lcDat(siBothID,2),99)]);
+% text2bar(siProxDistFig,'Spatial Info. (bits/spike)',ps.si_proxdist);
+% siDrslVtrlFig = plot_drslVvtrl(lcDat(:,2),siBothID & drslCC,siBothID & vtrlCC);
+% xlabel('Spatial Info. (bits/spike)'); text2bar(siDrslVtrlFig,'',ps.si_drslvtrl); xlim([0 prctile(lcDat(siBothID,2),99)]);
+[biPDCorrFig,mdlparams] = plot_anatCorr(bsDat(bstFrstID,2),recID(bstFrstID,5),1,pdCMap);
+ylim([0 4]); text2corr(biPDCorrFig,'Spatial Info. (bits/spike)',mdlparams);
+[biDVCorrFig,mdlparams] = plot_anatCorr(bsDat(bstFrstID,2),recID(bstFrstID,4),2,dvCMap);
+xlim([0 4]); xlabel('Spatial Info. (bits/spike)'); text2corr(biDVCorrFig,'',mdlparams);
+%%
 % % Compare Ripple Mod Dur pre shift for significant units pre-shift only
 % swrBothID = useCC & rpDat(:,2) > 0; % & rpDat(:,5) <= 0.05;
 % datXanatSWRFig = plot_group_datXlyr(rpDat(:,2)*histoBnsz,swrBothID,recID(:,4:5),turbo(sum(swrBothID)));
@@ -1854,25 +2039,126 @@ celltypeCbar = plotColorbar({'TR','RR'},redbluecmap(3));
 
 if saveFlag
     fsave(datXanatThAngFig,[sbase 'anat_thAng_PDDV_pre'])
-    fsave(thAngProxDistFig,[sbase 'anat_thAng_PDbar_pre'])
-    fsave(thAngDrslVtrlFig,[sbase 'anat_thAng_DVbar_pre'])
+    % fsave(thAngProxDistFig,[sbase 'anat_thAng_PDbar_pre'])
+    % fsave(thAngDrslVtrlFig,[sbase 'anat_thAng_DVbar_pre'])
     fsave(thAngPDCorrFig,[sbase 'anat_thAng_PDcor_pre'])
     fsave(thAngDVCorrFig,[sbase 'anat_thAng_DVcor_pre'])
     fsave(datXanatFRFig,[sbase 'anat_frRun_PDDV_pre'])
-    fsave(frProxDistFig,[sbase 'anat_frRun_PDbar_pre'])
-    fsave(frDrslVtrlFig,[sbase 'anat_frRun_DVbar_pre'])
+    % fsave(frProxDistFig,[sbase 'anat_frRun_PDbar_pre'])
+    % fsave(frDrslVtrlFig,[sbase 'anat_frRun_DVbar_pre'])
     fsave(frPVCorrFig,[sbase 'anat_frRun_PDcor_pre'])
     fsave(frDVCorrFig,[sbase 'anat_frRun_DVcor_pre'])
     fsave(datXanatSIFig,[sbase 'anat_si_PDDV_pre'])
-    fsave(siProxDistFig,[sbase 'anat_si_PDbar_pre'])
-    fsave(siDrslVtrlFig,[sbase 'anat_si_DVbar_pre'])
+    % fsave(siProxDistFig,[sbase 'anat_si_PDbar_pre'])
+    % fsave(siDrslVtrlFig,[sbase 'anat_si_DVbar_pre'])
     fsave(siPDCorrFig,[sbase 'anat_si_PDcor_pre'])
     fsave(siDVCorrFig,[sbase 'anat_si_DVcor_pre'])
     fsave(datXanatRFFig,[sbase 'anat_refFrame_PDDV'],'png')
-    fsave(frCbar,[sbase 'anat_frRun_cbar'])
-    fsave(thCbar,[sbase 'anat_thA_cbar'])
-    fsave(siCbar,[sbase 'anat_si_cbar'])
+    % fsave(frCbar,[sbase 'anat_frRun_cbar'])
+    % fsave(thCbar,[sbase 'anat_thA_cbar'])
+    % fsave(siCbar,[sbase 'anat_si_cbar'])
     fsave(celltypeCbar,[sbase 'anat_refFrame_cbar'])
+    fsave(datXanatBIFig,[sbase 'anat_bi_PDDV_pre'])
+    fsave(biPDCorrFig,[sbase 'anat_bi_PDcor_pre'])
+    fsave(biDVCorrFig,[sbase 'anat_bi_DVcor_pre'])
+end
+
+%% Scatter TR and RR by depth/distance normalized to all spatially mod cell
+
+dvbnsz = 10; dvBinEdges = min(recID(siBothID,4))-dvbnsz/2:dvbnsz:max(recID(siBothID,4))+0.5*dvbnsz; dvBinCtrs = dvBinEdges(2:end)-0.5*dvbnsz;
+pdbnsz = 0.05; pdBinEdges = 0:pdbnsz:round(max(recID(siBothID,5)),1)+pdbnsz/2; pdBinCtrs = pdBinEdges(2:end)-0.5*pdbnsz;
+trDat = recID(trCells,4:5);
+rrDat = recID(rrCells,4:5);
+irDat = recID(irCells,4:5);
+allDat = recID(siBothID,4:5);
+
+dvCountTR = histcounts(trDat(:,1),dvBinEdges);
+dvCountRR = histcounts(rrDat(:,1),dvBinEdges);
+dvCountIR = histcounts(irDat(:,1),dvBinEdges);
+dvCountAll = histcounts(allDat(:,1),dvBinEdges);
+pdCountTR = histcounts(trDat(:,2),pdBinEdges);
+pdCountRR = histcounts(rrDat(:,2),pdBinEdges);
+pdCountIR = histcounts(irDat(:,2),pdBinEdges);
+pdCountAll = histcounts(allDat(:,2),pdBinEdges);
+
+% Models
+dvRRmdl = get_linfit(dvBinCtrs,dvCountRR);
+dvTRmdl = get_linfit(dvBinCtrs,dvCountTR);
+pdRRmdl = get_linfit(pdBinCtrs,pdCountRR);
+pdTRmdl = get_linfit(pdBinCtrs,pdCountTR);
+
+rfPDCorrFig = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.15 0.27])
+scatter(pdBinCtrs,pdCountRR./sum(pdCountAll,'all'),'r','MarkerFaceColor','r')
+plot(pdBinCtrs,pdRRmdl.ypred./sum(pdCountAll,'all'),'r')
+scatter(pdBinCtrs,pdCountTR./sum(pdCountAll,'all'),'b','MarkerFaceColor','b')
+plot(pdBinCtrs,pdTRmdl.ypred./sum(pdCountAll,'all'),'b')
+xlabel('% Distance through subiculum'); ylim([0 .2])
+text2corr(rfDVCorrFig,'% of spatial cells',pdTRmdl,0.4);
+text2corr(rfDVCorrFig,'% of spatial cells',pdRRmdl,0.9);
+set(gca,'FontSize',12,'FontName','Arial')
+
+rfDVCorrFig = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.15 0.27])
+scatter(dvCountRR./sum(dvCountAll,'all'),dvBinCtrs,'r','MarkerFaceColor','r')
+plot(dvRRmdl.ypred./sum(dvCountAll,'all'),dvBinCtrs,'r')
+scatter(dvCountTR./sum(dvCountAll,'all'),dvBinCtrs,'b','MarkerFaceColor','b')
+plot(dvTRmdl.ypred./sum(dvCountAll,'all'),dvBinCtrs,'b')
+xlabel('% of spatial cells')
+set(gca,'FontSize',12,'FontName','Arial')
+xlim([0 .1]); xlabel('Spatial Info. (bits/spike)'); 
+text2corr(rfDVCorrFig,'Distance to layer center (um)',dvRRmdl,0.4);
+text2corr(rfDVCorrFig,'Distance to layer center (um)',dvTRmdl,0.9);
+
+if saveFlag
+    fsave(rfPDCorrFig,[sbase 'anat_refFrame_PDcor'])
+    fsave(rfDVCorrFig,[sbase 'anat_refFrame_DVcor'])
+end
+
+%%
+% Count units by type and reference frame for each mouse and shank
+
+% mID; shank; pos; good units; tr; rr; ir;
+rfMat = [];
+for i = 1:length(mID)
+    units = recID(:,1) == mID(i);
+    shs = unique(recID(units,5));
+    for j = 1:length(shs)
+        if shs(j) < 0
+            continue
+        end
+        shUnits = recID(:,5) == shs(j) & recID(:,1) == mID(i);
+        nTot = sum(shUnits & useCC);
+        nTR = sum(shUnits & trCells);
+        nRR = sum(shUnits & rrCells);
+        nIR = sum(shUnits & irCells);
+        rfMat = [rfMat; mID(i), j, shs(j), nTot, nTR, nRR, nIR];
+    end
+end
+
+pTR = rfMat(:,5) ./ rfMat(:,4);
+pRR = rfMat(:,6) ./ rfMat(:,4);
+pIR = rfMat(:,7) ./ rfMat(:,4);
+xDat = [rfMat(:,3); rfMat(:,3)];
+yDat = [pTR; pRR];
+cDat = [-1*ones(size(pTR)); ones(size(pRR))];
+
+pdTRmdl = get_linfit(rfMat(:,3),pTR);
+pdRRmdl = get_linfit(rfMat(:,3),pRR);
+
+rfPDCorrFig = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.15 0.27])
+scatter(xDat,yDat,[],cDat,'filled')
+colormap(redbluecmap(3))
+plot(rfMat(~isnan(pTR),3),pdTRmdl.ypred,'b')
+plot(rfMat(~isnan(pRR),3),pdRRmdl.ypred,'r')
+xlabel('% Distance through subiculum'); ylim([0 1])
+text2corr(rfPDCorrFig,'',pdTRmdl,0.4);
+text2corr(rfPDCorrFig,'P(Unit type by shank)',pdRRmdl,0.9);
+set(gca,'FontSize',16,'FontName','Arial')
+
+if saveFlag
+    fsave(rfPDCorrFig,[sbase 'anat_refFrame_PDcor'])
 end
 
 %% Save stats
@@ -1903,62 +2189,24 @@ p.LabelStyle = 'namedata';
 colororder(cMap)
 end
 
-function [fhandle] = plotDeltaHisto(dat1,dat2,binedges)
-
-deltaDatDistro = histcounts(dat2-dat1,binedges);
-bnsz = binedges(2) - binedges(1);
-
-fhandle = figure; hold on
-bar(binedges(1:end-1)+bnsz/2,deltaDatDistro/sum(deltaDatDistro),'FaceColor',[0.25 0.15 1],'HandleVisibility','off');
-plot(mean(dat2-dat1), max(deltaDatDistro/sum(deltaDatDistro))+0.01,'v','Color',[0.25 0.15 1])
-plot([0 0], [0 max(deltaDatDistro/sum(deltaDatDistro))+0.01],'k--')
-legend({['mean = ' num2str(mean(dat2-dat1))]})
-ylabel('Probability')
-set(gca,'FontSize',12,'FontName','Arial')
-end
-
-function [fhandle] = plotDistroHisto(distro1,distro2,binpos,rzPos)
-vColors2 = [0.5 0.5 1; 0.75 0.75 1];
-
-fhandle = figure; hold on
-plot(binpos*100,distro1./sum(distro1),'Color',vColors2(1,:),'LineWidth',2);
-plot(binpos*100,distro2./sum(distro2),'Color',vColors2(2,:),'LineWidth',2);
-if length(rzPos) == 2
-    plot([rzPos(1) rzPos(1)]*100,[0 0.15],'--','Color',vColors2(1,:))
-    plot([rzPos(2) rzPos(2)]*100,[0 0.15],'--','Color',vColors2(2,:))
-else
-    plot([rzPos rzPos]*100,[0 0.15],'k--')
-end
-ylim([0 max([distro1./sum(distro1); distro2./sum(distro2)+0.02],[],'all')])
-xlim([binpos(1)*100-1 binpos(end)*100+1])
-ylabel('Probability of field peak')
-legend({'Familiar','Novel'},'Location','northeast')
-set(gca,'FontSize',12,'FontName','Arial')
-end
-
-function [fhandle] = plot_anatCorr(dat,pdDist,toggle,cmap)
-mdl = fitlm(pdDist, dat);
-ys = predict(mdl, [min(pdDist); max(pdDist)]);
-
-fhandle = figure; hold on
-set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.39])
-
-if toggle == 1
-    scatter(pdDist,dat,[],pdDist,'filled')
-    colormap(cmap);
-    plot([min(pdDist) max(pdDist)],ys,'Color',[0.353 0.612 0.223],'LineWidth',2)
-    xlim([0 1]); ylim([0 max([dat; dat],[],'all')])
-    xlabel('% Distance to CA1/Sub border')
-else
-    scatter(dat,pdDist,[],pdDist,'filled')
-    colormap(cmap)
-    plot(ys,[min(pdDist) max(pdDist)],'Color',[0.063 0.482 0.416],'LineWidth',2)
-    ylim([min(pdDist) max(pdDist)]); xlim([0 max([dat; dat],[],'all')])
-    ylabel('Distance to layer center (um)')
-end
-set(gca,'FontSize',12,'FontName','Arial')
-
-end
+% function [fhandle] = plotDistroHisto(distro1,distro2,binpos,rzPos)
+% vColors2 = [0.5 0.5 1; 0.75 0.75 1];
+% 
+% fhandle = figure; hold on
+% plot(binpos*100,distro1./sum(distro1),'Color',vColors2(1,:),'LineWidth',2);
+% plot(binpos*100,distro2./sum(distro2),'Color',vColors2(2,:),'LineWidth',2);
+% if length(rzPos) == 2
+%     plot([rzPos(1) rzPos(1)]*100,[0 0.15],'--','Color',vColors2(1,:))
+%     plot([rzPos(2) rzPos(2)]*100,[0 0.15],'--','Color',vColors2(2,:))
+% else
+%     plot([rzPos rzPos]*100,[0 0.15],'k--')
+% end
+% ylim([0 max([distro1./sum(distro1); distro2./sum(distro2)+0.02],[],'all')])
+% xlim([binpos(1)*100-1 binpos(end)*100+1])
+% ylabel('Probability of field peak')
+% legend({'Familiar','Novel'},'Location','northeast')
+% set(gca,'FontSize',12,'FontName','Arial')
+% end
 
 % function [fhandle] = plot_barXmouse(dat)
 % vColors2 = [0.5 0.5 1; 0.75 0.75 1];
@@ -1988,4 +2236,32 @@ plot(bnpos,mean(dat),'Color',vcolors(2,:),'LineWidth',2)
 xlabel('Position (cm)')
 set(gca,'FontSize',16,'FontName','Arial')
 
+end
+
+function [fhandle] = plotMiniBar(dat1,dat2,vColors)
+
+arguments
+    dat1
+    dat2
+    % vColors = [0.5 0.5 1; 0.75 0.75 1];
+    vColors = [.35 .35 .35; 1 .25 .25];
+end
+
+nUnits = [size(dat1,1) size(dat2,1)];
+bardat = [mean(dat1); mean(dat2)];
+semdat = [std(dat1)/sqrt(nUnits(1)); std(dat2)/sqrt(nUnits(2))];
+xrands1 = (rand(nUnits(1),1)-0.5)*0.2;
+xrands2 = (rand(nUnits(2),1)-0.5)*0.2;
+
+fhandle = figure; hold on;
+set(gcf,'units','normalized','position',[0.4 0.35 0.1 0.2])
+% b = bar([1.15 2.15],bardat,0.3,'FaceColor','flat','BarWidth',0.5);
+% b.CData = vColors;
+plot(xrands1+1,dat1,'.','Color',vColors(1,:),'MarkerSize',10)
+plot(xrands2+2,dat2,'.','Color',vColors(2,:),'MarkerSize',10)
+errorbar([1.15 2.15],bardat,semdat,'k.')
+xlim([0.5 2.5]); ylim([0 max([prctile(dat1,98); prctile(dat2,98)],[],'all')])
+xticks(1:2); xticklabels({'F', 'N'})
+set(gca,'FontSize',16,'FontName','Arial')
+box off
 end

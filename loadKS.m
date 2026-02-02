@@ -71,13 +71,28 @@ if length(syncfile) > 1 % i.e. for 2.0 recordings
     meta      = SGLX_readMeta.ReadMeta(syncfile(2).name, syncfile(2).folder);
     chanCt    = SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
     dataArray = SGLX_readMeta.ReadBin(0, nSamp, meta, syncfile(2).name, syncfile(2).folder);
-    dataArray = dataArray(1:chSubsamp:chanCt,1:lfSubsamp:length(dataArray)); %Subsample to 1250 Hz and 1/chSubsamp channels
+    subSamp   = dataArray(:,1:lfSubsamp:length(dataArray));  % Sub sample in time
+    pxx       = pwelch(subSamp',[],[],10000,2500/lfSubsamp);  % Power spectrum over all channels
+    badChans  = find(mean(pxx,1) > 10000);    % Find channels with combined power > 10K
+    subChans  = 1:chSubsamp:chanCt;
+    for i = 1:length(subChans)
+        chMatch = find(badChans == subChans(i));
+        if ~isempty(chMatch) % use other electrode at same depth on that shank
+            if mod(subChans(i),2) == 0
+                subChans(i) = subChans(i) -1; % Accounts for 0-indexing
+            else
+                subChans(i) = subChans(i) +1;
+            end
+        end
+    end
+    dataArray = dataArray(subChans,1:lfSubsamp:length(dataArray)); %Subsample to 1250 Hz and 1/chSubsamp channels
     dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:size(dataArray,1), meta).*1000; %Outputs channels in mVolts
 else
     chSubsamp = 4;
     lfSubsamp = 2;
     [~,chanCt]= SGLX_readMeta.ChannelCountsIM(meta);    %[AP LFP SY] Chan counts
-    dataArray = dataArray(1:chSubsamp:chanCt,1:lfSubsamp:length(dataArray)); %Subsample to 1250 Hz and 1/chSubsamp channels
+    subChans  = 1:chSubsamp:chanCt;
+    dataArray = dataArray(subChans,1:lfSubsamp:length(dataArray)); %Subsample to 1250 Hz and 1/chSubsamp channels
     dataArray = SGLX_readMeta.GainCorrectIM(dataArray, 1:size(dataArray,1), meta).*1000; %Outputs channels in mVolts    
 end
 
@@ -183,7 +198,7 @@ root.fs_lfp = SGLX_readMeta.SampRate(meta)/lfSubsamp;
 [filtb, filta] = butter(3, 300/(root.fs_lfp/2),'low');
 root.lfp       = filtfilt(filtb, filta, dataArray(1:size(dataArray,1),:)')';
 
-lfpch = (1:chSubsamp:chanCt)'-1;   % Correct for 0-starting IDs of electrodes
+lfpch = subChans' - 1; % (1:chSubsamp:chanCt)'-1;   % Correct for 0-starting IDs of electrodes
 lfpShank = zeros(size(root.lfp,1),1);
 lfpDepth = zeros(size(root.lfp,1),1);
 root.lfpinfo = table(lfpch,lfpShank,lfpDepth);

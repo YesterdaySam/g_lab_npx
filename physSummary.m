@@ -1,8 +1,8 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_09252025_rec_D1_RLat1';
-datpath = 'D:\Data\Kelton\probe_data\ZM002\ZM002_09252025_rec_D1_RLat1_g0';
+spath = 'D:\Data\Kelton\analyses\HE002\HE002_01222026_rec_D2_RLat2';
+datpath = 'D:\Data\Kelton\probe_data\HE002\HE002_01222026_rec_D2_RLat2_g0';
 
 loadKS(datpath,spath,1); 
 root = alignBhvrTS(spath,spath,spath);
@@ -75,6 +75,10 @@ root = get_layerBounds(root,100,0.25);    % Assign units to layers, min layer wi
 %     plot(f(ind1hz:ind300hz),pxx(ind1hz:ind300hz,root.uPSDMax(2,sh)),'Color',cmapcool(sh,:))
 % end
 
+%% Add bursts to root struct
+
+root = burst2root(root,sess);
+
 %% Plot LFP by depth
 
 tmpLFPDensityFig = plot_lfpXdepth(root);
@@ -117,6 +121,10 @@ for chan = chans
     ripStruc(ct).ripples = get_ripples(root,chan,sess,3,5,[15 250]);
     % catRips = [catRips; ripStruc(ct).ripples(:,2), -1+ct+zeros(size(ripStruc(ct).ripples,1),1)];
     ct = ct+1;
+end
+
+if root.prbType == 'NPX1.0'
+    root.ripRef = 1;
 end
 
 root.ripStruc = ripStruc;

@@ -40,7 +40,8 @@ xlim([0 max(binedges)])
 if matchWfl
     set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.14])
     set(gca,'Position',[0.11 0.17 0.8 0.80])
-    xticks([binedges(1), binedges(round(nBins/2)), binedges(nBins)])
+    nEdges = nBins+1;
+    xticks([binedges(1), binedges(round(nEdges/2)), binedges(nEdges)])
 else
     ylabel('Probability')
 end

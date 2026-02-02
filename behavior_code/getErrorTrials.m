@@ -29,11 +29,11 @@ isgood = ones(size(sess.lapstt));
 
 % Find long or short laps and exclude
 for i = 1:length(sess.lapstt)
-    lapLen = max(sess.pos(sess.lapstt(i):sess.lapend(i))) - min(sess.pos(sess.lapstt(i):sess.lapend(i)));
+    lapLen(i) = max(sess.pos(sess.lapstt(i):sess.lapend(i))) - min(sess.pos(sess.lapstt(i):sess.lapend(i)));
 
-    if lapLen > maxPos + 0.1    % in meters
+    if lapLen(i) > maxPos + 0.2    % in meters
         isgood(i) = 0;
-    elseif lapLen < maxPos - 0.1
+    elseif lapLen(i) < maxPos - 0.2
         isgood(i) = 0;
     end
 end

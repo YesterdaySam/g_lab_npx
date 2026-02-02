@@ -5,7 +5,7 @@ arguments
     fhandle
     sname
     pngF = 1
-    svgF = 1
+    svgF = 0
     figF = 0
 end
 

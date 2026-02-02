@@ -14,7 +14,7 @@ b.CData = vColors2;
 errorbar(bardat,[1.15 2.15],semdat,'k.','horizontal')
 violinplot([dat(drsl); dat(vtrl)],[1*ones(nUnits(1),1); 2*ones(nUnits(2),1)], 'ViolinColor',vColors2,'HalfViolin','left','Orientation','horizontal');
 ylim([0.5 2.5]); xlim([0 max([dat(drsl); dat(vtrl)],[],'all')])
-yticks(1:2); yticklabels({'Dorsal', 'Ventral'}); ytickangle(90)
+yticks(1:2); yticklabels({'Deep', 'Superficial'}); ytickangle(90)
 set(gca,'FontSize',12,'FontName','Arial','YDir','reverse')
 
 end

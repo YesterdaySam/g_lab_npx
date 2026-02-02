@@ -7,6 +7,14 @@ if size(ydat,1) > size(ydat,2)
     ydat = ydat';
 end
 
+% Clean inputs of NaN
+xnan = isnan(xdat);
+ynan = isnan(ydat);
+rminds = xnan | ynan;
+
+xdat(rminds) = [];
+ydat(rminds) = [];
+
 mdl = fitlm(xdat, ydat);
 ypreds = predict(mdl, xdat');
 [r,p] = corrcoef(ydat,ypreds);

@@ -25,7 +25,7 @@ arguments
     perioptoF           = 1 % Include peri-opto pulse spikes plot
     acgF                = 1 % Include AutoCorreloGram plot
     thetaF              = 1 % Include Theta Phase Modulation plot
-    rwdTF               = 1 % Include reward time binned firing rate
+    rwdTF               = 0 % Include reward time binned firing rate
 end
 
 cd(sdir)

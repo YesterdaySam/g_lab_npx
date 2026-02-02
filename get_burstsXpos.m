@@ -1,4 +1,4 @@
-function [binedges,binfr,spkmap] = get_frXpos(root,unit,sess,dbnsz,dend,vFlag,smFactor)
+function [binedges,binBR,bstmap,uBR] = get_burstsXpos(root,unit,sess,dbnsz,dend,vFlag,smFactor)
 %% Collects smoothed firing rate by position and trial of a unit
 %
 % Inputs:
@@ -12,10 +12,11 @@ function [binedges,binfr,spkmap] = get_frXpos(root,unit,sess,dbnsz,dend,vFlag,sm
 %
 % Outputs:
 % binedges = spatial bin edges
-% binfr = MxN of M trials and N spatial-bins firing rates
-% spkmap = MxN of M trials and N spatial-bins spike counts
+% binBR = MxN of M trials and N spatial-bins burst rates
+% bstmap = MxN of M trials and N spatial bin burst counts
+% uBR   = 1xN of mean burst rate over N spatial-bins
 %
-% Created 7/23/25 LKW; Grienberger Lab; Brandeis University
+% Created 12/4/25 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
 arguments
@@ -35,26 +36,28 @@ sess.nlaps  = length(sess.lapstt);
 % sess.valTrials = 1:sess.nlaps;
 
 binedges = 0:dbnsz:dend;
-spkinds = root.tsb(root.cl == unit);
+[bStts] = get_bursts(root,sess,unit);
 
 if vFlag
-    spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
+    bStts = bStts(sess.runInds(bStts));   % Use only spikes in run periods
 end
 
-spkmap = [];
+bstmap = [];
 bnoccs = [];
 for i = 1:sess.nlaps
-    tmpspks = sess.pos(spkinds(spkinds > sess.lapstt(i) & spkinds < sess.lapend(i)));
-    spkct   = histcounts(tmpspks, binedges);
+    tmpbst = sess.pos(bStts(bStts > sess.lapstt(i) & bStts < sess.lapend(i)));
+    bstct   = histcounts(tmpbst, binedges);
     lapInds = sess.ind(sess.lapstt(i):sess.lapend(i));
     tmpRun  = lapInds(sess.runInds(lapInds));   % Use only run periods for calculating occupancy
     bnocc   = histcounts(sess.pos(tmpRun),binedges) / sess.samprate;
     bnoccs  = [bnoccs; bnocc];              % Save bin occupancy
-    spkmap  = [spkmap; spkct];              % Save spike counts
+    bstmap  = [bstmap; bstct];              % Save burst counts
 end
 
-spksmooth = smoothdata(spkmap,2,'gaussian',smFactor);
+bstsmooth = smoothdata(bstmap,2,'gaussian',smFactor);
 occsmooth = smoothdata(bnoccs,2,'gaussian',smFactor);
 
-binfr = spksmooth ./ occsmooth;
+binBR = bstsmooth ./ occsmooth;
+uBR = sum(bstsmooth,'all','omitnan') / sum(occsmooth,'all','omitnan');
+
 end

@@ -1,4 +1,4 @@
-function [fhandle,frMapSort,sortInd] = plot_unitWaterfall(frMapRaw,binedges,useSort,plotflag,cbarF)
+function [fhandle,frMapSort,sortInd] = plot_unitWaterfall(frMapRaw,binedges,useSort,plotflag,cbarF,normDat)
 %% Plots the avg binned firing rate of all units in frMapRaw
 %
 % Inputs:
@@ -22,25 +22,36 @@ arguments
     useSort = 0
     plotflag = 1    % binary
     cbarF = 1
+    normDat = 1
 end
 
 nBins = size(frMapRaw,2);
 nUnits = size(frMapRaw,1);
 
 unitMax = max(frMapRaw,[],2);
-frMapNorm = frMapRaw ./ repmat(unitMax,[1, nBins]);
+if normDat
+    frMap = frMapRaw ./ repmat(unitMax,[1, nBins]);
+else
+    frMap = frMapRaw;
+end
 
 if length(useSort) ~= 1
     sortInd = useSort;
+elseif normDat
+    for i = 1:nUnits
+        tmpbns = find(frMap(i,:) == 1); % In case of multiple peak normalized bins
+        maxBin(i) = tmpbns(1);
+    end
+    [~,sortInd] = sort(maxBin);
 else
     for i = 1:nUnits
-        tmpbns = find(frMapNorm(i,:) == 1); % In case of multiple peak normalized bins
-        maxBin(i) = tmpbns(1);
+        [~,tmpMax] = max(abs(frMap(i,:)));
+        maxBin(i) = tmpMax(1);
     end
     [~,sortInd] = sort(maxBin);
 end
 
-frMapSort = frMapNorm(sortInd,:);
+frMapSort = frMap(sortInd,:);
 
 if plotflag
     fhandle = figure; hold on;
@@ -58,9 +69,10 @@ if plotflag
         set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.5])
         set(gca,'Position',[0.11 0.11 0.8 0.815])
     end
-    xticks([1, round(nBins/2), nBins])
-    xticklabels([binedges(1)*100, binedges(round(nBins/2))*100, binedges(nBins)*100])
-    xlim([0.15 nBins+0.85]); ylim([0.15 nUnits+0.85])
+    nEdges = nBins +1; 
+    xticks([1, round(nEdges/2), nEdges])
+    xticklabels([binedges(1), binedges(round(nEdges/2)), binedges(nEdges)]*100)
+    xlim([0.15 nEdges+0.85]); ylim([0.15 nUnits+0.85])
     yticks([1,nUnits]);
     set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 end

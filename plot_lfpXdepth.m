@@ -15,13 +15,15 @@ nShanks = numel(unique(root.lfpinfo.lfpShank));
 try
     disp(['Existing root.lyrbounds: ' num2str(root.lyrbounds(1,:)) ' TO ' num2str(root.lyrbounds(2,:))])
 catch
-    root = get_layerUnits(root,100);
+    root = get_layerUnits(root);
     disp(['Added root.lyrbounds: ' num2str(root.lyrbounds(1,:)) ' TO ' num2str(root.lyrbounds(2,:))])
 end
 
 cmap(1).map = cool(4);
 cmap(2).map = hot(8);
 cmap(3).map = gray(5);
+cmap(4).map = spring(5);
+cmap(5).map = summer(5);
 
 fhandle = figure; hold on
 legcell = {};

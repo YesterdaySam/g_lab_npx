@@ -12,6 +12,9 @@ thMap = [];     % [frstHalf.thetafr, lastHalf.thetafr];
 rpDat = [];     % [frstHalf.ripParticip, frstHalf.ripModBin, lastHalf.ripParticip, lastHalf.ripModBin]
 rpRat = [];     % [frstHalf.ripRate, lastHalf.ripRate];
 rpMap = [];     % [frstHalf.swrfr, lastHalf.swrfr];
+rpMapZ = [];    % [frstHalf.swrz, lastHalf.swrz];
+rpMod = [];     % [frstHalf.ripModBins, lastHalf.ripModBins];
+bsDat = [];     % [frstHalf.burstIndex, lastHalf.burstIndex];
 bvDat = [];     % [frstHalf.lckDI, frstHalf.preRZV, lastHalf.lckDI, lastHalf.preRZV
 pvStr = [];     % Struc containing binned SI data per 10 laps
 
@@ -93,10 +96,6 @@ for i = 1:height(datT)
     [thAng1, thMRL1, thP1] = get_thAng(frstHalf.thetastats);
     [thAng2, thMRL2, thP2] = get_thAng(lastHalf.thetastats);
     thDat = [thDat; thP1', thMRL1', thAng1', thP2', thMRL2', thAng2'];
-    % for j = 1:length(root.good)
-    %     thDat = [thDat; frstHalf.thetastats(j).p, frstHalf.thetastats(j).mrl, frstHalf.thetastats(j).ang, ...
-    %         lastHalf.thetastats(j).p, lastHalf.thetastats(j).mrl, lastHalf.thetastats(j).ang];
-    % end
     thMap = [thMap; frstHalf.thetafr lastHalf.thetafr];
 
     % === Concatenate SI and Peak data ===
@@ -105,16 +104,24 @@ for i = 1:height(datT)
     lcMap = [lcMap; frstHalf.posfr, lastHalf.posfr];
 
     % === Concatenate SPWR Modulation data ===
-    for j = 1:nUnits
+    for j = 1:length(root.good)
         cc = root.good(j);
-        [~,~,frstHalf.swrz(j,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,150,5,0);
-        [~,~,lastHalf.swrz(j,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,wlen,histoBnsz,0);
+        % [spwr_frst,~,frstHalf.swrz(j,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,150,5,0);
+        % [spwr_last,~,lastHalf.swrz(j,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,150,5,0);
+        % frstHalf.ripModBins(j,:) = get_confband(squeeze(frstHalf.shufSPWR(:,j,:)),spwr_frst);
+        % lastHalf.ripModBins(j,:) = get_confband(squeeze(lastHalf.shufSPWR(:,j,:)),spwr_last);
+        frstHalf.burstIndex(j) = get_burstIndex(rootFrst,sessFrst,cc);
+        lastHalf.burstIndex(j) = get_burstIndex(rootLast,sessLast,cc);
     end
 
     rpDat = [rpDat; frstHalf.ripParticipation', frstHalf.ripModBinCt', ...
         lastHalf.ripParticipation', lastHalf.ripModBinCt'];
     rpRat = [rpRat; frstHalf.ripRate, lastHalf.ripRate];
     rpMap = [rpMap; frstHalf.swrfr lastHalf.swrfr];
+    rpMapZ = [rpMapZ; frstHalf.swrz lastHalf.swrz];
+    rpMod = [rpMod; frstHalf.ripModBins lastHalf.ripModBins];
+
+    bsDat = [bsDat; frstHalf.burstIndex', lastHalf.burstIndex'];
 
     % === Concatenate SI over 10-trial blocks ===
     siStr(ct).preBlockSI = frstHalf.subEpochSI;
@@ -152,14 +159,24 @@ for i = 1:height(datT)
     bvDat(ct).uPreLL20    = mean(preLckMap(end-19:end,:),'omitnan');
     bvDat(ct).uPstLF20    = mean(pstLckMap(1:20,:),'omitnan');
     bvDat(ct).uPstLL20    = mean(pstLckMap(end-19:end,:),'omitnan');
+
+    frstHalf.vCorXLap = corr(frstHalf.spVelMap', mean(frstHalf.spVelMap(end-29:end,:))','rows','complete');
+    try
+        lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(lastHalf.spVelMap(31:60,:))','rows','complete');
+    catch
+        lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(lastHalf.spVelMap(end-29:end,:))','rows','complete');
+    end
+
     bvDat(ct).vCorPre     = frstHalf.vCorXLap;
     bvDat(ct).vCorPst     = lastHalf.vCorXLap;
     
     ct = ct + 1;
+
+    save([root.name '_RwdShift_Data2'],'frstHalf','lastHalf');
 end
 
 cd(sdir)
 
-save(fname,'frDat','recID','useCC','siStr','lcDat','lcMap','thDat','thMap','rpDat','rpRat','rpMap','vlDat','bvDat','pvStr')
+save(fname,'frDat','recID','useCC','siStr','lcDat','lcMap','thDat','thMap','rpDat','rpRat','rpMap','rpMapZ','rpMod','bsDat','vlDat','bvDat','pvStr')
 
 end
