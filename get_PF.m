@@ -37,6 +37,17 @@ valspks = spkinds(sess.lapInclude(spkinds));
 valoccs = sess.lapInclude & sess.runInds;
 
 bnspks  = histcounts(sess.pos(valspks), binedges);
+
+if sum(bnspks) < 100
+    disp(['Fewer than 100 spikes found for unit ' num2str(unit) ' during get_PF'])
+    si      = NaN;
+    peakFR  = NaN;
+    uFR     = NaN;
+    pfields = NaN;
+    binfr   = NaN;
+    return
+end
+
 % bnoccs  = histcounts(sess.pos(sess.lapInclude),binedges) / sess.samprate;
 bnoccs  = histcounts(sess.pos(valoccs),binedges) / sess.samprate;
 
@@ -44,10 +55,18 @@ spksmooth = smoothdata(bnspks,'gaussian',5);
 occsmooth = smoothdata(bnoccs,'gaussian',5);
 
 binfr = spksmooth ./ occsmooth;
+peakFR = max(binfr);
 
 % Find candidate fields based on 50% of peak smoothed FR
-peakFR = max(binfr);
-fieldBins = binfr > 0.5*peakFR;
+% fieldBins = binfr > 0.5*peakFR;
+
+% Find candidate fields based on 3 std of mean
+% fieldBins = binfr > mean + 3*std(binfr);
+
+% Find candidate fields based on 3 std of noise floor (lower 50th pctile)
+noiseLevel = binfr < prctile(binfr,50);
+fieldBins = binfr > mean(binfr(noiseLevel)) + 3*std(binfr(noiseLevel));
+
 fOffsets = find(diff([fieldBins 0]) == -1); 
 fOnsets  = find(diff([0 double(fieldBins)]) == 1);
 nFields = numel(fOffsets);

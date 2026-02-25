@@ -9,9 +9,9 @@ function [spVelMat,f1,f2] = plot_lap_velCCorr(sess,dbnsz,vbnsz,plotflag)
 % plotflag = binary of whether to plot the output
 %
 % Outputs:
-% binedges = spatial bin edges
-% binfr = spatial-binned firing rate
-% fhandle = handle to figure
+% spVelMat = spatially binned velocity map for each trial
+% f1 = bin x bin velocity correlation over all laps
+% f2 = lap x lap velocity correlation over all bins
 %
 % Created 12/2/24 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
@@ -28,7 +28,11 @@ sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
 
-binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+if isfield(sess,'maxPos')
+    binedges = 0:dbnsz:sess.maxPos;    % Base max binsize on first valid trial
+else    
+    binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+end
 nbins = length(binedges)-1;
 
 spVelMat = zeros(sess.nlaps,nbins);

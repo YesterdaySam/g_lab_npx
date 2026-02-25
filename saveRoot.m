@@ -7,6 +7,6 @@ arguments
 end
 
 sname = [spath, '\', root.name, '_root'];
-save(sname,'root')
+save(sname,'root','-v7.3')
 
 end

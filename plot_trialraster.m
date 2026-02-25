@@ -18,7 +18,7 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
-    vthresh = 0.02  %meters/s; velocity threshold
+    vthresh = 0.04  %meters/s; velocity threshold
     plotflag = 1    %binary
 end
 
@@ -36,8 +36,17 @@ rwdpos = [];
 for i = 1:sess.nlaps
     tmpspks = sess.pos(spkinds(spkinds > sess.lapstt(i) & spkinds < sess.lapend(i)));
     tmprwd  = sess.pos(sess.rwdind(sess.rwdind > sess.lapstt(i) & sess.rwdind < sess.lapend(i)));
+
     spkpos  = [spkpos; tmpspks, i*ones(length(tmpspks),1)];
-    rwdpos  = [rwdpos; tmprwd, i];
+    if ~isempty(tmprwd)
+        try
+            rwdpos  = [rwdpos; tmprwd, i];
+        catch
+            rwdpos = [rwdpos; NaN, i];
+        end
+    else
+        rwdpos = [rwdpos; NaN, i];
+    end
 end
 
 % spkpos = sess.pos(root.tsb(root.cl == unit));
@@ -48,8 +57,8 @@ if plotflag
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
     plot(spkpos(:,1)*100,spkpos(:,2),'k|')
     plot(rwdpos(:,1)*100,rwdpos(:,2),'b*')
-    xlabel('Position (cm)')
-    ylabel('Trial #')
+    xlabel('Position (cm)'); xlim([0 100*max(sess.pos(sess.lapstt(1):sess.lapend(1)))])
+    ylabel('Trial #'); ylim([0 sess.nlaps])
     set(gca,'FontSize',12,'FontName','Arial')
 end
 

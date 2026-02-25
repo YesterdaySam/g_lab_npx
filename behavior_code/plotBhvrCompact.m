@@ -32,7 +32,7 @@ if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
 
     if rwdlickFlag
         try
-            [fig_lickpos, fig_licktrialavg, tmpedges2, ~, tmpbnlck] = plot_lickpos(sess);
+            [tmpedges2, ~, ~, fig_lickpos, fig_licktrialavg] = plot_lickpos(sess);
             close(fig_licktrialavg)
             title("Licks by Trial")
         catch
@@ -47,7 +47,7 @@ if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
     end
 
     if velheatmapFlag
-        [fig_trialvel,fig_velavg, ~, tmpbnvel] = plot_trialvel(sess);  % default 0.01m binsize
+        [~,tmpbnvel,fig_trialvel,fig_velavg] = plot_trialvel(sess);  % default 0.01m binsize
         close(fig_velavg)
         title("Velocity by Trial")
     end
@@ -76,7 +76,7 @@ if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
             colormap(ax,'sky')
         end
     end
-    title(tcl,sess.name(1:end-8))
+    title(tcl,replace(sess.name(1:end-8),'_',' '))
     saveas(newfig, [sess.name(1:14) '_behavior_summary.png'], 'png')
     close all
 end

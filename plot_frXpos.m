@@ -1,4 +1,4 @@
-function [binedges,binfr,fhandle] = plot_frXpos(root,unit,sess,dbnsz,vthresh,plotflag)
+function [binedges,binfr,fhandle] = plot_frXpos(root,unit,sess,dbnsz,vFlag,plotflag)
 %% Plots the avg binned firing rate by position of a unit
 %
 % Inputs:
@@ -6,7 +6,7 @@ function [binedges,binfr,fhandle] = plot_frXpos(root,unit,sess,dbnsz,vthresh,plo
 % unit = cluster ID
 % sess = session struct from importBhvr
 % dbnsz = size of position bins, default 0.05m = 5cm
-% vthresh = threshold of behavioral velocity to throw out spikes, default 0.04 m/s
+% vFlag = whether or not to remove spikes not coinciding with sess.runInds
 % plotflag = binary of whether to plot the output
 %
 % Outputs:
@@ -22,7 +22,8 @@ arguments
     unit {double}   %Cluster ID
     sess            %session struct
     dbnsz = 0.05    %m
-    vthresh = 0.04  %m/s; velocity threshold for spikes
+    % vthresh = 0.04  %m/s; velocity threshold for spikes
+    vFlag = 1
     plotflag = 1    %binary
 end
 
@@ -30,15 +31,17 @@ end
 sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
+sess.valTrials = 1:sess.nlaps;
 
-binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+try 
+    binedges = 0:dbnsz:sess.maxPos;
+catch
+    binedges = 0:dbnsz:max(sess.pos(sess.lapstt(1):sess.lapend(1)));    % Base max binsize on first valid trial
+end
 spkinds = root.tsb(root.cl == unit);
-% spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold 
-spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
 
-% dspk = histcounts(sess.pos(spkinds),binedges);
-% docc = histcounts(sess.pos,binedges)/sess.samprate;
-% binfr = dspk ./ docc;
+% spkinds = spkinds(sess.velshft(spkinds) > vthresh);     % Use only spikes above velocity threshold
+spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
 
 spkmap = [];
 bnoccs = [];
@@ -68,17 +71,41 @@ cidn = rawfr - sem*1.96;
 
 if plotflag
     fhandle = figure; hold on
-    plot([binedges(1:length(rawfr))]*100,rawfr, 'k')
-    patch(100*[binedges(1:length(rawfr)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
-    plot([binedges(1:end-1)]*100,binfr, 'r')
+    xcoords = (binedges(1:end-1) + 0.5*dbnsz)*100;
 
+    if vFlag % Plot velocity overlay
+        ax = gca;
+        yyaxis right
+        if ~isfield(sess,'sess.velXpos')
+            [~,bnvel] = plot_trialvel(sess,dbnsz,0);
+        else
+            bnvel = sess.velXpos;
+        end
+        velmean = mean(bnvel);
+        [vciup, vcidn] = get_CI(bnvel);
+        velsem = std(bnvel)./sqrt(sess.nlaps);
+
+        plot_CIs(xcoords,vciup,vcidn,'r')
+        plot(xcoords,velmean,'r','LineWidth',2)
+        ylim([0 prctile(sess.velshft,99)])
+        ax.YAxis(2).Color = 'r';
+        ylabel('Velocity (cm/s)')
+
+        yyaxis left
+    end
+
+    plot_CIs(xcoords,ciup,cidn,'k')
+    plot(xcoords, rawfr, 'k-')
+    plot(xcoords, binfr, 'b-')
+    
     xlabel('Position (cm)'); ylabel('Firing Rate (spk/s)')
 
     if max(mean(binfr,1,'omitnan'),[],'all') < 10
-        ylim([0 10])
+        ylim([-1 10])
     elseif max(binfr,[],'all') < 20
-        ylim([0 20])
+        ylim([-1 20])
     end
+    ax.YAxis(1).Color = 'k';
 
     title(['Unit ' num2str(unit)])
     set(gca,'FontSize',12,'FontName','Arial')

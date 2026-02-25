@@ -1,0 +1,157 @@
+
+% FG data
+spath = 'D:\Data\other_Fox\probe_data\FG065';
+% spath = 'D:\Data\other_Fox\probe_data\FG066';
+
+cd(spath)
+rootfile = dir("*_root.mat");
+load(rootfile.name)
+sessfile = dir("*_sess.mat");
+load(sessfile.name)
+epochfile = dir("*_ec_pilot_dat.mat");
+try load(epochfile.name); catch; disp('No existing epoched data file'); end
+
+epochInd = round(sess.nlaps/2);
+nUnits = length(root.good);
+saveFlag = 1;
+
+dbnsz = 0.05;
+histoBnsz = 5;
+wlen = 150;
+ripRef = root.ripRef;
+r1pos = 1;    % 100 cm
+binpos = 0.025:dbnsz:1.825;
+tmpD = root.info.depth(root.goodind);
+
+sbase = root.name; 
+
+%% Add cue times to sess struct
+sess = get_QTwin(sess,0);
+sess = get_QTwin(sess,1);
+
+%% Visualizing cues
+
+figure; hold on;
+plot(sess.ts, sess.fixedCue)
+plot(sess.ts, sess.randCue)
+plot(sess.ts,sess.pos)
+
+cueTrialFig = figure; hold on;
+for i = 1:length(sess.lapstt)
+    tmpFC = find(sess.fixedCueInd > sess.lapstt(i) & sess.fixedCueInd < sess.lapend(i));
+    tmpRC = find(sess.randCueInd > sess.lapstt(i) & sess.randCueInd < sess.lapend(i));
+    tmpRw = find(sess.rwdind > sess.lapstt(i) & sess.rwdind < sess.lapend(i));
+    plot(sess.pos(sess.fixedCueInd(tmpFC)),i*ones(size(tmpFC)),'k.')
+    plot(sess.pos(sess.randCueInd(tmpRC)),i*ones(size(tmpRC)),'ro')
+    plot(sess.pos(sess.rwdind(tmpRw)),i*ones(size(tmpRw)),'b*')
+end
+set(gca,'FontSize',12,'FontName','Arial')
+title(root.name)
+ylabel('Trial #')
+xlabel('Position (m)'); xlim([0 1.86])
+
+fsave(cueTrialFig,[sbase '_cueXtrial'],1,0,0)
+
+%% Get real unit and epoch parameters
+
+clear datStruc
+datStruc.name   = root.name;
+datStruc.trueSI = zeros(size(root.good));
+datStruc.truePk = zeros(size(root.good));
+datStruc.trueLc = zeros(size(root.good));
+
+for i = 1:nUnits
+    cc = root.good(i);
+    lfpInd = root.info.shankID(root.info.cluster_id == cc)+1;   % Account for 0-indexing
+    [datStruc.trueSI(i),~,datStruc.truePk(i),datStruc.trueLc(i),~,~,datStruc.posfr(i,:),datStruc.binedges] = get_SI(root,cc,sess,dbnsz);
+    datStruc.frStandRun(i,:) = get_frStandVRun(root,cc,sess);
+    [~,~,datStruc.trueVelMdl(i)] = plot_frXvel(root,cc,sess,2,0);
+    [datStruc.thetastats(i),datStruc.thetafr(i,:)] = plot_thetaMod(root,cc,lfpInd,2*pi/36,0);
+    % datStruc.swrfr(i,:) = plot_frXripple(root,cc,sess,ripRef,wlen,histoBnsz,0);
+    % [~,datStruc.rwdfr(i,:),datStruc.trueRI(i)] = plot_frXrwdtime(root,cc,sess,0.25,5,0);
+    [datStruc.optobins,datStruc.optoMat(i,:,:)] = plot_frXopto(root,cc,sess,0.002,0.5,0);
+    tmp = get_firstPk(datStruc,i);
+    datStruc.optoPkT(i) = tmp;
+end
+
+datStruc = subEpochSI(sess,root,datStruc,10);
+
+% datStruc.ripRate = size(root.ripStruc(ripRef).ripples,1) / (sum(not(sess.runInds)) / sess.samprate);    %Normalize based on standing periods
+datStruc.binpos = datStruc.binedges(1:end-1)+0.5*dbnsz;
+
+%% Save for later
+
+if saveFlag
+    save([root.name '_ec_pilot_dat'],'datStruc')
+end
+
+%% Splitting by gamma, theta-mod, opto-mod, and depth
+% Fernandez-Ruiz et al., 2021 Gamma-S = 30-50; Gamma-M = 60-80; Gamma-L = 100-150
+
+root = get_layerBounds(root,100,0.25);    % Assign units to layers, min layer width 100um, prominence cut off 0.25
+
+root = get_lfpXdepth(root,[6 10; 150 250; 30 50; 60 80; 100 150]);
+tmpLFPDensityFig = plot_lfpXdepth(root);
+ylim([0 max(root.lfpinfo.lfpDepth)])
+set(gcf,'units','normalized','position',[0.4 0.2 0.3 0.6])
+
+thDepthFig = plot_datXdepth(root,datStruc,1,0,0,2); % theta
+opDepthFig = plot_datXdepth(root,datStruc,1,0,0,4); % peri-opto peak time
+
+saveas(tmpLFPDensityFig,[sbase '_LFPPower.png'])
+saveas(opDepthFig,[sbase '_opXdepth.png'])
+saveas(thDepthFig,[sbase '_thXdepth.png'])
+
+%% Spatial response
+datStruc.binpos = binpos;
+
+datStruc.rwdBin = find(datStruc.binpos > r1pos,1);
+
+% Convert root.spatialUnits to indices of root.good
+for i = 1:length(root.spatialUnits)
+    siUnits(i) = find(root.good == root.spatialUnits(i));
+end
+
+ecFieldDistro = histcounts(datStruc.binpos(datStruc.trueLc(siUnits)),datStruc.binedges);
+
+[spWflFig] = plot_unitsXpos(root,sess,root.good(siUnits));
+plot([datStruc.rwdBin datStruc.rwdBin],[0 length(siUnits)+1],'r--','LineWidth',2)
+% plot(normalize(ecFieldDistro,'range').*sum(siUnits)./5,'k','LineWidth',1)
+title(replace(root.name,"_"," "))
+
+peakDistroFig = plotDistroHisto(ecFieldDistro,binpos,r1pos);
+set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.14])
+xlabel('Track Position (cm)')
+
+if saveFlag
+    saveas(spWflFig,[sbase '_fc_waterfall.png'])
+    saveas(peakDistroFig,[sbase '_fc_PeakDistro.png'])
+end
+
+%% Example Rand cue response
+cc = 409;
+
+[rndFRF, rndRastF] = plot_align2rand(root,cc,sess,0,0.025);
+[fixFRF, fixRastF] = plot_align2rand(root,cc,sess,1,0.025);
+[~,~,spFRF] = plot_frXpos(root,cc,sess,0.025); ylim([0 10]);
+[spRastF] = plot_trialraster(root,cc,sess); set(gcf,'units','normalized','position',[0.4 0.4611 0.2917 0.3889]);
+
+fsave(rndFRF,[sbase '_cc' num2str(cc) '_frXrq'],1)
+fsave(rndRastF,[sbase, '_cc' num2str(cc) '_rastXrq'],1)
+fsave(fixFRF,[sbase, '_cc' num2str(cc) '_frXfq'],1)
+fsave(fixRastF,[sbase, '_cc' num2str(cc) '_rastXfq'],1)
+fsave(spFRF,[sbase, '_cc' num2str(cc) '_frXpos'],1)
+fsave(spRastF,[sbase, '_cc' num2str(cc) '_rastXpos'],1)
+
+%%
+function [fhandle] = plotDistroHisto(distro1,binpos,rzPos)
+vColors2 = [0.5 0.5 1; 0.75 0.75 1];
+
+fhandle = figure; hold on
+plot(binpos*100,distro1./sum(distro1),'Color',vColors2(1,:),'LineWidth',2);
+plot([rzPos rzPos]*100,[0 0.15],'k--','HandleVisibility','off')
+ylim([0 max(distro1./sum(distro1),[],'all')])
+xlim([binpos(1)*100-1 binpos(end)*100+1])
+ylabel('P(field peak)')
+set(gca,'FontSize',12,'FontName','Arial')
+end

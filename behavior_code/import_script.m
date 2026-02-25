@@ -1,8 +1,6 @@
 % Batched Import behavior script
 
-% bhvrdir = 'C:\Users\cornu\Documents\Research\Data\test\test_02';
-% mousedir = 'C:\Users\cornu\Documents\Research\Data\KW005';
-mousedir = 'D:\Data\Kelton\analyses\KW022';
+mousedir = 'D:\Data\Kelton\analyses\HE002';
 
 overwriteFlag = 0;
 
@@ -26,10 +24,16 @@ for i = 1:length(dirlist)
 
     try
         sess = importBhvr(fullfile(dirlist(i).folder,dirlist(i).name));
-        % sess = getErrorTrials(sess);
     catch
         cd(mousedir)
         continue
+    end
+
+    try
+        [~,sess.velXpos] = plot_trialvel(sess,0.01,0);
+        [~,sess.velXrwd] = get_velXrwd(sess,0.25,5,0);
+    catch
+        disp('No bnvel or velxrwd assigned to sess file')
     end
 
     sbase = sess.name(1:14);
@@ -40,18 +44,18 @@ for i = 1:length(dirlist)
         continue
     end
 
-    [fig_trialvel,fig_velavg, tmpedges1, tmpbnvel] = plot_trialvel(sess);  % default 0.01m binsize
+    [tmpedges1, tmpbnvel, fig_trialvel,fig_velavg] = plot_trialvel(sess);  % default 0.01m binsize
     saveas(fig_trialvel,[sbase, '_trialvelocity'],'png')
-    saveas(fig_velavg,[sbase, '_avgvelocity'],'png')
+    % saveas(fig_velavg,[sbase, '_avgvelocity'],'png')
 
     [fig_lickraster, fig_lickavg] = plot_lickraster_rwd(sess, 5, 0.1);
     saveas(fig_lickraster,[sbase, '_lickraster_rwdalign'],'png')
     saveas(fig_lickavg,[sbase, '_lickaverage'],'png')
 
     if dirlist(i).name(end-1:end) ~= "D1"
-        [fig_lickpos, fig_licktrialavg, tmpedges2, ~, tmpbnlck] = plot_lickpos(sess);   % Don't run this for D1 - random acclimation (# laps ~= # rewards)
+        [tmpedges2, ~, tmpbnlck, fig_lickpos, fig_licktrialavg] = plot_lickpos(sess);   % Don't run this for D1 - random acclimation (# laps ~= # rewards)
         saveas(fig_lickpos,[sbase, '_lickraster'],'png')
-        saveas(fig_licktrialavg,[sbase, '_lickpos_average'],'png')
+        % saveas(fig_licktrialavg,[sbase, '_lickpos_average'],'png')
     end
 
     fig_vel_lick = plot_vel_lck(sess, tmpbnvel, 0.01, 0.03);

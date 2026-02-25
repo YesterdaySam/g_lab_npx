@@ -89,7 +89,8 @@ for i = 1:nshanks-1
     plot(ax2,[i i], [min(root.info.depth) max(root.info.depth)], 'k--')
 end
 
-xlim([0 max(normamp)+nshanks-1]);
+xmax = max(normamp)+nshanks-1;
+xlim([0 xmax]);
 
 ax2.Color = 'none';
 ax1.Box = 'off';

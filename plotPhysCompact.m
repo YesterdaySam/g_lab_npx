@@ -1,4 +1,4 @@
-function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag)
+function [] = plotPhysCompact(root,sess,sdir,overwrite,dType,rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF,rwdTF)
 %% Plot and save some neural analyses
 %
 % Inputs:
@@ -17,17 +17,22 @@ arguments
     sdir                    % Directory to save subplots
     overwrite           = 0 % Overwrite old plots
     dType               = 'good' % Type of units to work with
-    rastFlag            = 1 % Include raster across trials
-    velFlag             = 1 % Include velocity binned firing rate
-    avgposFlag          = 1 % Include averaged spatial firing rate
-    trialheatmapFlag    = 1 % Include heatmap across trials
-    perioptoFlag        = 0 % Include peri-opto pulse spikes plot
+    rastF               = 1 % Include raster across trials
+    velF                = 1 % Include velocity binned firing rate
+    avgposF             = 1 % Include averaged spatial firing rate
+    trialheatmapF       = 1 % Include heatmap across trials
+    templateF           = 1 % Include template waveform 
+    perioptoF           = 1 % Include peri-opto pulse spikes plot
+    acgF                = 1 % Include AutoCorreloGram plot
+    thetaF              = 1 % Include Theta Phase Modulation plot
+    rwdTF               = 0 % Include reward time binned firing rate
 end
 
 cd(sdir)
+close all
 
 if contains(dType,'good')
-    if isempty(dir('*_good')) || overwrite
+    if isempty(dir('ephysPlots_good')) || overwrite
         mkdir('ephysPlots_good')
     end
     cd('ephysPlots_good')
@@ -40,7 +45,11 @@ elseif contains(dType,'mua')
     nUnits = length(root.mua);
 end
 
-nPlots = sum([rastFlag,velFlag,avgposFlag,trialheatmapFlag,perioptoFlag]);
+if isempty(sess.optoind)
+    perioptoF = 1;
+end
+
+nPlots = sum([rastF,velF,avgposF,trialheatmapF,templateF,perioptoF,acgF,thetaF,rwdTF]);
 
 for i = 1:nUnits
 
@@ -57,21 +66,37 @@ for i = 1:nUnits
 
     if isempty(dir(['unit' num2str(cc) '_summary.png'])) | overwrite == 1
 
-        if rastFlag
+        if rwdTF
+            [~,~,~,tmpfrrwdT] = plot_frXrwdtime(root,cc,sess);
+        end
+
+        if perioptoF
+            [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.005,0.5);
+        end
+
+        if thetaF
+            tmpInd = find(root.info.cluster_id == cc);
+            lfpInd = root.info.shankID(tmpInd) + 1; % Account for 0-indexing
+            [~,~,tmptheta] = plot_thetaMod(root,cc,lfpInd);   % Plot theta modulation relative to local theta, 10 degree bin size (Quilichini et al., 2010)
+        end
+
+        if acgF
+            tmpacg = plot_acg(root,cc);
+        end
+
+        if rastF
             tmpraster = plot_trialraster(root,cc,sess);
         end
 
-        if velFlag
+        if velF
             [~,~,~,tmpfrvel] = plot_frXvel(root,cc,sess);
-            title('');
         end
 
-        if avgposFlag
+        if avgposF
             [~,~,tmpfrpos] = plot_frXpos(root,cc,sess);
-            title('');
         end
 
-        if trialheatmapFlag
+        if trialheatmapF
             try
                 tmpheatmap = plot_trialHeatmap(root,cc,sess);
             catch
@@ -79,29 +104,37 @@ for i = 1:nUnits
             end
         end
 
-        if perioptoFlag
-            [~,~,tmpfropto] = plot_frXopto(root,cc,sess,0.01,0.1);
-            title('');
+        if templateF
+            tmpWF = plot_templateWF(root,cc);
         end
 
         figlist = get(groot, 'Children');
         newfig = figure;
         if nPlots < 5
             set(gcf,'units','normalized','position',[0.1 0.1 0.4 0.7])
-        else
+        elseif nPlots < 7
             set(gcf,'units','normalized','position',[0.1 0.1 0.7 0.7])
+        else
+            set(gcf,'units','normalized','position',[0.1 0.01 0.7 0.95])
         end
 
         tcl = tiledlayout(newfig, 'flow');
 
         for j = 1:numel(figlist)
             figure(figlist(j))
+            title('')
             ax = gca;
             ax.Parent = tcl;
             ax.Layout.Tile = j;
         end
-        title(tcl,['Unit ' num2str(cc)])
-        saveas(newfig, ['unit' num2str(cc) '_summary'], 'png')
+        tblind = find(root.info.cluster_id == cc);
+        title(tcl,['unit ' num2str(cc) ' Shank ' num2str(root.info.shankID(tblind)), ' Depth ', num2str(root.info.depth(tblind)) 'um'])
+        figure(newfig)  % To pull figure to front of screen for visualization
+        saveas(newfig, ['unit' num2str(cc) '_shank' num2str(root.info.shankID(tblind)) '_depth' num2str(root.info.depth(tblind)) '_summary'], 'png')
         close all
     end
+end
+
+cd(sdir)
+
 end

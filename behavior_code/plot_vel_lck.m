@@ -17,7 +17,11 @@ sess.lapstt = sess.lapstt(sess.valTrials);
 sess.lapend = sess.lapend(sess.valTrials);
 sess.nlaps  = length(sess.lapstt);
 
-tracklen    = max(sess.pos(sess.lapstt(1):sess.lapend(1))); % m
+try
+    tracklen = sess.maxPos;
+catch
+    tracklen    = max(sess.pos(sess.lapstt(1):sess.lapend(1))); % m
+end
 edgesVel    = 0:bnszVel:tracklen;
 edgesLck    = 0:bnszLck:tracklen;
 % nBinVel     = length(edgesVel);
@@ -60,11 +64,13 @@ yyaxis right
 set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
 plot(edgesLck(1:end-1)*100,mean(bnlck,1,'omitnan'),'b','LineWidth',2)
 patch(100*[edgesLck(1:length(cidnlck)),fliplr(edgesLck(1:length(cidnlck)))],[cidnlck,fliplr(ciuplck)],'b','FaceAlpha',0.5,'EdgeColor','none')
-ylabel('Average Licks/s'); ylim([0 inf])
+ylabel('Average Licks/s'); ylim([0 max(mean(bnlck,1,'omitnan'))+1])
 set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
 tmp = gca;
 tmp.YAxis(2).Color = 'b';
 tmp.YAxis(1).Color = 'k';
+
+yyaxis left
 
 end
