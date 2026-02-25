@@ -11,35 +11,44 @@ import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
 # import spikeinterface.postprocessing as spost
-# import spikeinterface.qualitymetrics as sqm
+# import spikeinterface.qualitymetrics as sqm bbvb   
 # import spikeinterface.comparison as sc
 # import spikeinterface.exporters as sexp
 # import spikeinterface.curation as scur
 # import spikeinterface.widgets as sw
 
-import subprocess
+import subprocess  
 import numpy as np
-# import matplotlib.pyplot as plt
+from kilosort.io import load_ops
+# from kilosort.data_tools import (
+#     mean_waveform, cluster_templates, get_good_cluster, get_cluster_spikes,
+#     get_spike_waveforms, get_best_channels
+#     )
+import matplotlib.pyplot as plt
+from matplotlib import gridspec, rcParams
+rcParams['axes.spines.top'] = False
+rcParams['axes.spines.right'] = False
+gray = .5 * np.ones(3)
 from pathlib import Path
 from datetime import datetime
 import os
- 
+
 global_job_kwargs = dict(n_jobs=8, chunk_duration="1s")
 si.set_global_job_kwargs(**global_job_kwargs)
 
-base_folder = Path('D:\Kelton\probe_data\KW022')
+base_folder = Path('D:\Kelton\probe_data\ZM018')
 
 for fold in os.listdir(base_folder):
     sglx_dir = base_folder / fold
     os.chdir(sglx_dir)
-     
-    # try:
-    #     tmp = os.listdir(sglx_dir)
-    #     tmp.index('kilosort4')
-    #     print("kilosort4 folder already found for", sglx_dir)
-    #     continue
-    # except:
-    #     print("Starting SI kilosort4 analysis for", sglx_dir)
+        
+    try:
+        tmp = os.listdir(sglx_dir)
+        tmp.index('kilosort4')
+        print("kilosort4 folder already found for", sglx_dir)
+        continue
+    except:
+        print("Starting SI kilosort4 analysis for", sglx_dir)
     
     # Load raw data, DON'T load sync channel here or subsequent operations won't work!
     raw_rec = se.read_spikeglx(sglx_dir, stream_name='imec0.ap', load_sync_channel = False)
@@ -72,7 +81,7 @@ for fold in os.listdir(base_folder):
         os.chdir(r'C:\Users\spikesorter\Documents\CatGTWinApp\CatGT-win')
         subF = fold[:-3]        #Accounts for _g0 tag
         # subprocess.run(f"CatGT -dir={base_folder} -run={subF} -g=0 -t=0 -prb_fld -lf -lffilter=butter,12,0,300 -prb=0 -save=2,0,0,384", shell=True)   #Export sync chan only for size reasons
-        subprocess.run(f"CatGT -dir={base_folder} -run={subF} -g=0 -t=0 -prb_fld -lf -lffilter=butter,12,0,300 -prb=0 -save=2,0,0,384 -save=2,0,10,0:383", shell=True)       #Export both sync chan and LFP albeit separately
+        subprocess.run(f"CatGT -dir={base_folder} -run={subF} -g=0 -t=0 -prb_fld -lf -lffilter=butter,12,0,300 -prb=0 -save=2,0,0,384 -save=2,0,1,0:383", shell=True)       #Export both sync chan and LFP albeit separately
          
         # Experimental SI version of saving sync channel, don't use because can't read out later
         # sync_rec = se.read_spikeglx(sglx_dir, stream_name='imec0.ap', load_sync_channel = True)
@@ -90,12 +99,33 @@ for fold in os.listdir(base_folder):
     dat_path = rec_signals_dict[raw_rec.stream_id]["bin_file"]  # Write file path to original ap.bin file 
 
     # Write over params file
-    f = open(base_folder / sglx_dir / 'kilosort4/sorter_output/params.py','w')
+    results_dir = base_folder / sglx_dir / 'kilosort4/sorter_output'
+    f = open(results_dir / 'params.py','w')
     writedict = {'n_channels_dat':n_channels_dat, 'offset':offset, 'sample_rate':sample_rate, 'dtype':dtype, 'hp_filtered':hp_filtered, 'dat_path':dat_path}
     for name, val in writedict.items():
         f.write("%s = %s\n" % (name, repr(val)))
     f.close()
     
     print("Finished sort at " + str(datetime.now()))
+
+    # Plot some basic kilosort outputs
+    ops = load_ops(results_dir / 'ops.npy')
+    # t = (np.arange(ops['nt']) / ops['fs']) * 1000
+    fig = plt.figure(figsize=(12,5), dpi=100)
+    grid = gridspec.GridSpec(1, 1, figure=fig, hspace=0.5, wspace=0.5)
+    
+    ax = fig.add_subplot(grid[0,0])
+    ax.plot(np.arange(0, ops['Nbatches'])*2, ops['dshift']);
+    ax.set_xlabel('time (sec.)')
+    ax.set_ylabel('drift (um)')
+    fig.savefig(base_folder / sglx_dir / 'kilosort4/drift.png')
+    plt.close('all')
+
+    # Not currently working, may be due to channel count not saved properly in ops.npy
+    # cc = get_good_cluster(results_dir,n=1)
+    # mean_wv, spike_subset = mean_waveform(cc, results_dir, n_spikes=100,
+    #                                       bfile=None, best=True)
+    # mean_temp = cluster_templates(sorting.unit_ids[0], results_dir, mean=True,
+    #                               best=True, spike_subset=spike_subset)
 
 os.chdir(base_folder)
