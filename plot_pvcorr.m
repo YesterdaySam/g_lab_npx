@@ -4,6 +4,9 @@ function [fhandle] = plot_pvcorr(dat)
 %   dat = correlation data in MxM spatial bins
 % Outputs:
 %   fhandle = handle to figure
+%
+% Created 4/29/26 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
 
 nBins = size(dat,1);
 

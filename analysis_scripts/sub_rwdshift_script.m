@@ -902,14 +902,14 @@ pvPrePstCompF = plot_pvcorr(pvPrePst);
 
 parentDir = "D:\Data\Kelton\analyses\group_analyses"; 
 subDatT = import_xldat(parentDir,"dat_include.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\dp2_2026\ca1';
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\dp2_2026\subiculum';
 cd(groupSDir) 
 
 cleanInds = subDatT.include ~= 1;
 subDatT(cleanInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
-sbase = 'ca1RwdShift_';
+sbase = 'subRwdShift_';
 fname = [sbase 'data1'];
 
 dbnsz = 0.05;
@@ -1760,9 +1760,9 @@ xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
 [~,ps.lc_pv_PreOddEvn_idVdg,~,stats.lc_pv_PreOddEvn_idVdg] = ttest(uPVCPreOddEvnID,uPVCPreOddEvnDG);
 [~,ps.lc_pv_PstOddEvn_idVdg,~,stats.lc_pv_PstOddEvn_idVdg] = ttest(uPVCPstOddEvnID,uPVCPstOddEvnDG);
 
-pvPrePstCompF    = plotPVCorrComp(uPVCorrID, uPVCorrDG, nMice, ps.lc_pv_PrePst_idVdg);
-pvPreOddEvnCompF = plotPVCorrComp(uPVCPreOddEvnID, uPVCPreOddEvnDG, nMice, ps.lc_pv_PreOddEvn_idVdg);
-pvPstOddEvnCompF = plotPVCorrComp(uPVCPstOddEvnID, uPVCPstOddEvnDG, nMice, ps.lc_pv_PstOddEvn_idVdg);
+pvPrePstCompF    = plot_PVCorrComp(uPVCorrID, uPVCorrDG, ps.lc_pv_PrePst_idVdg);
+pvPreOddEvnCompF = plot_PVCorrComp(uPVCPreOddEvnID, uPVCPreOddEvnDG, ps.lc_pv_PreOddEvn_idVdg);
+pvPstOddEvnCompF = plot_PVCorrComp(uPVCPstOddEvnID, uPVCPstOddEvnDG, ps.lc_pv_PstOddEvn_idVdg);
 
 if saveFlag
     fsave(pvPrePstF,[sbase 'lc_pv_corr_allSICells_prepost'])
