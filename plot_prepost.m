@@ -24,8 +24,8 @@ end
 axisFlag = 0;
 
 if      plttype == 1
-    r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
-    r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:30))),1);
+    r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:10))),1);
+    r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:10))),1);
     [~,~,fhandlePre] = plot_frXpos(root1,unit,sess1,0.05,1);
     plot([r1pos, r1pos], ylim,'k--');
     [~,~,fhandlePst] = plot_frXpos(root2,unit,sess2,0.05,1);
@@ -37,8 +37,8 @@ elseif  plttype == 2
     [~,~,~,fhandlePst] = plot_frXvel(root2,unit,sess2);
     titleStr = 'Velocity Tuning ';
 elseif  plttype == 3
-    [~,~,fhandlePre] = plot_thetaMod(root1,unit,3);
-    [~,~,fhandlePst] = plot_thetaMod(root2,unit,3);
+    [~,~,fhandlePre] = plot_thetaMod(root1,unit,root1.ripRef);
+    [~,~,fhandlePst] = plot_thetaMod(root2,unit,root2.ripRef);
     titleStr = 'Theta Tuning ';
 elseif  plttype == 4
     [~,~,~,fhandlePre] = plot_frXrwdtime(root1,unit,sess1);
@@ -71,7 +71,7 @@ tcl = tiledlayout(fhandle, 'flow');
 figlist = [fhandlePre,fhandlePst];
 titlelist = {'Familiar Goal','Novel Goal'};
 
-if plttype ~= 3
+if plttype ~= 3 && plttype ~= 5
     for i = 1:length(figlist(1).Children.YAxis)
         yExtrema(i,:) = [min([figlist(1).Children.YAxis(i).Limits, figlist(2).Children.YAxis(i).Limits]),...
             max([figlist(1).Children.YAxis(i).Limits figlist(2).Children.YAxis(i).Limits])];
@@ -85,7 +85,7 @@ for j = 1:numel(figlist)
     if j == 2 && plttype ~= 3; ax.YAxis(1).Label.String = ''; end
     if j == 1 && axisFlag; ax.YAxis(2).Label.String = ''; ax.YAxis(2).TickLabels = ''; end
 
-    if plttype ~= 3; 
+    if plttype ~= 3 && plttype ~= 5
         for i = 1:length(ax.YAxis)
             ax.YAxis(i).Limits = yExtrema(i,:);
         end

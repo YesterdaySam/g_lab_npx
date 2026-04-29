@@ -17,8 +17,18 @@ end
 [binedges2,~,pslck2] = plot_lickpos(sess2,dbnsz,0);
 normlck1 = pslck1 ./ sum(pslck1,2);
 normlck2 = pslck2 ./ sum(pslck2,2);
-r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
-r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:30))),1);
+try
+    r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
+catch
+    disp('Fewer than 30 trials before shift, using all')
+    r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:end))),1);
+end
+try
+    r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:30))),1);
+catch
+    disp('Fewer than 30 trials after shift, using all')
+    r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:end))),1);
+end
 
 if plotflag
     preHeatmapF = figure;

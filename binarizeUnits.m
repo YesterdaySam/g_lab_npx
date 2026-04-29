@@ -6,13 +6,13 @@ function [spkMap] = binarizeUnits(root,units,sess)
 %   sess = sess object
 %
 % Output
-%   spkMap = binarized spike matrix, length sess.ts - 1
+%   spkMap = binarized spike matrix, length sess.ts
 %
 % Created 10/1/25 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
 nUnits = length(units);
-spkMap = zeros(nUnits,length(sess.ts)-1);
+spkMap = zeros(nUnits,length(sess.ts));
 
 for i = 1:nUnits
     cc = units(i);

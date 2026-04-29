@@ -15,8 +15,18 @@ end
 
 [binedges1,bnvel1] = plot_trialvel(sess1,dbnsz,0);
 [binedges2,bnvel2] = plot_trialvel(sess2,dbnsz,0);
-r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
-r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:30))),1);
+try
+    r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
+catch
+    disp('Fewer than 30 trials before shift, using all')
+    r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:end))),1);
+end
+try
+    r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:30))),1);
+catch
+    disp('Fewer than 30 trials after shift, using all')
+    r2pos = 100*round(mean(sess2.pos(sess2.rwdind(1:end))),1);
+end
 
 vspbnsz = 0.01;
 vMap1 = plot_lap_velCCorr(sess1,vspbnsz,0.002,0);
@@ -32,7 +42,7 @@ if plotflag
     xticks(1:90:length(binedges1)); xticklabels(binedges1(1:90:length(binedges1))*100);
     yticks(30:30:size(vMap1,1));
     ylabel('Trial #'); ylabel(cbar,'Velocity (cm/s)','FontSize',12,'Rotation',90)
-    set(gca,'FontSize',12,'FontName','Arial')
+    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
     pstHeatmapF = figure;
     set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.45])
@@ -43,7 +53,7 @@ if plotflag
     ylabel('Trial #'); ylabel(cbar,'Velocity (cm/s)','FontSize',12,'Rotation',90)
     xticks(1:90:length(binedges2)); xticklabels(binedges2(1:90:length(binedges2))*100);
     yticks(30:30:size(vMap2,1));
-    set(gca,'FontSize',12,'FontName','Arial')
+    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 
     sem1 = std(bnvel1,'omitnan')/sqrt(sess1.nlaps);
     ciup1 = rmmissing(mean(bnvel1,1,'omitnan') + sem1*1.96);

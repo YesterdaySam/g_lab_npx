@@ -5,7 +5,7 @@ recID = [];     % [mouseID, recDay, recUnit ID, dist2center, dist2border]
 useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
 lcDat = [];     % [frstHalf.si_p, frstHalf.si, frstHalf.pkFR, frstHalf.pkLoc, lastHalf.si_p, lastHalf.si, lastHalf.pkFR, lastHalf.pkLoc]
 lcMap = [];     % [frstHalf.posfr, lastHalf.posfr];
-siStr = [];     % Struc containing binned SI data per 10 laps
+% siStr = [];     % Struc containing binned SI data per 10 laps
 vlDat = [];     % [frstHalf sig., frstHalf slope, frstHalf R, lastHalf sig., lastHalf slope, lastHalf R]
 thDat = [];     % [frstHalf.p, frstHalf.mrl, frstHalf.ang, lastHalf.p, lastHalf.mrl, lastHalf.ang]
 thMap = [];     % [frstHalf.thetafr, lastHalf.thetafr];
@@ -16,7 +16,7 @@ rpMapZ = [];    % [frstHalf.swrz, lastHalf.swrz];
 rpMod = [];     % [frstHalf.ripModBins, lastHalf.ripModBins];
 bsDat = [];     % [frstHalf.burstIndex, lastHalf.burstIndex];
 bvDat = [];     % [frstHalf.lckDI, frstHalf.preRZV, lastHalf.lckDI, lastHalf.preRZV
-pvStr = [];     % Struc containing binned SI data per 10 laps
+pvStr = [];     % [frstHalf.pvXlap, lastHalf.pvXlap] Struc containing PVC data per lap
 
 ct    = 1;
 
@@ -99,8 +99,13 @@ for i = 1:height(datT)
     thMap = [thMap; frstHalf.thetafr lastHalf.thetafr];
 
     % === Concatenate SI and Peak data ===
-    lcDat = [lcDat; frstHalf.sig, frstHalf.trueSI, frstHalf.truePk, frstHalf.trueLc, ...
-        lastHalf.sig, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
+    try
+        lcDat = [lcDat; frstHalf.sigSI, frstHalf.trueSI, frstHalf.truePk, frstHalf.trueLc, ...
+            lastHalf.sigSI, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
+    catch
+        lcDat = [lcDat; frstHalf.sig, frstHalf.trueSI, frstHalf.truePk, frstHalf.trueLc, ...
+            lastHalf.sig, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
+    end
     lcMap = [lcMap; frstHalf.posfr, lastHalf.posfr];
 
     % === Concatenate SPWR Modulation data ===
@@ -123,14 +128,18 @@ for i = 1:height(datT)
 
     bsDat = [bsDat; frstHalf.burstIndex', lastHalf.burstIndex'];
 
-    % === Concatenate SI over 10-trial blocks ===
-    siStr(ct).preBlockSI = frstHalf.subEpochSI;
-    siStr(ct).pstBlockSI = lastHalf.subEpochSI;
+    % % === Concatenate SI over 10-trial blocks ===
+    % siStr(ct).preBlockSI = frstHalf.subEpochSI;
+    % siStr(ct).pstBlockSI = lastHalf.subEpochSI;
 
-    % === Concatenate PV over laps ===
+    % === Concatenate PV data ===
     pvStr(ct).preBlockPV = frstHalf.pvXlap;
     pvStr(ct).pstBlockPV = lastHalf.pvXlap;
-    
+    pvStr(ct).preEvn     = frstHalf.pvEvn; % Not actually the pvc, just the frmap used to make it
+    pvStr(ct).preOdd     = frstHalf.pvOdd;
+    pvStr(ct).pstEvn     = lastHalf.pvEvn;
+    pvStr(ct).pstOdd     = lastHalf.pvOdd;
+
     % === Concatenate Behavior data ===
     [~,~,preLckMap] = plot_lickpos(sessFrst,0.03,0);
     [~,~,pstLckMap] = plot_lickpos(sessLast,0.03,0);
@@ -177,6 +186,6 @@ end
 
 cd(sdir)
 
-save(fname,'frDat','recID','useCC','siStr','lcDat','lcMap','thDat','thMap','rpDat','rpRat','rpMap','rpMapZ','rpMod','bsDat','vlDat','bvDat','pvStr')
+save(fname,'frDat','recID','useCC','lcDat','lcMap','thDat','thMap','rpDat','rpRat','rpMap','rpMapZ','rpMod','bsDat','vlDat','bvDat','pvStr')
 
 end

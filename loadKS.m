@@ -1,4 +1,4 @@
-function [root] = loadKS(datpath, spath, overwrite)
+function [root] = loadKS(datpath, spath, overwrite, kspath)
 %% Loads the main file outputs from Phy
 % Requires the npy-matlab package from kwikteam https://github.com/kwikteam/npy-matlab
 % Generates or loads a root file in the ksPath and saves it to the starting
@@ -7,6 +7,7 @@ function [root] = loadKS(datpath, spath, overwrite)
 % Inputs:
 % datpath   = string specifying the path to the kilosort output directory
 % spath     = string specifying path where _root file will be saved
+% kspath    = optional to specify which sorting to use
 % overwrite = 0 or 1 to overwrite an existing '*_root' file in ksPath dir
 %
 % Outputs:
@@ -26,6 +27,7 @@ arguments
     datpath
     spath
     overwrite = 0
+    kspath = dir([datpath '\*kilosort*']);
 end
 
 cd(spath)
@@ -106,11 +108,14 @@ end
 
 %% Get kilosort and Phy outputs
 cd(datpath)
-kspath = dir('*kilosort*');
 try 
     cd([kspath.name '\sorter_output'])
 catch
-    cd(kspath.name)
+    try
+        cd(kspath.name)
+    catch
+        cd(kspath)
+    end
 end
 
 fileClust = dir("spike_clusters.npy");

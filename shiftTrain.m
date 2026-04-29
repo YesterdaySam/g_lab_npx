@@ -13,7 +13,6 @@ function [root,sess,rShift] = shiftTrain(root,sess)
 % Created 9/19/24 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
-
 arguments
     root
     sess

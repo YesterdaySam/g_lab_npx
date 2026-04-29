@@ -44,7 +44,7 @@ occsmooth = smoothdata(bnoccs,'gaussian',5);
 binfr = spksmooth ./ occsmooth;
 [peakFR,peakLoc] = max(binfr);
 
-pOcc = bnoccs ./ sum(bnoccs,'all','omitnan');
+pOcc = occsmooth ./ sum(occsmooth,'all','omitnan');
 uFR = sum(spksmooth,'all','omitnan') / sum(occsmooth,'all','omitnan');
 si = sum(pOcc .* binfr .* log2(binfr ./ uFR),'all','omitnan');
 

@@ -6,7 +6,7 @@ arguments
 end
 
 sem = rmmissing(std(dat,'omitnan')/sqrt(size(dat,1)));
-ciup = mean(dat,'omitnan') + sem*sigma;
-cidn = mean(dat,'omitnan') - sem*sigma;
+ciup = rmmissing(mean(dat,'omitnan')) + sem*sigma;
+cidn = rmmissing(mean(dat,'omitnan')) - sem*sigma;
 
 end

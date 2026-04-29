@@ -6,14 +6,14 @@ function [binSpike] = binarizeSpikeTrain(root,unit,sess)
 %   sess = sess object
 %
 % Output
-%   binSpike = binarized spike train, length sess.ts - 1
+%   binSpike = binarized spike train, length sess.ts
 %
 % Created 10/1/25 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
 spikeTS = sess.ts(root.tsb(root.cl == unit));
 
-binSpike = histcounts(spikeTS,sess.ts);
+binSpike = histcounts(spikeTS,[0, sess.ts]);
 
 multicounts = binSpike > 1;
 binSpike(multicounts) = 1;  % Ignore multiple spikes in the same time bin

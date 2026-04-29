@@ -1,11 +1,16 @@
 function [binedges, lckmap, bnlck, fhandle, fhandle2] = plot_lickpos(sess,bnsz,plotflag)
 %% Create linearized lick posiition (binned by space)
 % Inputs
-%   sess = struct from importBhvr.m
-%   bnsz    = double in meters (m)
+%   sess     = struct from importBhvr.m
+%   bnsz     = double in meters (m)
+%   plotflag = binary whether to plot lick raster and trial averaged rate
 %
 % Outputs
-%   fhandle = handle to figure
+%   binedges = bin edges (m)
+%   lckmap   = Nx2 of [lick positions (m), trial]
+%   bnlck    = lick rate (Hz) per spatial bin normalized by time in bin
+%   fhandle  = handle to raster figure
+%   fhandle2 = handle to trial averaged rate figure
 %
 % Created 5/10/24 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------

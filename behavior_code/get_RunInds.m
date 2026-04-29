@@ -14,7 +14,7 @@ function [sess] = get_RunInds(sess,vthresh,tthresh)
 
 arguments
     sess
-    vthresh = 0.04;     %m/s
+    vthresh = 0.025;     %m/s
     tthresh = 2;        %s
 end
 

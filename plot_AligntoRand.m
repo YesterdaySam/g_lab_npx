@@ -4,7 +4,7 @@ function [binedges,binfr,fhandle] = plot_AligntoRand(root,unit,sess,dbnsz,vthres
 % Inputs:
 % root = root object. Must have root.tssync and root.tsb fields
 % unit = cluster ID
-% sess = session struct from importBhvr
+% sess = session struct from importBhvr. Must have RandCueInd field
 % dbnsz = size of position bins, default 0.05m = 5cm
 % vthresh = threshold of behavioral velocity to throw out spikes, default 0.04 m/s
 % plotflag = binary of whether to plot the output

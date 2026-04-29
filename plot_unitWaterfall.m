@@ -7,6 +7,8 @@ function [fhandle,frMapSort,sortInd] = plot_unitWaterfall(frMapRaw,binedges,useS
 %   useSort = Nx1 array of indices from previous sort to use instead of
 %       default sorting based on max bin position
 %   plotflag = binary of whether to plot the output
+%   cbarF = binary, whether to add cbar to figure
+%   normDat = binary, whether to normalize to each cell's peak
 %
 % Outputs:
 %   fhandle = handle to figure
@@ -28,13 +30,15 @@ end
 nBins = size(frMapRaw,2);
 nUnits = size(frMapRaw,1);
 
-unitMax = max(frMapRaw,[],2);
+% Normalize firing 0-1 on a cell by cell basis
 if normDat
+    unitMax = max(frMapRaw,[],2);
     frMap = frMapRaw ./ repmat(unitMax,[1, nBins]);
 else
     frMap = frMapRaw;
 end
 
+% Find peak for each cell (normalized or raw) if not using another sort
 if length(useSort) ~= 1
     sortInd = useSort;
 elseif normDat

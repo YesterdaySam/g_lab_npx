@@ -63,7 +63,8 @@ spksmooth = smoothdata(spkct,'gaussian',5);
 occsmooth = smoothdata(occct,'gaussian',5);
 
 binfr = spksmooth ./ occsmooth;
-rawfr = rmmissing(spkct ./ occct);
+[rawfr,rmSpkinds] = rmmissing(spkct ./ occct);
+binfr(rmSpkinds) = [];
 
 sem = rmmissing(std(spkmap ./ bnoccs,'omitnan')/sqrt(sess.nlaps));
 ciup = rawfr + sem*1.96;
@@ -81,12 +82,14 @@ if plotflag
         else
             bnvel = sess.velXpos;
         end
-        velmean = mean(bnvel);
+        [velmean,rminds] = rmmissing(mean(bnvel,'omitnan'));
+        bnvel(:,rminds) = [];
         [vciup, vcidn] = get_CI(bnvel);
-        velsem = std(bnvel)./sqrt(sess.nlaps);
+        vxcoords = xcoords;
+        vxcoords(rminds) = [];
 
-        plot_CIs(xcoords,vciup,vcidn,'r')
-        plot(xcoords,velmean,'r','LineWidth',2)
+        plot_CIs(vxcoords,vciup,vcidn,'r')
+        plot(vxcoords,velmean,'r','LineWidth',2)
         ylim([0 prctile(sess.velshft,99)])
         ax.YAxis(2).Color = 'r';
         ylabel('Velocity (cm/s)')
@@ -94,6 +97,7 @@ if plotflag
         yyaxis left
     end
 
+    xcoords(rmSpkinds) = [];
     plot_CIs(xcoords,ciup,cidn,'k')
     plot(xcoords, rawfr, 'k-')
     plot(xcoords, binfr, 'b-')

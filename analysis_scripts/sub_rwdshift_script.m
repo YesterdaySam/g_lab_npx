@@ -1,39 +1,54 @@
-% 10m rest Subiculum RZ Shift
-% spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2';
-spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1';
-% spath = 'D:\Data\Kelton\analyses\KW048\KW048_06172025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\KW058\KW058_08222025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\KW059\KW059_08212025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\KW060\KW060_08242025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';
+% Non-op Subiculum RZ Shift
+% spath = 'D:\Data\Kelton\analyses\KW038\KW038_04182025_rec_D5_LLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW040\KW040_04292025_rec_D4_LLat1'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW048\KW048_06172025_rec_D2_RLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06172025_rec_D2_RLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW058\KW058_08222025_rec_D2_RLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW059\KW059_08212025_rec_D2_RLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW060\KW060_08242025_rec_D2_RLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\FG042\FG042_20250607_R3';           % 10m rest
 
-% 10m rest Sub RZ Randomization
-% spath = 'D:\Data\Kelton\analyses\KW040\KW040_05012025_rec_D6_LMed1';
-% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06202025_rec_D5_LLat2';
-% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06222025_rec_D6_LMed1';
+% Non-op Sub RZ Randomization
+% spath = 'D:\Data\Kelton\analyses\KW040\KW040_05012025_rec_D6_LMed1'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06202025_rec_D5_LLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW049\KW049_06222025_rec_D6_LMed1'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_10012025_rec_D5_LLat2'; % 20m rest
 
-% 10m rest CA1 RZ Shift
-% spath = 'D:\Data\Kelton\analyses\FG044\FG044_20250710_R2';
-% spath = 'D:\Data\Kelton\analyses\KW062\KW062_09052025_rec_D3_RMed1';  % One sub shank
-% spath = 'D:\Data\Kelton\analyses\KW065\KW065_09042025_rec_D2_RLat2';
-% spath = 'D:\Data\Kelton\analyses\KW066\KW066_09122025_rec_D2_RLat2';
+% Non-op CA1 RZ Shift
+% spath = 'D:\Data\Kelton\analyses\FG044\FG044_20250710_R2';           % 10m rest 
+% spath = 'D:\Data\Kelton\analyses\KW062\KW062_09052025_rec_D3_RMed1'; % 10m rest; One sub shank
+% spath = 'D:\Data\Kelton\analyses\KW065\KW065_09042025_rec_D2_RLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\KW066\KW066_09122025_rec_D2_RLat2'; % 10m rest
+% spath = 'D:\Data\Kelton\analyses\ZM001\ZM001_10012025_rec_D5_LLat2'; % 20m rest
+spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_09262025_rec_D2_RLat2'; % 20m rest
 
-% 20m rest Non-op Sub RZ Randomization
-% spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_10012025_rec_D5_LLat2';
+% Non-op CA1 RZ Randomization
+% spath = 'D:\Data\Kelton\analyses\ZM001\ZM001_10022025_rec_D6_LMed1'; % 20m rest
 
-% 20m rest Non-op CA1 RZ Shift
-% spath = 'D:\Data\Kelton\analyses\ZM001\ZM001_10012025_rec_D5_LLat2';
-% spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_09262025_rec_D2_RLat2';
+% Operant Subiculum RZ Shift
+% spath = 'D:\Data\Kelton\analyses\KW073\KW073_10132025_rec_D1_RLat1'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\ZM006\ZM006_10172025_rec_D4_LLat2'; % 20m rest Already experienced a partial RZ Shift...
+% spath = 'D:\Data\Kelton\analyses\KW074\KW074_10212025_rec_D2_RLat2'; % 20m rest Not a great session behaviorally
+% spath = 'D:\Data\Kelton\analyses\KW077\KW077_11262025_rec_D2_RLat2'; % 20m rest
 
-% 20m rest Operant Sub RZ Shift
-% spath = 'D:\Data\Kelton\analyses\KW073\KW073_10132025_rec_D1_RLat1';
-% spath = 'D:\Data\Kelton\analyses\ZM006\ZM006_10172025_rec_D4_LLat2'; % Already experienced a partial RZ Shift...
-% spath = 'D:\Data\Kelton\analyses\KW074\KW074_10212025_rec_D2_RLat2'; % Not a great session behaviorally
+% Operant Sub RZ Randomization
+% spath = 'D:\Data\Kelton\analyses\KW073\KW073_10172025_rec_D4_LLat2'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\ZM018\ZM018_02242026_rec_D4_LLat2'; % 20m rest
 
-% 20m rest Operant Sub RZ Randomization
-% spath = 'D:\Data\Kelton\analyses\KW073\KW073_10172025_rec_D4_LLat2';
-% spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_10012025_rec_D5_LLat2';
+% Operant CA1 RZ Shift
+% spath = 'D:\Data\Kelton\analyses\HE002\HE002_01222026_rec_D2_RLat2'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\FG068\FG068_01312026_rec_D2_RLat2'; % 20m rest
+
+% Operant CA1 RZ Randomization
+% spath = 'D:\Data\Kelton\analyses\FG068\FG068_02022026_rec_D3_RMed1'; % 20m rest
+
+% Operant Sub Non-learners
+% spath = 'D:\Data\Kelton\analyses\ZM018\ZM018_02232026_rec_D3_LLat1'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\ZM020\ZM020_02232026_rec_D1_RLat1'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\KW087\KW087_02082026_rec_D2_RLat2'; % 20m rest
+
+% Operant EC RZ Shift
+% spath = 'D:\Data\Kelton\analyses\KW093\KW093_03292026_rec_D4_RMed2'; % 20m rest
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -65,7 +80,7 @@ saveRoot(root);
 
 % Epoch into pre/post reward shift for reward shift sessions
 frstHalfInds         = [sess.ind(1) sess.lapend(rwdShift)];
-lastHalfInds         = [sess.lapstt(sess.valTrials(rwdShift+1)) sess.ind(end)];
+lastHalfInds         = [sess.lapstt(rwdShift+1) sess.ind(end)];
 [sessFrst, rootFrst] = epochStruc(sess,root,frstHalfInds);
 [sessLast, rootLast] = epochStruc(sess,root,lastHalfInds);
 
@@ -93,6 +108,21 @@ if saveFlag
     fsave(preLckMapF,[root.name,'_preLckMap'])
     fsave(pstLckMapF,[root.name,'_pstLckMap'])
 end
+
+%% Get indices of spatial windows around fixed and rand rewards
+sessFrst = get_QTwin(sessFrst,sessFrst.rwdind);
+sessLast = get_QTwin(sessLast,sessLast.rwdind);
+sess = get_QTwin(sess,sess.rwdind);
+
+% Set up q structs for calling plot_frXcue;
+qfrst.q = sessFrst.qInd;
+qfrst.stt = sessFrst.qStt;
+qfrst.end = sessFrst.qEnd;
+qfrst.qID = sessFrst.qTrialID;
+qlast.q = sessLast.qInd;
+qlast.stt = sessLast.qStt;
+qlast.end = sessLast.qEnd;
+qlast.qID = sessLast.qTrialID;
 
 %% Velocity correlation by lap
 
@@ -126,7 +156,7 @@ frstHalf.alnVelMap = [frstHalf.spVelMap(1:end-1,(1.85-0.90)/vspbnsz:1.85/vspbnsz
 % frstHalf.vCorXLap = corr(frstHalf.alnVelMap',mean(frstHalf.alnVelMap)','rows','complete');
 % lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(frstHalf.alnVelMap)','rows','complete');
 frstHalf.vCorXLap = corr(frstHalf.spVelMap', mean(frstHalf.spVelMap(end-29:end,:))','rows','complete');
-lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(lastHalf.spVelMap(31:60,:))','rows','complete');
+lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(lastHalf.spVelMap(end-29:end,:))','rows','complete');
 tmp = [frstHalf.vCorXLap; NaN(5-mod(size(frstHalf.vCorXLap,1),5),1)]; % Get average every 5 laps
 frstHalf.vCorAvg = nanmean(reshape(tmp,5,size(tmp,1)/5));
 tmp = [lastHalf.vCorXLap; NaN(5-mod(size(lastHalf.vCorXLap,1),5),1)]; % Get average every 5 laps
@@ -167,13 +197,14 @@ ylabel('Velocity Correlation'); xlabel('Lap');
 set(gca,'FontSize',16,'FontName','Arial')
 
 %% Plot example pre/post unit
-cc = 270;
+cc = 19;
 close all
 rzPosFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,1);
 rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
 rzThMFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,3);
 rzRwdFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,4);
-rzSWRFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,7);
+rzHmpFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,5);
+% rzSWRFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,7);
 
 if saveFlag
     tblind = find(root.info.cluster_id == cc);
@@ -182,7 +213,8 @@ if saveFlag
     saveas(rzVelFig,[sbase 'velocity'],'png')
     saveas(rzThMFig,[sbase 'thetaMod'],'png')
     saveas(rzRwdFig,[sbase 'rewardT'], 'png')
-    saveas(rzSWRFig,[sbase 'spwrMod'], 'png')
+    saveas(rzHmpFig,[sbase 'spatial_heatmap'], 'png')
+    % saveas(rzSWRFig,[sbase 'spwrMod'], 'png')
 end
 
 %% Plot pre/post acg
@@ -200,14 +232,14 @@ set(gca,'FontSize',12,'FontName','Arial')
 
 %% Plot example behavior traces
 
-laps = [63:66,106:107];
+laps = [63:66, 106:107];
 exBhvrTracesFig = plot_bhvrTraces(sess, laps);
 if saveFlag
-    fsave(exBhvrTracesFig,[sbase '_exampleBhvrTraces'])
+    % fsave(exBhvrTracesFig,[sbase '_exampleBhvrTraces'])
 end
 
-%% Plot heatmap, burst raster and combined average traces
-cc = 366;
+%% Plot 1 unit's heatmap, burst raster and combined average traces
+cc = 209;
 sess.valTrials = sess.rwdTrials;
 sessFrst.valTrials = sessFrst.rwdTrials;
 sessLast.valTrials = sessLast.rwdTrials;
@@ -301,33 +333,33 @@ end
 
 for i = 1:nUnits
     cc = root.good(i);
-    % lfpInd = root.info.shankID(root.info.cluster_id == cc)+1;   % Account for 0-indexing
-    % [frstHalf.trueSI(i),~,frstHalf.truePk(i),frstHalf.trueLc(i),~,~,frstHalf.posfr(i,:),frstHalf.binedges] = get_SI(rootFrst,cc,sessFrst,dbnsz);
-    % [lastHalf.trueSI(i),~,lastHalf.truePk(i),lastHalf.trueLc(i),~,~,lastHalf.posfr(i,:),lastHalf.binedges] = get_SI(rootLast,cc,sessLast,dbnsz);
-    % frstHalf.frStandRun(i,:) = get_frStandVRun(rootFrst,cc,sessFrst);
-    % lastHalf.frStandRun(i,:) = get_frStandVRun(rootLast,cc,sessLast);
-    % [~,~,frstHalf.trueVelMdl(i)] = plot_frXvel(rootFrst,cc,sessFrst,2,0);
-    % [~,~,lastHalf.trueVelMdl(i)] = plot_frXvel(rootLast,cc,sessLast,2,0);
-    % [frstHalf.thetastats(i),frstHalf.thetafr(i,:)] = plot_thetaMod(rootFrst,cc,lfpInd,2*pi/36,0);
-    % [lastHalf.thetastats(i),lastHalf.thetafr(i,:)] = plot_thetaMod(rootLast,cc,lfpInd,2*pi/36,0);
-    % [spwr_frst,~,frstHalf.swrz(j,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,wlen,histoBnsz,0);
-    % [spwr_last,~,lastHalf.swrz(j,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,wlen,histoBnsz,0);
-    % [~,frstHalf.rwdfr(i,:),frstHalf.trueRI(i)] = plot_frXrwdtime(rootFrst,cc,sessFrst,0.25,5,0);
-    % [~,lastHalf.rwdfr(i,:),lastHalf.trueRI(i)] = plot_frXrwdtime(rootLast,cc,sessLast,0.25,5,0);
-    % [~,frstHalf.frMap(:,:,i),frstHalf.spkMap(:,:,i)] = get_frXpos(rootFrst,cc,sessFrst,0.05,1.85,1);
-    % [~,lastHalf.frMap(:,:,i),lastHalf.spkMap(:,:,i)] = get_frXpos(rootLast,cc,sessLast,0.05,1.85,1);
-    frstHalf.burstIndex(i) = get_burstIndex(rootFrst,sessFrst,cc);
-    lastHalf.burstIndex(i) = get_burstIndex(rootLast,sessLast,cc);
-    [binedges,binBR,bstmap,uBR] = get_burstsXpos(root,unit,sess);
+    lfpInd = root.info.shankID(root.info.cluster_id == cc)+1;   % Account for 0-indexing
+    [frstHalf.trueSI(i),~,frstHalf.truePk(i),frstHalf.trueLc(i),~,~,frstHalf.posfr(i,:),frstHalf.binedges] = get_SI(rootFrst,cc,sessFrst,dbnsz);
+    [lastHalf.trueSI(i),~,lastHalf.truePk(i),lastHalf.trueLc(i),~,~,lastHalf.posfr(i,:),lastHalf.binedges] = get_SI(rootLast,cc,sessLast,dbnsz);
+    frstHalf.frStandRun(i,:) = get_frStandVRun(rootFrst,cc,sessFrst);
+    lastHalf.frStandRun(i,:) = get_frStandVRun(rootLast,cc,sessLast);
+    [~,~,frstHalf.trueVelMdl(i)] = plot_frXvel(rootFrst,cc,sessFrst,2,0);
+    [~,~,lastHalf.trueVelMdl(i)] = plot_frXvel(rootLast,cc,sessLast,2,0);
+    [frstHalf.thetastats(i),frstHalf.thetafr(i,:)] = plot_thetaMod(rootFrst,cc,lfpInd,2*pi/36,0);
+    [lastHalf.thetastats(i),lastHalf.thetafr(i,:)] = plot_thetaMod(rootLast,cc,lfpInd,2*pi/36,0);
+    [frstHalf.swrfr(i,:),~,frstHalf.swrz(i,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,wlen,histoBnsz,0); % Not actual firing rate map, just spk map
+    [lastHalf.swrfr(i,:),~,lastHalf.swrz(i,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,wlen,histoBnsz,0);
+    [~,frstHalf.rwdfr(i,:),frstHalf.trueRI(i)] = plot_frXrwdtime(rootFrst,cc,sessFrst,0.25,5,0);
+    [~,lastHalf.rwdfr(i,:),lastHalf.trueRI(i)] = plot_frXrwdtime(rootLast,cc,sessLast,0.25,5,0);
+    [~,frstHalf.frMap(:,:,i),frstHalf.spkMap(:,:,i)] = get_frXpos(rootFrst,cc,sessFrst,0.05,1.85,1);
+    [~,lastHalf.frMap(:,:,i),lastHalf.spkMap(:,:,i)] = get_frXpos(rootLast,cc,sessLast,0.05,1.85,1);
+    % frstHalf.burstIndex(i) = get_burstIndex(rootFrst,sessFrst,cc);
+    % lastHalf.burstIndex(i) = get_burstIndex(rootLast,sessLast,cc);
+    % [binedges,binBR,bstmap,uBR] = get_burstsXpos(root,unit,sess);
 end
 
-% frstHalf = subEpochSI(sessFrst,rootFrst,frstHalf,10);
-% lastHalf = subEpochSI(sessLast,rootLast,lastHalf,10);
-% 
-% frstHalf.ripRate = size(rootFrst.ripStruc(ripRef).ripples,1) / (sum(not(sessFrst.runInds)) / sess.samprate);    %Normalize based on standing periods
-% lastHalf.ripRate = size(rootLast.ripStruc(ripRef).ripples,1) / (sum(not(sessLast.runInds)) / sess.samprate);
-% frstHalf.binpos = frstHalf.binedges(1:end-1)+0.5*dbnsz;
-% lastHalf.binpos = lastHalf.binedges(1:end-1)+0.5*dbnsz;
+frstHalf = subEpochSI(sessFrst,rootFrst,frstHalf,10);
+lastHalf = subEpochSI(sessLast,rootLast,lastHalf,10);
+
+frstHalf.ripRate = size(rootFrst.ripStruc(ripRef).ripples,1) / (sum(not(sessFrst.runInds)) / sess.samprate);    %Normalize based on standing periods
+lastHalf.ripRate = size(rootLast.ripStruc(ripRef).ripples,1) / (sum(not(sessLast.runInds)) / sess.samprate);
+frstHalf.binpos = frstHalf.binedges(1:end-1)+0.5*dbnsz;
+lastHalf.binpos = lastHalf.binedges(1:end-1)+0.5*dbnsz;
 
 %% Behavioral comparison
 % Lick discrimination
@@ -363,6 +395,8 @@ frstHalf.shufSI = zeros(nUnits,nShufs);
 lastHalf.shufSI = zeros(nUnits,nShufs);
 frstHalf.shufSPWR = zeros(nShufs,nUnits,length(-wlen:histoBnsz:wlen)-1);
 lastHalf.shufSPWR = zeros(nShufs,nUnits,length(-wlen:histoBnsz:wlen)-1);
+frstHalf.shufRI = zeros(nUnits,nShufs);
+lastHalf.shufRI = zeros(nUnits,nShufs);
 
 for j = 1:nShufs
     [shiftFrst,shiftSessFrst,shiftIndFrst] = shiftTrain(rootFrst,sessFrst);
@@ -389,13 +423,15 @@ end
 
 toc
 
-frstHalf.sig = sum(frstHalf.shufSI >= frstHalf.trueSI,2) / nShufs;
-lastHalf.sig = sum(lastHalf.shufSI >= lastHalf.trueSI,2) / nShufs;
+frstHalf.sigSI = sum(frstHalf.shufSI >= frstHalf.trueSI,2) / nShufs;
+lastHalf.sigSI = sum(lastHalf.shufSI >= lastHalf.trueSI,2) / nShufs;
+% frstHalf.sigRI = sum(frstHalf.shufRI >= frstHalf.trueRI',2) / nShufs;
+% lastHalf.sigRI = sum(lastHalf.shufRI >= lastHalf.trueRI',2) / nShufs;
 
-disp(['First half SI p <= 0.05 ' num2str(sum(frstHalf.sig <= 0.05)) ' of ' num2str(nUnits) ' units'])
-disp(['Last half SI p <= 0.05 ' num2str(sum(lastHalf.sig <= 0.05)) ' of ' num2str(nUnits) ' units'])
-disp(['First and last half SI p <= 0.05 ' num2str(sum(frstHalf.sig <= 0.05 & lastHalf.sig <= 0.05)) ' of ' num2str(nUnits) ' units'])
- 
+disp(['First half SI p <= 0.05 ' num2str(sum(frstHalf.sigSI <= 0.05)) ' of ' num2str(nUnits) ' units'])
+disp(['Last half SI p <= 0.05 ' num2str(sum(lastHalf.sigSI <= 0.05)) ' of ' num2str(nUnits) ' units'])
+disp(['First and last half SI p <= 0.05 ' num2str(sum(frstHalf.sigSI <= 0.05 & lastHalf.sigSI <= 0.05)) ' of ' num2str(nUnits) ' units'])
+
 %% SPWRs pre and post
 
 for i = 1:nUnits
@@ -406,8 +442,8 @@ for i = 1:nUnits
     lastHalf.ripParticipation(i) = get_RipParticipation(rootLast,cc,sessLast,ripRef,wlen);
     frstHalf.ripModBins = get_confband(squeeze(frstHalf.shufSPWR(:,i,:)),spwr_frst);
     lastHalf.ripModBins = get_confband(squeeze(lastHalf.shufSPWR(:,i,:)),spwr_last);
-    frstHalf.ripModBinCt(i) = sum(p_frst);
-    lastHalf.ripModBinCt(i) = sum(p_last);
+    frstHalf.ripModBinCt(i) = sum(frstHalf.ripModBins);
+    lastHalf.ripModBinCt(i) = sum(lastHalf.ripModBins);
 end
 
 disp(['First half SPWR Modulated p <= 0.05 ' num2str(sum(frstHalf.ripModBinCt > 1)) ' of ' num2str(nUnits) ' units'])
@@ -444,10 +480,10 @@ lyrUnits = root.info.lyrID(root.goodind) == 1;
 hiFRUnits = root.info.fr(root.goodind) > 0.1;
 useUnits = lyrUnits & hiFRUnits & root.info.uType(root.goodind);
 frstHalf.useUnits = useUnits; lastHalf.useUnits = useUnits;
-siUnits = useUnits & (frstHalf.sig <= 0.05 | lastHalf.sig <= 0.05);
-frstSIUnits = useUnits & (frstHalf.sig <= 0.05);
-lastSIUnits = useUnits & (lastHalf.sig <= 0.05);
-bothSIUnits = useUnits & (lastHalf.sig <= 0.05 & frstHalf.sig <= 0.05);
+siUnits = useUnits & (frstHalf.sigSI <= 0.05 | lastHalf.sigSI <= 0.05);
+frstSIUnits = useUnits & (frstHalf.sigSI <= 0.05);
+lastSIUnits = useUnits & (lastHalf.sigSI <= 0.05);
+bothSIUnits = useUnits & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
 
 nUseUnits = sum(useUnits);
 
@@ -482,8 +518,8 @@ set(gca,'FontSize',12,'FontName','Arial')
 lcBothSIFig = plotBar2(frstHalf.trueSI(siUnits), lastHalf.trueSI(siUnits));
 ylabel('Spatial Information (Bits/spike)')
 
-burstFig = plotBar2(frstHalf.burstIndex(useUnits)', lastHalf.burstIndex(useUnits)');
-ylabel('Burst Index')
+% burstFig = plotBar2(frstHalf.burstIndex(useUnits)', lastHalf.burstIndex(useUnits)');
+% ylabel('Burst Index')
 
 if saveFlag
     sbase = root.name;
@@ -566,24 +602,44 @@ if saveFlag
     saveas(lastRZ_bothSI_Wfl_sort_fig,[sbase '_RwdShift_waterfall_bothSI_last_sortfrst.png'])
 end
 
-%% PV analysis through time
+%% PV Analysis - Pre/Post, Odd/even, over time
+frstHalf.sigSI = sum(frstHalf.shufSI >= frstHalf.trueSI,2) / nShufs;
+lastHalf.sigSI = sum(lastHalf.shufSI >= lastHalf.trueSI,2) / nShufs;
 
 nBins = length(binpos);
 lyrUnits = root.info.lyrID(root.goodind) == 1;
 hiFRUnits = root.info.fr(root.goodind) > 0.1;
 useUnits = lyrUnits & hiFRUnits & root.info.uType(root.goodind);
-bothSIUnits = useUnits & (lastHalf.sig <= 0.05 & frstHalf.sig <= 0.05);
+bothSIUnits = useUnits & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
 
-% Compare identity to off-diagonal
+% Make off-diagonal matrix
 idMat = logical(eye(nBins));
 % dgMat = logical(spdiags([1 1],[-round(nBins/2) round(nBins/2)],nBins,nBins));
 
+% PVC pre to post for visualization
+posNormPre = (squeeze(mean(frstHalf.frMap(:,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(:,:,bothSIUnits),1,"omitnan")),[],1))';
+posNormPst = (squeeze(mean(lastHalf.frMap(:,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(:,:,bothSIUnits),1,"omitnan")),[],1))';
+pvPrePst = corr(posNormPst,posNormPre);   % units x sp. bins
+pvPrePstCompF = plot_pvcorr(pvPrePst);
+
+% PVC Pre odd vs Pre even for visualization
+frstHalf.pvOdd = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")),[],1))';
+frstHalf.pvEvn = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")),[],1))';
+lastHalf.pvOdd = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")),[],1))';
+lastHalf.pvEvn = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")),[],1))';
+pvPreOddEvn = corr(frstHalf.pvOdd,frstHalf.pvEvn);
+pvPstOddEvn = corr(lastHalf.pvOdd,lastHalf.pvEvn);
+pvPreOddEvnFig = plot_pvcorr(pvPreOddEvn);
+xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
+pvPstOddEvnFig = plot_pvcorr(pvPstOddEvn);
+xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
+
+% PVC x time
 uPVPrePre = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothSIUnits);
 uPVPrePst = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothSIUnits,idMat);
-frstHalf.pvXlap = [uPVPrePre, uPVPrePst];
-
 uPVPstPre = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothSIUnits,idMat);
 uPVPstPst = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothSIUnits);
+frstHalf.pvXlap = [uPVPrePre, uPVPrePst];
 lastHalf.pvXlap = [uPVPstPre, uPVPstPst];
 
 pvXtimeFig = figure; hold on;
@@ -598,7 +654,10 @@ set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 if saveFlag
     sbase = root.name;
     save([sbase '_RwdShift_Data2'], 'frstHalf', 'lastHalf')
+    fsave(pvPrePstCompF,[sbase 'pvCorrPrePost'],1,1,0)
     saveas(pvXtimeFig,[sbase '_pvCorrXLaps.png'])
+    fsave(pvPreOddEvnFig,[sbase 'pvCorrPreOddEven'],1,1,0)
+    fsave(pvPstOddEvnFig,[sbase 'pvCorrPstOddEven'],1,1,0)
 end
 
 %% PV Corr vs Velocity Corr
@@ -653,7 +712,7 @@ end
 %% Plot units by anatomical position and depth
 
 useUnits = root.info.lyrID(root.goodind) == 1 & root.info.fr(root.goodind) > 0.1 & root.info.uType(root.goodind);
-bothSIUnits = useUnits & (lastHalf.sig <= 0.05 & frstHalf.sig <= 0.05);
+bothSIUnits = useUnits & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
 
 parentDir = "D:\Data\Kelton\analyses\group_analyses"; 
 subDatT = import_xldat(parentDir,"dat_include.xlsx");
@@ -674,6 +733,86 @@ if saveFlag
     sbase = root.name;
     save([sbase '_RwdShift_Data2'], 'frstHalf', 'lastHalf')
 end
+
+%% Analysis relative to reward delivery
+[~,~,~,~,~,~,~,~,binedges] = get_SI_cue(rootFrst,root.good(1),sessFrst,qfrst);
+famQMap = zeros(length(root.good),length(binedges)-1);
+novQMap = zeros(length(root.good),length(binedges)-1);
+
+for i = 1:length(root.good)
+    cc = root.good(i);
+    [frstHalf.RRSI(i),~,~,~,tmpspkmap,tmpoccmap,~,famQMap(i,:)] = get_SI_cue(rootFrst,cc,sessFrst,qfrst);
+    frstHalf.rrFRMap(:,:,i) = tmpspkmap ./ tmpoccmap;
+    [lastHalf.RRSI(i),~,~,~,tmpspkmap,tmpoccmap,~,novQMap(i,:)] = get_SI_cue(rootLast,cc,sessLast,qlast);
+    lastHalf.rrFRMap(:,:,i) = tmpspkmap ./ tmpoccmap;
+end
+
+% frstHalf.famQMap = famQMap;
+% lastHalf.novQMap = novQMap;
+
+%% Shuffle Reward Relative spatial firing 
+tic
+nShufs = 250;
+
+frstHalf.shufRRSI = zeros(nUnits,nShufs);
+lastHalf.shufRRSI = zeros(nUnits,nShufs);
+
+for j = 1:nShufs
+    [shiftFrst,shiftSessFrst,shiftIndFrst] = shiftTrain(rootFrst,sessFrst);
+    [shiftLast,shiftSessLast,shiftIndLast] = shiftTrain(rootLast,sessLast);
+
+    if mod(j,50) == 0
+        disp(['Shuffle # ' num2str(j)])
+        toc 
+    end
+
+    for i = 1:nUnits
+        cc = root.good(i);
+
+        [frstHalf.shufRRSI(i,j)] = get_SI_cue(shiftFrst,cc,shiftSessFrst,qfrst);
+        [lastHalf.shufRRSI(i,j)] = get_SI_cue(shiftLast,cc,shiftSessLast,qlast);
+    end
+end
+
+toc
+
+frstHalf.sigRRSI = sum(frstHalf.shufRRSI >= frstHalf.RRSI',2) / nShufs;
+lastHalf.sigRRSI = sum(lastHalf.shufRRSI >= lastHalf.RRSI',2) / nShufs;
+
+disp(['First half SI p <= 0.05 ' num2str(sum(frstHalf.sigRRSI <= 0.05)) ' of ' num2str(nUnits) ' units'])
+disp(['Last half SI p <= 0.05 ' num2str(sum(lastHalf.sigRRSI <= 0.05)) ' of ' num2str(nUnits) ' units'])
+disp(['First and last half SI p <= 0.05 ' num2str(sum(frstHalf.sigRRSI <= 0.05 & lastHalf.sigRRSI <= 0.05)) ' of ' num2str(nUnits) ' units'])
+
+if saveFlag
+    save([root.name '_RwdShift_Data2'],'frstHalf','lastHalf')
+end
+
+%% Waterfall significant units
+lyrUnits = root.info.lyrID(root.goodind) == 1;
+hiFRUnits = root.info.fr(root.goodind) > 0.1;
+useUnits = lyrUnits & hiFRUnits & root.info.uType(root.goodind);
+frstHalf.useUnits = useUnits; lastHalf.useUnits = useUnits;
+bothSIUnits = useUnits & (lastHalf.sigRRSI <= 0.05 & frstHalf.sigRRSI <= 0.05);
+
+frstMap = squeeze(mean(frstHalf.frMap,1))';
+lastMap = squeeze(mean(lastHalf.frMap,1))';
+posWflF = plot_unitWaterfall(frstMap(bothSIUnits,:),0:0.05:sess.maxPos);
+[frstWflF,~,sortInd] = plot_unitWaterfall(famQMap(bothSIUnits,:),binedges);
+lastWflF = plot_unitWaterfall(novQMap(bothSIUnits,:),binedges,sortInd);
+lastWflN = plot_unitWaterfall(novQMap(bothSIUnits,:),binedges);
+
+if saveFlag
+    fsave(posWflF,[sbase '_RwdShift_waterfall_frstSI'],1,0)
+    fsave(frstWflF,[sbase '_RwdShift_waterfall_frstQ'],1,0)
+    fsave(lastWflF,[sbase '_RwdShift_waterfall_lastQ'],1,0)
+end
+
+%% RR PVC
+% PVC fam to rnd for visualization
+posNormF = (squeeze(mean(frstHalf.rrFRMap(:,:,bothSIUnits),1)) ./ max(squeeze(mean(frstHalf.frMap(:,:,bothSIUnits),1)),[],1))';
+posNormR = (squeeze(mean(lastHalf.frMap(:,:,bothSIUnits),1)) ./ max(squeeze(mean(lastHalf.frMap(:,:,bothSIUnits),1)),[],1))';
+pvPrePst = corr(posNormPst,posNormPre);   % units x sp. bins
+pvPrePstCompF = plot_pvcorr(pvPrePst);
 
 %% Bayesian decoding attempt
 
@@ -763,15 +902,15 @@ end
 
 parentDir = "D:\Data\Kelton\analyses\group_analyses"; 
 subDatT = import_xldat(parentDir,"dat_include.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort';
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\dp2_2026\ca1';
 cd(groupSDir) 
 
 cleanInds = subDatT.include ~= 1;
 subDatT(cleanInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
-sbase = 'subRwdShift_';
-fname = [sbase 'data7'];
+sbase = 'ca1RwdShift_';
+fname = [sbase 'data1'];
 
 dbnsz = 0.05;
 histoBnsz = 5;
@@ -786,13 +925,13 @@ vColors2 = [.35 .35 .35; 1 .25 .25];
 clear ps stats
 
 %% Combine data
-combine_rzShiftDat(subDatT,fname,'sub',groupSDir);
+combine_rzShiftDat(subDatT,fname,'ca1',groupSDir);
 
 %% Load previously saved data
 cd(groupSDir)
 load(fname)
 
-nMice = length(siStr);
+nMice = length(unique(recID(:,1)));
 mID = unique(recID(:,1));
 nTotal = size(recID,1);
 r1posInd = find(binpos > r1pos,1);
@@ -866,55 +1005,23 @@ end
 for i = 1:length(mID)
     uPreVel(i,:) = mean(bvDat(i).preVMap,'omitnan');
     uPstVel(i,:) = mean(bvDat(i).pstVMap,'omitnan');
-    uPreVF20(i,:) = bvDat(i).uPreVF20;
-    uPreVL20(i,:) = bvDat(i).uPreVL20;
-    uPstVF20(i,:) = bvDat(i).uPstVF20;
-    uPstVL20(i,:) = bvDat(i).uPstVL20;
 
     uPreLck(i,:) = mean(bvDat(i).preLMap,'omitnan');
     uPstLck(i,:) = mean(bvDat(i).pstLMap,'omitnan');
-    uPreLF20(i,:) = bvDat(i).uPreLF20;
-    uPreLL20(i,:) = bvDat(i).uPreLL20;
-    uPstLF20(i,:) = bvDat(i).uPstLF20;
-    uPstLL20(i,:) = bvDat(i).uPstLL20;
 end
 
-xcoordsPre = [10 40];
-xcoordsPst = [100 130];
-ycoords = [0 50];
-uPreVelF = plot_bhvrTraceXmouse(circshift(uPreVel,30,2),uPreVF20,uPreVL20,[0.45 0.45 0.45; 0 0 0]);
-xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
-patch([xcoordsPre,fliplr(xcoordsPre)],[0 0 50 50],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-patch([xcoordsPst,fliplr(xcoordsPst)],[0 0 50 50],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-plot([40 40],[0 50],'--','Color',vColors2(1,:)); plot([130 130],[0 50],'--','Color',vColors2(2,:))
-ylabel('Velocity (cm/s)'); ylim([0 50]); xlim([0 186])
-
-uPstVelF = plot_bhvrTraceXmouse(circshift(uPstVel,30,2),uPstVF20,uPstVL20,[1 .65 .65; 1 0 0]);
+xcoords = [10 40; 100 130];
+uVelF = plot_bhvrTraceCI(circshift(uPreVel,30,2),circshift(uPstVel,30,2),[0.45 0.45 0.45; 0 0 0],xcoords,[0 50]);
 xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
 ylabel('Velocity (cm/s)'); ylim([0 50]); xlim([0 186])
-patch([xcoordsPre,fliplr(xcoordsPre)],[0 0 50 50],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-patch([xcoordsPst,fliplr(xcoordsPst)],[0 0 50 50],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-plot([40 40],[0 50],'--','Color',vColors2(1,:)); plot([130 130],[0 50],'--','Color',vColors2(2,:))
 
-uPreLckF = plot_bhvrTraceXmouse(circshift(uPreLck,10,2),uPreLF20,uPreLL20,[0.45 0.45 0.45; 0 0 0]);
+uLckF = plot_bhvrTraceCI(circshift(uPreLck,10,2),circshift(uPstLck,10,2),[0.45 0.45 0.45; 0 0 0],xcoords,[0 12]);
 xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
-ylabel('Licks/spatial bin'); ylim([0 12]); xlim([0 186])
-patch([xcoordsPre,fliplr(xcoordsPre)],[0 0 12 12],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-patch([xcoordsPst,fliplr(xcoordsPst)],[0 0 12 12],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-plot([40 40],[0 12],'--','Color',vColors2(1,:)); plot([130 130],[0 12],'--','Color',vColors2(2,:))
-
-uPstLckF = plot_bhvrTraceXmouse(circshift(uPstLck,10,2),uPstLF20,uPstLL20,[1 .65 .65; 1 0 0]);
-xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
-ylabel('Licks/spatial bin'); ylim([0 12]); xlim([0 186])
-patch([xcoordsPre,fliplr(xcoordsPre)],[0 0 12 12],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-patch([xcoordsPst,fliplr(xcoordsPst)],[0 0 12 12],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
-plot([40 40],[0 12],'--','Color',vColors2(1,:)); plot([130 130],[0 12],'--','Color',vColors2(2,:))
+ylabel('Lick rate (Hz)'); ylim([0 12]); xlim([0 186])
 
 if saveFlag
-    fsave(uPreVelF,[sbase 'bhv_meanVelPre'])
-    fsave(uPstVelF,[sbase 'bhv_meanVelPst'])
-    fsave(uPreLckF,[sbase 'bhv_meanLckPre'])
-    fsave(uPstLckF,[sbase 'bhv_meanLckPst'])
+    fsave(uVelF,[sbase 'bhv_meanVelPrePst'])
+    fsave(uLckF,[sbase 'bhv_meanLckPrePst'])
 end
 
 %% Firing Rate stand vs run
@@ -1330,78 +1437,114 @@ set(gca,'FontSize',16,'FontName','Arial')
 
 nUseCC = sum(useCC);
 
+nBoth = sum(siBothID);
+nPre = sum(siFrstID);
+nPost = sum(siLastID);
+nNot = sum(not(siFrstID | siLastID) & useCC);
+
+prcts = [sum(trCells), sum(irCells), sum(rrCells), nPre - nBoth, nPost - nBoth, nNot] ./ sum(useCC); 
+
+cMap = [.75, .75, 1; .75, .5, .75; 1, .75, .75; .35, .35, .35; 1, .25, .25; 1, 1, 1];
+trirrrPie = figure;
+p = piechart(prcts*100,["TR-cells","IR-cells","RR-cells","Familiar-only","Novel-only","Neither"]);
+p.LabelStyle = 'namedata';
+colororder(cMap)
+
 if saveFlag
     fsave(pkPosPatchFig,[sbase 'lc_PeakComp_patch'])
+    fsave(trirrrPie,[sbase 'lc_PeakComp_pie'])
 end
 
 %% Distributions over linearized space
-% fieldDstPre = histcounts(spPk1,binedges);
-% fieldDstPst = histcounts(spPk2,binedges);
-% 
-% prepstFieldDstFig = plotDistroHisto(fieldDstPre,fieldDstPst,binpos,[r1pos r2pos]);
-% xlabel('Track Position (cm)')
-% 
-% trackLen = max(binedges);
-% shiftR1 = trackLen/2 - r1pos;
-% fieldAlignR1 = mod(binpos(lcDat(siBothID,4))+shiftR1,trackLen)+0.5*dbnsz;    % Account for mod() creating 0's
-% shiftR2 = trackLen/2 - r2pos;
-% fieldAlignR2 = mod(binpos(lcDat(siBothID,8))+shiftR2,trackLen)+0.5*dbnsz;
-% shiftbins = binedges - trackLen/2;
-% 
-% fieldDstPre_Align = histcounts(fieldAlignR1,binedges);
-% fieldDstPst_Align = histcounts(fieldAlignR2,binedges);
-% 
-% rzDstFig = plotDistroHisto(fieldDstPre_Align,fieldDstPst_Align,binpos-trackLen/2,0);
-% xlabel('Distance to RZ (cm)')
-% 
-% deltaField_RZAlign = fieldAlignR2 - fieldAlignR1;
-% circAlignNeg = deltaField_RZAlign < -trackLen/2;
-% circAlignPos = deltaField_RZAlign > trackLen/2;
-% deltaField_RZAlign(circAlignNeg) = -(deltaField_RZAlign(circAlignNeg) + trackLen);     % When new field back-shifts
-% deltaField_RZAlign(circAlignPos) = -(deltaField_RZAlign(circAlignPos) - trackLen);     % When new field forward-shifts
-% 
-% [~,ps.lc_DltLc_both,~,stats.lc_DltLc_both] = ttest(deltaField_RZAlign);
-% 
-% deltaField_Distro = histcounts(deltaField_RZAlign,shiftbins);
-% 
-% fieldShiftRZFig = figure; hold on
-% bar((shiftbins(1:end-1)+0.5*dbnsz)*100,deltaField_Distro/sum(deltaField_Distro),'FaceColor',[0.25 0.15 1],'HandleVisibility','off')
-% plot([0 0]*100,[0 max(deltaField_Distro/sum(deltaField_Distro),[],'all')+0.02],'--','Color',[.5 .5 .5],'HandleVisibility','off')
-% plot(mean(deltaField_RZAlign),max(deltaField_Distro/sum(deltaField_Distro),[],'all')+0.02,'v','Color',[0.25 0.15 1])
-% xlabel('\Delta RZ-aligned Novel - Familiar (cm)'); ylabel('Probability')
-% xlim([-trackLen/2-dbnsz trackLen/2+dbnsz]*100)
-% legend({['mean = ' num2str(mean(deltaField_RZAlign))]})
-% set(gca,'FontSize',12,'FontName','Arial')
-% 
-% % Shuffle novel RZ peak locations and calculate global confidence bands
-% clear deltaField_DistroJit
-% for i = 1:250
-%     fieldAlignR1 = mod(binpos(lcDat(siBothID,4))+shiftR1,trackLen)+0.5*dbnsz;    % Account for mod() creating 0's
-%     % fieldAbsR1 = binpos(lcDat(siBothID,4));
-% 
-%     rShift = 1 + randi(length(binedges) - 2,sum(siBothID),1);
-%     jitPost = mod(lcDat(siBothID,8) + rShift, length(binedges)-1)+1;
-%     fieldAlignJit = mod(binpos(jitPost)+shiftR2,trackLen)+0.5*dbnsz;
-%     fieldDstJit_Align = histcounts(fieldAlignJit,binedges);
-%     deltaField_RZJit = fieldAlignJit - fieldAlignR1;
-%     circAlignNeg = deltaField_RZJit < -trackLen/2;
-%     circAlignPos = deltaField_RZJit > trackLen/2;
-%     deltaField_RZJit(circAlignNeg) = -(deltaField_RZJit(circAlignNeg) + trackLen);     % When new field back-shifts
-%     deltaField_RZJit(circAlignPos) = -(deltaField_RZJit(circAlignPos) - trackLen);     % When new field forward-shifts
-%     deltaField_DistroJit(:,i) = histcounts(deltaField_RZJit,shiftbins);
-%     % absField_DistroJit(:,i) = histcounts(binpos(jitPost)-fieldAbsR1,shiftbins);
-% end
-% [~,fieldShiftRZJitFig] = get_confband(deltaField_DistroJit',deltaField_Distro,1,shiftbins(1:end-1)*100,dbnsz*100);
-% xlabel('\Delta RZ-aligned Novel - Familiar (cm)');
-% 
-% if saveFlag
-%     saveas(pkPosFig,[sbase 'lc_PeakComp'],'png')
-%     saveas(pkPosMapFig,[sbase 'lc_PeakMap'],'png')
-%     saveas(prepstFieldDstFig,[sbase 'lc_Distro'],'png')
-%     saveas(rzDstFig,[sbase 'lc_Align_Distro'],'png')
-%     saveas(fieldShiftRZFig,[sbase 'lc_Align_Delta'],'png')
-%     saveas(fieldShiftRZJitFig,[sbase 'lc_Align_Delta_shuf'],'png')
-% end
+binedges = 0:0.05:1.85;
+
+activeCells = rrCells; % siBothID; rrCells; trCells
+fieldDstPre = histcounts(spPk1(activeCells),binedges);
+fieldDstPst = histcounts(spPk2(activeCells),binedges);
+
+prepstFieldDstFig = plotDistroHisto(fieldDstPre,fieldDstPst,binpos,[r1pos r2pos]);
+xlabel('Track Position (cm)')
+
+% Aligns peaks with 90cm as reward
+trackLen = max(binedges);
+shiftR1 = trackLen/2 - r1pos;
+fieldAlignR1 = mod(binpos(lcDat(activeCells,4))+shiftR1,trackLen)+0.5*dbnsz;    % Account for mod() creating 0's
+shiftR2 = trackLen/2 - r2pos;
+fieldAlignR2 = mod(binpos(lcDat(activeCells,8))+shiftR2,trackLen)+0.5*dbnsz;
+shiftbins = binedges - trackLen/2;
+
+fieldDstPre_Align = histcounts(fieldAlignR1,binedges);
+fieldDstPst_Align = histcounts(fieldAlignR2,binedges);
+
+rzDstFig = plotDistroHisto(fieldDstPre_Align,fieldDstPst_Align,binpos-trackLen/2,0);
+xlabel('Distance to RZ (cm)')
+
+deltaField_RZAlign = fieldAlignR2 - fieldAlignR1;
+uFieldAlign = mean([fieldAlignR1; fieldAlignR2],1);
+uFieldAlignDistro = histcounts(uFieldAlign-trackLen/2,shiftbins);
+circAlignNeg = deltaField_RZAlign < -trackLen/2;
+circAlignPos = deltaField_RZAlign > trackLen/2;
+deltaField_RZAlign(circAlignNeg) = -(deltaField_RZAlign(circAlignNeg) + trackLen);     % When new field back-shifts
+deltaField_RZAlign(circAlignPos) = -(deltaField_RZAlign(circAlignPos) - trackLen);     % When new field forward-shifts
+
+[~,ps.lc_DltLc_both,~,stats.lc_DltLc_both] = ttest(deltaField_RZAlign);
+
+deltaField_Distro = histcounts(deltaField_RZAlign,shiftbins);
+
+fieldShiftRZFig = figure; hold on
+bar((shiftbins(1:end-1)+0.5*dbnsz)*100,deltaField_Distro/sum(deltaField_Distro),'FaceColor',[0.25 0.15 1],'HandleVisibility','off')
+plot([0 0]*100,[0 max(deltaField_Distro/sum(deltaField_Distro),[],'all')+0.02],'--','Color',[.5 .5 .5],'HandleVisibility','off')
+plot(mean(deltaField_RZAlign),max(deltaField_Distro/sum(deltaField_Distro),[],'all')+0.02,'v','Color',[0.25 0.15 1])
+xlabel('\Delta RZ-aligned Novel - Familiar (cm)'); ylabel('Probability')
+xlim([-trackLen/2-dbnsz trackLen/2+dbnsz]*100)
+legend({['mean = ' num2str(mean(deltaField_RZAlign))]})
+set(gca,'FontSize',12,'FontName','Arial')
+
+%% Shuffle novel RZ peak locations and calculate global confidence bands 
+clear deltaField_DistroJit
+for i = 1:250
+    rShift = 1 + randi(length(binedges) - 2,sum(activeCells),1);
+    jitPost = mod(lcDat(activeCells,8) + rShift, length(binedges)-1)+1;
+    fieldAlignJit = mod(binpos(jitPost)+shiftR2,trackLen)+0.5*dbnsz;
+    fieldDstJit_Align = histcounts(fieldAlignJit,binedges);
+    deltaField_RZJit = fieldAlignJit - fieldAlignR1;
+    circAlignNeg = deltaField_RZJit < -trackLen/2;
+    circAlignPos = deltaField_RZJit > trackLen/2;
+    deltaField_RZJit(circAlignNeg) = -(deltaField_RZJit(circAlignNeg) + trackLen);     % When new field back-shifts
+    deltaField_RZJit(circAlignPos) = -(deltaField_RZJit(circAlignPos) - trackLen);     % When new field forward-shifts
+    deltaField_DistroJit(:,i) = histcounts(deltaField_RZJit,shiftbins);
+
+    % uFieldAlignJit = mean([fieldAlignR1; fieldAlignJit],1);
+    % uFieldDistroJit(:,i) = histcounts(uFieldAlignJit - trackLen/2,shiftbins);
+    uFieldDistroJit(:,i) = histcounts(fieldAlignJit-trackLen/2,shiftbins);
+end
+[~,fieldShiftRZJitFig] = get_confband(deltaField_DistroJit',deltaField_Distro,1,shiftbins(1:end-1)*100,dbnsz*100);
+xlabel('\Delta RZ-aligned Novel - Familiar (cm)');
+
+% [~,fieldShiftAbsJitFig] = get_confband(uFieldDistroJit',uFieldAlignDistro,1,shiftbins(1:end-1)*100,dbnsz*100);
+
+xcoords = (shiftbins(1:end-1) + 0.5* dbnsz)*100;
+d2rzDistroFig = figure; hold on;
+set(gcf,'units','normalized','position',[0.3536 0.4231 0.25 0.204])
+bar(xcoords,uFieldAlignDistro ./ sum(uFieldAlignDistro));
+plot(xcoords,mean(uFieldDistroJit,2) ./ sum(mean(uFieldDistroJit,2)),'k');
+ciup = prctile(uFieldDistroJit',95,1) ./ sum(uFieldAlignDistro); % Switch to 97.5 for 2-tail
+% cidn = prctile(uFieldDistroJit',2.5,1) ./ sum(uFieldAlignDistro); % For 2-tailed 95% CI
+% plot_CIs(xcoords,ciup,cidn,[0 0 0])
+plot(xcoords,ciup,'k--')
+ylabel('P(RR field peak)'); xlabel('Mean dist. to reward');
+legend({'Real','Shuffle Mean','Shuffle 95%'},'location','nw')
+set(gca,'FontSize',12,'FontName','Arial')
+
+if saveFlag
+    saveas(pkPosFig,[sbase 'lc_PeakComp'],'png')
+    saveas(pkPosMapFig,[sbase 'lc_PeakMap'],'png')
+    saveas(prepstFieldDstFig,[sbase 'lc_Distro'],'png')
+    saveas(rzDstFig,[sbase 'lc_Align_Distro'],'png')
+    saveas(fieldShiftRZFig,[sbase 'lc_Align_Delta'],'png')
+    saveas(fieldShiftRZJitFig,[sbase 'lc_Align_Delta_shuf'],'png')
+    fsave(d2rzDistroFig,[sbase 'lc_Align_Dist2RZ_RR'])
+end
 
 %% Waterfall by TR or RR
 
@@ -1559,9 +1702,6 @@ if saveFlag
 end
 
 %% Population Vector analysis
-% Sparseness - P(alpha) From Battaglia et al., 2004
-% Normalize all PF firing rates, sum by bin, and sqaure
-% Divide by sum of squared PF firing rates by bin, and normalize by N cells
 
 activeUnits = siBothID;     % siBothID (allSICells); trCells; rrCells;
 nBins = length(binpos);
@@ -1569,34 +1709,17 @@ nBins = length(binpos);
 posNormPre = lcMap(activeUnits,1:nBins) ./ max(lcMap(activeUnits,1:nBins),[],2);
 posNormPst = lcMap(activeUnits,nBins+1:end) ./ max(lcMap(activeUnits,nBins+1:end),[],2);
 
-% numerPre = sum(posNormPre).^2;
-% denomPre = sum(posNormPre.^2);
-% 
-% pvSparsePre = numerPre ./ denomPre ./ size(posNormPre,1);
-
 pvPrePst = corr(posNormPst,posNormPre);
-
-pvFig = figure; hold on; axis square
-set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
-imagesc(pvPrePst,[prctile(pvPrePst,0,'all'), prctile(pvPrePst,99,'all')])
-colormap("turbo")
-clim([0 1]);
-% cbarLims = [0 1];
-% cbar = colorbar('Ticks',cbarLims,'TickLabels',cbarLims); clim(cbarLims); % ,'position', [0.9 0.12 0.05 0.3]
-xlim([-0 nBins+0.5]); xticks([1 nBins]); xticklabels({'0','185'}); xlabel('Position (cm) Familiar RZ')
-ylim([-0 nBins+0.5]); yticks([1 nBins]); yticklabels({'0','185'}); ylabel('Position (cm) Novel RZ')
-% plot([r1posInd r1posInd],[0 nBins],'w--',[0 nBins],[r2posInd r2posInd],'w--')
-plot([0 nBins],[0 nBins],'w--');
-plot([0 nBins/2],[nBins/2 nBins],'w--',[nBins/2 nBins],[0 nBins/2],'w--');
-% ylabel(cbar,'Pearson Correlation of PV','FontSize',12,'Rotation',90)
-set(gca,'FontSize',16,'FontName','Arial','YDir','normal')
+pvPrePstF = plot_pvcorr(pvPrePst);
 
 % Compare identity to off-diagonal
 idMat = logical(eye(size(pvPrePst)));
 dgMat = logical(spdiags([1 1],[-round(nBins/2) round(nBins/2)],nBins,nBins));
 
-uPVCorrID = [];
-uPVCorrDG = [];
+allPreEvn = [];
+allPreOdd = [];
+allPstEvn = [];
+allPstOdd = [];
 
 for i = 1:nMice
     tmpUnits = activeUnits & recID(:,1) == mID(i);
@@ -1610,21 +1733,44 @@ for i = 1:nMice
     end
     uPVCorrID(i) = mean(pvPrePst(idMat),'all');
     uPVCorrDG(i) = mean(pvPrePst(dgMat),'all');
+
+    allPreEvn = [allPreEvn; pvStr(i).preEvn];
+    allPreOdd = [allPreOdd; pvStr(i).preOdd];
+    allPstEvn = [allPstEvn; pvStr(i).pstEvn];
+    allPstOdd = [allPstOdd; pvStr(i).pstOdd];
+
+    pvPreOddEvn = corr(pvStr(i).preOdd, pvStr(i).preEvn);
+    pvPstOddEvn = corr(pvStr(i).pstOdd, pvStr(i).pstEvn);
+
+    uPVCPreOddEvnID(i) = mean(pvPreOddEvn(idMat),'all','omitnan');
+    uPVCPreOddEvnDG(i) = mean(pvPreOddEvn(dgMat),'all','omitnan');
+    uPVCPstOddEvnID(i) = mean(pvPstOddEvn(idMat),'all','omitnan');
+    uPVCPstOddEvnDG(i) = mean(pvPstOddEvn(dgMat),'all','omitnan');
 end
 
-[~,ps.lc_pv_tr_idVdg,~,stats.lc_pv_tr_idVdg] = ttest(uPVCorrID,uPVCorrDG);
+pvPreOddEvn = corr(allPreOdd,allPreEvn,'rows','complete');
+pvPreOddEvnF = plot_pvcorr(pvPreOddEvn);
+xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
 
-pvCompFig = figure; hold on
-set(gcf,'units','normalized','position',[0.4 0.35 0.15 0.2])
-plot([uPVCorrID' uPVCorrDG']','-o','Color',[.5 .5 .5])
-errorbar([1 2],mean([uPVCorrID' uPVCorrDG']),std([uPVCorrID' uPVCorrDG'])./sqrt(nMice),'k.','LineWidth',2,'CapSize',20)
-xlim([0.5 2.5]); xticks([1 2]); xticklabels({'Diagonal','Off-Diag'})
-ylim([-0.25 1]); text2bar(pvCompFig,'Mean of PV Corr.',ps.lc_pv_tr_idVdg);
-set(gca,'FontSize',16,'FontName','Arial')
+pvPstOddEvn = corr(allPstOdd,allPstEvn,'rows','complete');
+pvPstOddEvnF = plot_pvcorr(pvPstOddEvn);
+xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
+
+[~,ps.lc_pv_PrePst_idVdg,~,stats.lc_pv_PrePst_idVdg] = ttest(uPVCorrID,uPVCorrDG);
+[~,ps.lc_pv_PreOddEvn_idVdg,~,stats.lc_pv_PreOddEvn_idVdg] = ttest(uPVCPreOddEvnID,uPVCPreOddEvnDG);
+[~,ps.lc_pv_PstOddEvn_idVdg,~,stats.lc_pv_PstOddEvn_idVdg] = ttest(uPVCPstOddEvnID,uPVCPstOddEvnDG);
+
+pvPrePstCompF    = plotPVCorrComp(uPVCorrID, uPVCorrDG, nMice, ps.lc_pv_PrePst_idVdg);
+pvPreOddEvnCompF = plotPVCorrComp(uPVCPreOddEvnID, uPVCPreOddEvnDG, nMice, ps.lc_pv_PreOddEvn_idVdg);
+pvPstOddEvnCompF = plotPVCorrComp(uPVCPstOddEvnID, uPVCPstOddEvnDG, nMice, ps.lc_pv_PstOddEvn_idVdg);
 
 if saveFlag
-    fsave(pvFig,[sbase 'lc_pv_corr_allSICells'])
-    fsave(pvCompFig,[sbase 'lc_pv_comp_allSICells'])
+    fsave(pvPrePstF,[sbase 'lc_pv_corr_allSICells_prepost'])
+    fsave(pvPreOddEvnF,[sbase 'lc_pv_corr_allSICells_preoddeven'])
+    fsave(pvPstOddEvnF,[sbase 'lc_pv_corr_allSICells_pstoddeven'])
+    fsave(pvPrePstCompF,[sbase 'lc_pv_comp_allSICells_prepost'])
+    fsave(pvPreOddEvnCompF,[sbase 'lc_pv_comp_allSICells_preoddeven'])
+    fsave(pvPstOddEvnCompF,[sbase 'lc_pv_comp_allSICells_pstoddeven'])
 end
 
 %% PV across time
@@ -1718,7 +1864,41 @@ if saveFlag
     fsave(vcXlapFig,[sbase 'bhv_v_corr_laps'])
 end
 
-%% Behavior vs PV Corr analysis
+%% Lick DI across time
+
+for i = 1:nMice
+    nTrialsPre(i) = size(bvDat(i).preLckDI,1);
+    nTrialsPst(i) = size(bvDat(i).pstLckDI,1);
+end
+maxTr = [max(nTrialsPre) max(nTrialsPst)];
+lDIXlapPre = NaN(maxTr(1),nMice);
+lDIXlapPst = NaN(maxTr(1),nMice);
+
+for i = 1:nMice
+    lDIXlapPre(1:nTrialsPre(i),i) = bvDat(i).preLckDI(:,1);
+    lDIXlapPst(1:nTrialsPst(i),i) = bvDat(i).pstLckDI(:,1);
+end
+
+lDIXlapPre = lDIXlapPre(1:lapcutoff,:);
+lDIXlapPst = lDIXlapPst(1:lapcutoff,:);
+
+lDIXlapFig = figure; hold on;
+set(gcf,'units','normalized','position',[0.4 0.35 0.24 0.30])
+[preCIup,preCIdn] = get_CI(lDIXlapPre'); 
+[pstCIup,pstCIdn] = get_CI(lDIXlapPst'); 
+plot_CIs(1:lapcutoff,preCIup,preCIdn,vColors2(1,:))
+plot_CIs(1:lapcutoff,pstCIup,pstCIdn,vColors2(2,:))
+plot(1:lapcutoff,nanmean(lDIXlapPre'),'Color',vColors2(1,:),'LineWidth',2)
+plot(1:lapcutoff,nanmean(lDIXlapPst'),'Color',vColors2(2,:),'LineWidth',2)
+ylim([-0.05 1]); ylabel('Lick DI'); xlabel('Lap #'); xlim([0 lapcutoff]);
+legend({'Familiar','Novel'},'location','nw')
+set(gca,'FontSize',16,'FontName','Arial')
+
+if saveFlag
+    fsave(lDIXlapFig,[sbase 'bhv_lickDI_laps'])
+end
+
+%% Velocity vs PV Corr analysis
 
 vcXpvcPrePre = [];
 vcXpvcPrePst = [];
@@ -1754,8 +1934,8 @@ xlims = xlim;
 ylims = ylim;
 text(xlims(2) - .9*diff(xlims), ylims(2)-.1*diff(ylims),  ['R = ' num2str(mdlVPreXPVCprepre.r, 3)], 'Color', vColors2(1,:), 'FontSize', 12)
 text(xlims(2) - .9*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(mdlVPreXPVCprepre.p, 3)], 'Color', vColors2(1,:), 'FontSize', 12)
-text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims),  ['R = ' num2str(mdlVPreXPVCpstpst.r, 3)], 'Color', vColors2(2,:), 'FontSize', 12)
-text(xlims(2) - .9*diff(xlims), ylims(2)-.3*diff(ylims), ['p = ' num2str(mdlVPreXPVCpstpst.p, 3)], 'Color', vColors2(2,:), 'FontSize', 12)
+text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims), ['R = ' num2str(mdlVPreXPVCpstpst.r, 3)], 'Color', vColors2(2,:), 'FontSize', 12)
+text(xlims(2) - .9*diff(xlims), ylims(2)-.3*diff(ylims),  ['p = ' num2str(mdlVPreXPVCpstpst.p, 3)], 'Color', vColors2(2,:), 'FontSize', 12)
 
 if saveFlag
     fsave(vcXpvcF,[sbase '_vCorrXPVC'])
@@ -1768,7 +1948,9 @@ end
 % Summary of quantities
 [tmpSWPie, swprcts] = prepostPie(swrFrstID,swrLastID,useCC);
 title("Sig. SPW-R Mod. units");
-swrBothCounts = [groupcounts(recID(swrFrstID,1)) groupcounts(recID(swrLastID,1))];
+frstGrpAdd = [mID; recID(swrFrstID,1)]; % Need to add all mice then subtract 1 from groupCounts otherwise it is blind to missing mice
+lastGrpAdd = [mID; recID(swrLastID,1)];
+swrBothCounts = [groupcounts(firstGrpAdd)-1 groupcounts(lastGrpAdd)-1];
 swrBothRatio = swrBothCounts ./ [groupcounts(recID(useCC,1)) groupcounts(recID(useCC,1))];
 [~,ps.swr_ModCt_both,~,stats.swr_ModCt_both] = ttest(swrBothCounts(:,1),swrBothCounts(:,2));
 swrModCtFig = plot_barXmouse(swrBothRatio);
@@ -1927,6 +2109,46 @@ if saveFlag
     fsave(swPartcpTRRRPstFig,[sbase 'swr_pstPartbar_trrr'])
     fsave(swrModTRRRFig,[sbase 'swr_ModDur_trrr'])
     fsave(swrZTRRRFig,[sbase 'swr_ModZ_trrr'])
+end
+
+%% Compare SPWRs against Behavior data
+% swrBothCounts = [groupcounts(recID(swrFrstID,1)) groupcounts(recID(swrLastID,1))];
+% uLckDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
+
+mdlLPreXspwr = get_linfit(uLckDI(:,1),swrBothRatio(:,1));
+mdlLPstXspwr = get_linfit(uLckDI(:,2),swrBothRatio(:,2));
+
+lckXspwrF = figure; hold on
+plot(uLckDI(:,1),swrBothRatio(:,1),'o','Color',vColors2(1,:))
+plot(uLckDI(:,2),swrBothRatio(:,2),'o','Color',vColors2(2,:))
+plot(uLckDI(:,1),mdlLPreXspwr.ypred,'Color',vColors2(1,:),'LineWidth',2)
+plot(uLckDI(:,2),mdlLPstXspwr.ypred,'Color',vColors2(2,:),'LineWidth',2)
+xlim([-1 1]); xlabel('Lick DI');
+ylim([0 1]); ylabel('P(SPWR-mod)');
+legend({'Familiar','Novel'},'location','ne')
+set(gca,'FontSize',16,'FontName','Arial')
+xlims = xlim;
+ylims = ylim;
+text(xlims(2) - .9*diff(xlims), ylims(2)-.1*diff(ylims),  ['R = ' num2str(mdlLPreXspwr.r, 3)], 'Color', vColors2(1,:), 'FontSize', 12)
+text(xlims(2) - .9*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(mdlLPreXspwr.p, 3)], 'Color', vColors2(1,:), 'FontSize', 12)
+text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims), ['R = ' num2str(mdlLPstXspwr.r, 3)], 'Color', vColors2(2,:), 'FontSize', 12)
+text(xlims(2) - .9*diff(xlims), ylims(2)-.3*diff(ylims),  ['p = ' num2str(mdlLPstXspwr.p, 3)], 'Color', vColors2(2,:), 'FontSize', 12)
+
+% Compare delta of lckDI and delta of P(SPWR-Mod)
+mdlDeltaLPreXspwr = get_linfit(uLckDI(:,2)-uLckDI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1));
+dlckXdspwrF = figure; hold on
+plot(uLckDI(:,2)-uLckDI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1),'ko')
+plot(uLckDI(:,2)-uLckDI(:,1),mdlDeltaLPreXspwr.ypred,'Color','k','LineWidth',2)
+xlabel('\Delta Lick DI');
+ylabel('\Delta P(SPWR-mod)');
+set(gca,'FontSize',16,'FontName','Arial')
+xlims = xlim;ylims = ylim;
+text(xlims(2) - .9*diff(xlims), ylims(2)-.1*diff(ylims),  ['R = ' num2str(mdlDeltaLPreXspwr.r, 3)], 'Color', vColors2(1,:), 'FontSize', 12)
+text(xlims(2) - .9*diff(xlims), ylims(2)-.15*diff(ylims), ['p = ' num2str(mdlDeltaLPreXspwr.p, 3)], 'Color', vColors2(1,:), 'FontSize', 12)
+
+if saveFlag
+    fsave(lckXspwrF,[sbase 'swrXlck'])
+    fsave(dlckXdspwrF,[sbase 'swrDXlckD'])
 end
 
 %% Plot units by anatomical position and other data
@@ -2189,50 +2411,27 @@ p.LabelStyle = 'namedata';
 colororder(cMap)
 end
 
-% function [fhandle] = plotDistroHisto(distro1,distro2,binpos,rzPos)
-% vColors2 = [0.5 0.5 1; 0.75 0.75 1];
-% 
-% fhandle = figure; hold on
-% plot(binpos*100,distro1./sum(distro1),'Color',vColors2(1,:),'LineWidth',2);
-% plot(binpos*100,distro2./sum(distro2),'Color',vColors2(2,:),'LineWidth',2);
-% if length(rzPos) == 2
-%     plot([rzPos(1) rzPos(1)]*100,[0 0.15],'--','Color',vColors2(1,:))
-%     plot([rzPos(2) rzPos(2)]*100,[0 0.15],'--','Color',vColors2(2,:))
-% else
-%     plot([rzPos rzPos]*100,[0 0.15],'k--')
-% end
-% ylim([0 max([distro1./sum(distro1); distro2./sum(distro2)+0.02],[],'all')])
-% xlim([binpos(1)*100-1 binpos(end)*100+1])
-% ylabel('Probability of field peak')
-% legend({'Familiar','Novel'},'Location','northeast')
-% set(gca,'FontSize',12,'FontName','Arial')
-% end
+function [fhandle] = plot_bhvrTraceCI(dat1,dat2,vcolors,xcoords,ycoords)
 
-% function [fhandle] = plot_barXmouse(dat)
-% vColors2 = [0.5 0.5 1; 0.75 0.75 1];
-% 
-% fhandle = figure; hold on
-% set(gcf,'units','normalized','position',[0.4 0.35 0.12 0.39])
-% b = bar(mean(dat),'FaceColor','flat','HandleVisibility','off');
-% b.CData = vColors2;
-% errorbar(1:2,mean(dat),std(dat)/sqrt(size(dat,1)),'k.','HandleVisibility','off')
-% plot(dat','k-o')
-% xlim([0.5 2.5])
-% xticks(1:2); xticklabels({'Familiar', 'Novel'})
-% legend('Mouse')
-% set(gca,'FontSize',12,'FontName','Arial')
-% end
+[ciup1, cidn1] = get_CI(dat1);
+[ciup2, cidn2] = get_CI(dat2);
 
-function [fhandle] = plot_bhvrTraceXmouse(dat,datF20,datL20,vcolors)
+bnpos = linspace(0,185,size(dat1,2));
 
-bnpos = linspace(0,185,size(dat,2));
+xcoordsPre = xcoords(1,:);
+xcoordsPst = xcoords(2,:);
 
 fhandle = figure; hold on;
-set(gcf,'units','normalized','position',[0.4 0.35 0.22 0.4])
-plot(bnpos,dat','Color',vcolors(1,:))
-plot(bnpos,mean(dat),'Color',vcolors(2,:),'LineWidth',2)
-% plot(mean(datF20),'Color',vcolors(1,:),'LineWidth',2);
-% plot(mean(datL20),'Color',vcolors(2,:),'LineWidth',2);
+set(gcf,'units','normalized','position',[0.4 0.5 0.22 0.23])
+
+patch([xcoordsPre,fliplr(xcoordsPre)],[ycoords(1) ycoords(1) ycoords(2) ycoords(2)],[0 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+patch([xcoordsPst,fliplr(xcoordsPst)],[ycoords(1) ycoords(1) ycoords(2) ycoords(2)],[1 0 0],'FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
+plot([xcoordsPre(2) xcoordsPre(2)],ycoords,'--','Color',vcolors(2,:)); plot([xcoordsPst(2) xcoordsPst(2)],ycoords,'--','Color',vcolors(2,:))
+
+plot_CIs(bnpos,ciup1,cidn1,[.8 .8 .8])
+plot(bnpos,mean(dat1),'Color',vcolors(2,:),'LineWidth',2)
+plot_CIs(bnpos,ciup2,cidn2,[1 .8 .8])
+plot(bnpos,mean(dat2),'Color',[1 0 0],'LineWidth',2)
 xlabel('Position (cm)')
 set(gca,'FontSize',16,'FontName','Arial')
 
@@ -2265,3 +2464,36 @@ xticks(1:2); xticklabels({'F', 'N'})
 set(gca,'FontSize',16,'FontName','Arial')
 box off
 end
+
+function [fhandle] = plotPVCorrComp(dat1, dat2, nMice, pval)
+% Plot on-diagonal vs off diagonal average PVC
+
+fhandle = figure; hold on
+set(gcf,'units','normalized','position',[0.4 0.35 0.15 0.2])
+plot([dat1' dat2']','-o','Color',[.5 .5 .5])
+errorbar([1 2],mean([dat1' dat2'],1,'omitnan'),std([dat1' dat2'],1,'omitnan')./sqrt(nMice),'k.','LineWidth',2,'CapSize',20)
+xlim([0.5 2.5]); xticks([1 2]); xticklabels({'Diagonal','Off-Diag'})
+ylim([-0.25 1]); text2bar(fhandle,'Mean of PV Corr.',pval);
+set(gca,'FontSize',16,'FontName','Arial')
+
+end
+
+function [fhandle] = plotDistroHisto(distro1,distro2,binpos,rzPos)
+vColors2 = [0.5 0.5 1; 0.75 0.75 1];
+
+fhandle = figure; hold on
+plot(binpos*100,distro1./sum(distro1),'Color',vColors2(1,:),'LineWidth',2);
+plot(binpos*100,distro2./sum(distro2),'Color',vColors2(2,:),'LineWidth',2);
+if length(rzPos) == 2
+    plot([rzPos(1) rzPos(1)]*100,[0 0.15],'--','Color',vColors2(1,:))
+    plot([rzPos(2) rzPos(2)]*100,[0 0.15],'--','Color',vColors2(2,:))
+else
+    plot([rzPos rzPos]*100,[0 0.15],'k--')
+end
+ylim([0 max([distro1./sum(distro1); distro2./sum(distro2)+0.02],[],'all')])
+xlim([binpos(1)*100-1 binpos(end)*100+1])
+ylabel('P(Field Peak)')
+legend({'Familiar','Novel'},'Location','northeast')
+set(gca,'FontSize',12,'FontName','Arial')
+end
+

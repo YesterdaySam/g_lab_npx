@@ -54,7 +54,8 @@ for i = 1:nRips
     % sigInds = [find(root.lfp_tsb == root.ripples(i,2) - wdw) find(root.lfp_tsb == root.ripples(i,2) + wdw)];
     tmpspks         = spkinds(spkinds > sess.ts(ripples(i,2)) - wdw & spkinds < sess.ts(ripples(i,2)) + wdw) - sess.ts(ripples(i,2));
     ripFRMap(i,:)   = histcounts(tmpspks,binedges);
-    ripRast = [ripRast; tmpspks, i*ones(numel(tmpspks),1)];
+    % ripFRMap(i,:)   = ripFRMap(i,:) ./ (bnsz ./ 1000);    % Convert to rate 
+    ripRast         = [ripRast; tmpspks, i*ones(numel(tmpspks),1)];
 end
 
 % ripSpkPr  = sum(ripFRMap) ./ sum(ripFRMap,'all');

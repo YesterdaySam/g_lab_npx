@@ -3,7 +3,7 @@ function [pvCorrXTime] = get_pvXtime(refMap,frMap,useUnits,useMask)
 %
 % Inputs:
 % refMap = MxN firing rate of M units over N spatial bins 
-% frMap = MxNxL firing rate of M units over N bins over L laps
+% frMap = LxNxM firing rate of M units over N bins over L laps
 % useUnits = binary of Mx1 of units to include
 % useMask = binary of NxN positions to use, otherwise use whole corr
 %
@@ -38,4 +38,6 @@ for i = 1:size(frMap,1)
     normFR = squeeze(frMap(i,:,useUnits)) ./ max(squeeze(frMap(i,:,useUnits)),[],1);
     corrTmp = corr(normFR',refMap,'rows','complete');
     pvCorrXTime(i) = mean(corrTmp(useMask),'all');
+end
+
 end

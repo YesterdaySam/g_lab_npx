@@ -1,12 +1,11 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW093\KW093_03292026_rec_D4_RMed2';
-datpath = 'D:\Data\Kelton\probe_data\KW093\KW093_03292026_rec_D4_RMed2_g0';
+spath = 'D:\Data\Kelton\analyses\KW077\KW077_12012025_rec_D3_LLat1';
+datpath = 'D:\Data\Kelton\probe_data\KW077\KW077_12012025_rec_D3_LLat1_g0';
 
 loadKS(datpath,spath,1); 
 root = alignBhvrTS(spath,spath,spath);
-% root = addPseudoTSB(spath,spath);
 
 %% Load existing root file
 % spath = 'D:\Data\Kelton\analyses\KW031\KW031_02182025_rec_D4_LLat1';
