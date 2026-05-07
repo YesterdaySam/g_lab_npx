@@ -3,7 +3,7 @@ function [fhandle,frMapSort,sortInd] = plot_unitWaterfall(frMapRaw,binedges,useS
 %
 % Inputs:
 %   frMapRaw = MxN matrix of M unit avg. firing rates in N bins
-%   binedges = 1xN+1 array of binedges used to creat frMapRaw
+%   binedges = 1xN+1 array of binedges in cm used to creat frMapRaw
 %   useSort = Nx1 array of indices from previous sort to use instead of
 %       default sorting based on max bin position
 %   plotflag = binary of whether to plot the output
@@ -75,7 +75,7 @@ if plotflag
     end
     nEdges = nBins +1; 
     xticks([1, round(nEdges/2), nEdges])
-    xticklabels([binedges(1), binedges(round(nEdges/2)), binedges(nEdges)]*100)
+    xticklabels([binedges(1), binedges(round(nEdges/2)), binedges(end)]*100)
     xlim([0.15 nEdges+0.85]); ylim([0.15 nUnits+0.85])
     yticks([1,nUnits]);
     set(gca,'FontSize',12,'FontName','Arial','YDir','normal')

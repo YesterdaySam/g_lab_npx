@@ -144,21 +144,15 @@ for i = 1:height(datT)
 
     % === Concatenate PV data ===
     if sessType == 2
-        pvStr(ct).preBlockPV = frstHalf.pvXlap;
-        pvStr(ct).pstBlockPV = lastHalf.pvXlap;
-        pvStr(ct).preEvn     = frstHalf.pvEvn; % Not actually the pvc, just the frmap used to make it
-        pvStr(ct).preOdd     = frstHalf.pvOdd;
-        pvStr(ct).pstEvn     = lastHalf.pvEvn;
-        pvStr(ct).pstOdd     = lastHalf.pvOdd;
+    pvStr(ct).preBlockPV = frstHalf.pvXlap;
+    pvStr(ct).pstBlockPV = lastHalf.pvXlap;
+    pvStr(ct).preEvn     = frstHalf.pvEvn; % Not actually the pvc, just the frmap used to make it
+    pvStr(ct).preOdd     = frstHalf.pvOdd;
+    pvStr(ct).pstEvn     = lastHalf.pvEvn;
+    pvStr(ct).pstOdd     = lastHalf.pvOdd;
     elseif sessType == 3
-        pvStr(ct).preBlockPV = frstHalf.pvXlapRR;
-        pvStr(ct).pstBlockPV = lastHalf.pvXlapRR;
-        pvStr(ct).preEvn     = frstHalf.pvEvnRR; % Not actually the pvc, just the frmap used to make it
-        pvStr(ct).preOdd     = frstHalf.pvOddRR;
-        pvStr(ct).pstEvn     = lastHalf.pvEvnRR;
-        pvStr(ct).pstOdd     = lastHalf.pvOddRR;
-     end
-
+    end
+    
     % === Concatenate Behavior data ===
     [~,~,preLckMap] = plot_lickpos(sessFrst,0.03,0);
     [~,~,pstLckMap] = plot_lickpos(sessLast,0.03,0);

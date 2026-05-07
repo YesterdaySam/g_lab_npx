@@ -341,7 +341,7 @@ sfs = size(tmpbinfr,2);
 wn = (sfs) * 10;     % 16 laps worth of segments
 ovlp = round(wn*0.875);
 
-clear pxxA pxxF pxxN
+clear pxx pxxF pxxN
 for i = 1:length(root.good)
     cc = root.good(i);
     % cc = 15;
@@ -360,15 +360,14 @@ for i = 1:length(root.good)
     spFRN(isnan(spFRN)) = 0;
     spFRN = normalize(spFRN);
 
+    % [pxxA,f] = pwelch(spFRA,wn,ovlp,10000,sfs); % f is in m^-1 so place cell will have peak frequency every 1 cycle
+    % [pxxF] = pwelch(spFRF,wn,ovlp,10000,sfs);
+    % [pxxN] = pwelch(spFRN,wn,ovlp,10000,sfs);
+
     [pxxA(i,:),f] = xcorr(spFRA,sfs*2); % Compute xcorr over 2 cycles
     [pxxF(i,:)] = xcorr(spFRF,sfs*2);
     [pxxN(i,:)] = xcorr(spFRN,sfs*2);
     
-    % Try with spectral power estimate instead 
-    % [pxxA,f] = pwelch(spFRA,wn,ovlp,10000,sfs); % f is in m^-1 so place cell will have peak frequency every 1 cycle
-    % [pxxF] = pwelch(spFRF,wn,ovlp,10000,sfs);
-    % [pxxN] = pwelch(spFRN,wn,ovlp,10000,sfs);
-    % 
     % figure; hold on;
     % plot(f,pxx,'k')
     % plot(f,pxxfrst,'g')
@@ -381,10 +380,6 @@ end
 %% Visualize spatial acgs
 npxxA = smoothdata(pxxA,2,'movmean',10);
 npxxA = normalize(npxxA,2,'range',[0 1]);
-npxxF = smoothdata(pxxF,2,'movmean',10);
-npxxF = normalize(npxxF,2,'range',[0 1]);
-npxxN = smoothdata(pxxN,2,'movmean',10);
-npxxN = normalize(npxxN,2,'range',[0 1]);
 
 for i = 1:length(root.good)
     [pks,locs] = findpeaks(npxxA(i,:),'MinPeakProminence',0.1);
@@ -398,13 +393,13 @@ for i = 1:length(root.good)
     pkDN(i) = mean(diff(locs));
 end
 putGC = npksA >= 5; % # peaks for putative Grid Cells over 2 cycles
-[~,inds] = sort(pkDA(putGC));
-
+[~,inds] = sort(pkD(putGC));
 tmpbns = sfs:1:3*sfs;   % Only plot 1 cycle
+
 allGCF = plot_unitWaterfall(npxxA(putGC,tmpbns),(tmpbns-sfs*2)/100,inds,1,0);
 colormap jet; set(gcf,'Position',[.4 .35 .2 .3]); clim([0 0.9])
 
-% fsave(allGCF,[sbase '_GC_acg'])
+fsave(allGCF,[sbase '_GC_acg'])
 
 %% Epoch into pre/post reward shift for reward shift sessions
 

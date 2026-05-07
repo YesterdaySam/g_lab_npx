@@ -20,7 +20,7 @@
 % spath = 'D:\Data\Kelton\analyses\KW065\KW065_09042025_rec_D2_RLat2'; % 10m rest
 % spath = 'D:\Data\Kelton\analyses\KW066\KW066_09122025_rec_D2_RLat2'; % 10m rest
 % spath = 'D:\Data\Kelton\analyses\ZM001\ZM001_10012025_rec_D5_LLat2'; % 20m rest
-spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_09262025_rec_D2_RLat2'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_09262025_rec_D2_RLat2'; % 20m rest
 
 % Non-op CA1 RZ Randomization
 % spath = 'D:\Data\Kelton\analyses\ZM001\ZM001_10022025_rec_D6_LMed1'; % 20m rest
@@ -32,7 +32,7 @@ spath = 'D:\Data\Kelton\analyses\ZM002\ZM002_09262025_rec_D2_RLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW077\KW077_11262025_rec_D2_RLat2'; % 20m rest
 
 % Operant Sub RZ Randomization
-% spath = 'D:\Data\Kelton\analyses\KW073\KW073_10172025_rec_D4_LLat2'; % 20m rest
+spath = 'D:\Data\Kelton\analyses\KW073\KW073_10172025_rec_D4_LLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\ZM018\ZM018_02242026_rec_D4_LLat2'; % 20m rest
 
 % Operant CA1 RZ Shift
@@ -108,21 +108,6 @@ if saveFlag
     fsave(preLckMapF,[root.name,'_preLckMap'])
     fsave(pstLckMapF,[root.name,'_pstLckMap'])
 end
-
-%% Get indices of spatial windows around fixed and rand rewards
-sessFrst = get_QTwin(sessFrst,sessFrst.rwdind);
-sessLast = get_QTwin(sessLast,sessLast.rwdind);
-sess = get_QTwin(sess,sess.rwdind);
-
-% Set up q structs for calling plot_frXcue;
-qfrst.q = sessFrst.qInd;
-qfrst.stt = sessFrst.qStt;
-qfrst.end = sessFrst.qEnd;
-qfrst.qID = sessFrst.qTrialID;
-qlast.q = sessLast.qInd;
-qlast.stt = sessLast.qStt;
-qlast.end = sessLast.qEnd;
-qlast.qID = sessLast.qTrialID;
 
 %% Velocity correlation by lap
 
@@ -620,7 +605,7 @@ idMat = logical(eye(nBins));
 posNormPre = (squeeze(mean(frstHalf.frMap(:,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(:,:,bothSIUnits),1,"omitnan")),[],1))';
 posNormPst = (squeeze(mean(lastHalf.frMap(:,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(:,:,bothSIUnits),1,"omitnan")),[],1))';
 pvPrePst = corr(posNormPst,posNormPre);   % units x sp. bins
-pvPrePstCompF = plotPVCorr(pvPrePst);
+pvPrePstCompF = plot_pvcorr(pvPrePst);
 
 % PVC Pre odd vs Pre even for visualization
 frstHalf.pvOdd = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")),[],1))';
@@ -629,9 +614,9 @@ lastHalf.pvOdd = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan"
 lastHalf.pvEvn = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothSIUnits),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSIUnits),1,"omitnan")),[],1))';
 pvPreOddEvn = corr(frstHalf.pvOdd,frstHalf.pvEvn);
 pvPstOddEvn = corr(lastHalf.pvOdd,lastHalf.pvEvn);
-pvPreOddEvnFig = plotPVCorr(pvPreOddEvn);
+pvPreOddEvnFig = plot_pvcorr(pvPreOddEvn);
 xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
-pvPstOddEvnFig = plotPVCorr(pvPstOddEvn);
+pvPstOddEvnFig = plot_pvcorr(pvPstOddEvn);
 xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
 
 % PVC x time
@@ -735,6 +720,23 @@ if saveFlag
 end
 
 %% Analysis relative to reward delivery
+
+% Get indices of spatial windows around fixed and rand rewards
+sessFrst = get_QTwin(sessFrst,sessFrst.rwdind);
+sessLast = get_QTwin(sessLast,sessLast.rwdind);
+sess = get_QTwin(sess,sess.rwdind);
+
+% Set up q structs for calling plot_frXcue;
+qfrst.q = sessFrst.qInd;
+qfrst.stt = sessFrst.qStt;
+qfrst.end = sessFrst.qEnd;
+qfrst.qID = sessFrst.qTrialID;
+qlast.q = sessLast.qInd;
+qlast.stt = sessLast.qStt;
+qlast.end = sessLast.qEnd;
+qlast.qID = sessLast.qTrialID;
+
+%% Get real RR spatial info
 [~,~,~,~,~,~,~,~,binedges] = get_SI_cue(rootFrst,root.good(1),sessFrst,qfrst);
 famQMap = zeros(length(root.good),length(binedges)-1);
 novQMap = zeros(length(root.good),length(binedges)-1);
@@ -747,8 +749,8 @@ for i = 1:length(root.good)
     lastHalf.rrFRMap(:,:,i) = tmpspkmap ./ tmpoccmap;
 end
 
-% frstHalf.famQMap = famQMap;
-% lastHalf.novQMap = novQMap;
+frstHalf.famQMap = famQMap;
+lastHalf.novQMap = novQMap;
 
 %% Shuffle Reward Relative spatial firing 
 tic
@@ -809,10 +811,10 @@ end
 
 %% RR PVC
 % PVC fam to rnd for visualization
-posNormF = (squeeze(mean(frstHalf.rrFRMap(:,:,bothSIUnits),1)) ./ max(squeeze(mean(frstHalf.frMap(:,:,bothSIUnits),1)),[],1))';
-posNormR = (squeeze(mean(lastHalf.frMap(:,:,bothSIUnits),1)) ./ max(squeeze(mean(lastHalf.frMap(:,:,bothSIUnits),1)),[],1))';
-pvPrePst = corr(posNormPst,posNormPre);   % units x sp. bins
-pvPrePstCompF = plotPVCorr(pvPrePst);
+posNormF = (squeeze(mean(frstHalf.rrFRMap(:,:,bothSIUnits),1)) ./ max(squeeze(mean(frstHalf.rrFRMap(:,:,bothSIUnits),1)),[],1))';
+posNormR = (squeeze(mean(lastHalf.rrFRMap(:,:,bothSIUnits),1)) ./ max(squeeze(mean(lastHalf.rrFRMap(:,:,bothSIUnits),1)),[],1))';
+pvPrePst = corr(posNormR,posNormF);   % units x sp. bins
+pvPrePstCompF = plot_pvcorr(pvPrePst);
 
 %% Bayesian decoding attempt
 
@@ -902,14 +904,14 @@ pvPrePstCompF = plotPVCorr(pvPrePst);
 
 parentDir = "D:\Data\Kelton\analyses\group_analyses"; 
 subDatT = import_xldat(parentDir,"dat_include.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\dp2_2026\ca1';
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\dp2_2026\subiculum';
 cd(groupSDir) 
 
 cleanInds = subDatT.include ~= 1;
 subDatT(cleanInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
-sbase = 'ca1RwdShift_';
+sbase = 'subRwdShift_';
 fname = [sbase 'data1'];
 
 dbnsz = 0.05;
@@ -1710,7 +1712,7 @@ posNormPre = lcMap(activeUnits,1:nBins) ./ max(lcMap(activeUnits,1:nBins),[],2);
 posNormPst = lcMap(activeUnits,nBins+1:end) ./ max(lcMap(activeUnits,nBins+1:end),[],2);
 
 pvPrePst = corr(posNormPst,posNormPre);
-pvPrePstF = plotPVCorr(pvPrePst);
+pvPrePstF = plot_pvcorr(pvPrePst);
 
 % Compare identity to off-diagonal
 idMat = logical(eye(size(pvPrePst)));
@@ -1749,20 +1751,20 @@ for i = 1:nMice
 end
 
 pvPreOddEvn = corr(allPreOdd,allPreEvn,'rows','complete');
-pvPreOddEvnF = plotPVCorr(pvPreOddEvn);
+pvPreOddEvnF = plot_pvcorr(pvPreOddEvn);
 xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
 
 pvPstOddEvn = corr(allPstOdd,allPstEvn,'rows','complete');
-pvPstOddEvnF = plotPVCorr(pvPstOddEvn);
+pvPstOddEvnF = plot_pvcorr(pvPstOddEvn);
 xlabel("Position (cm) even laps"); ylabel("Position (cm) odd laps")
 
 [~,ps.lc_pv_PrePst_idVdg,~,stats.lc_pv_PrePst_idVdg] = ttest(uPVCorrID,uPVCorrDG);
 [~,ps.lc_pv_PreOddEvn_idVdg,~,stats.lc_pv_PreOddEvn_idVdg] = ttest(uPVCPreOddEvnID,uPVCPreOddEvnDG);
 [~,ps.lc_pv_PstOddEvn_idVdg,~,stats.lc_pv_PstOddEvn_idVdg] = ttest(uPVCPstOddEvnID,uPVCPstOddEvnDG);
 
-pvPrePstCompF    = plotPVCorrComp(uPVCorrID, uPVCorrDG, nMice, ps.lc_pv_PrePst_idVdg);
-pvPreOddEvnCompF = plotPVCorrComp(uPVCPreOddEvnID, uPVCPreOddEvnDG, nMice, ps.lc_pv_PreOddEvn_idVdg);
-pvPstOddEvnCompF = plotPVCorrComp(uPVCPstOddEvnID, uPVCPstOddEvnDG, nMice, ps.lc_pv_PstOddEvn_idVdg);
+pvPrePstCompF    = plot_PVCorrComp(uPVCorrID, uPVCorrDG, ps.lc_pv_PrePst_idVdg);
+pvPreOddEvnCompF = plot_PVCorrComp(uPVCPreOddEvnID, uPVCPreOddEvnDG, ps.lc_pv_PreOddEvn_idVdg);
+pvPstOddEvnCompF = plot_PVCorrComp(uPVCPstOddEvnID, uPVCPstOddEvnDG, ps.lc_pv_PstOddEvn_idVdg);
 
 if saveFlag
     fsave(pvPrePstF,[sbase 'lc_pv_corr_allSICells_prepost'])
@@ -1948,8 +1950,9 @@ end
 % Summary of quantities
 [tmpSWPie, swprcts] = prepostPie(swrFrstID,swrLastID,useCC);
 title("Sig. SPW-R Mod. units");
-firstGrpAdd = recID(swrFrstID,1); mID]
-swrBothCounts = [groupcounts(recID(swrFrstID,1),"IncludeEmptyGroups",true) groupcounts(recID(swrLastID,1),"IncludeEmptyGroups",true)];
+frstGrpAdd = [mID; recID(swrFrstID,1)]; % Need to add all mice then subtract 1 from groupCounts otherwise it is blind to missing mice
+lastGrpAdd = [mID; recID(swrLastID,1)];
+swrBothCounts = [groupcounts(firstGrpAdd)-1 groupcounts(lastGrpAdd)-1];
 swrBothRatio = swrBothCounts ./ [groupcounts(recID(useCC,1)) groupcounts(recID(useCC,1))];
 [~,ps.swr_ModCt_both,~,stats.swr_ModCt_both] = ttest(swrBothCounts(:,1),swrBothCounts(:,2));
 swrModCtFig = plot_barXmouse(swrBothRatio);
@@ -2462,29 +2465,6 @@ xlim([0.5 2.5]); ylim([0 max([prctile(dat1,98); prctile(dat2,98)],[],'all')])
 xticks(1:2); xticklabels({'F', 'N'})
 set(gca,'FontSize',16,'FontName','Arial')
 box off
-end
-
-function [fhandle] = plotPVCorr(dat)
-% Plot PVC heatmap with colorbar scaling [0 1] of corr values
-% dat = correlation data in MxM spatial bins
-
-nBins = size(dat,1);
-
-fhandle = figure; hold on; axis square
-set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
-imagesc(dat,[prctile(dat,0,'all'), prctile(dat,99,'all')])
-colormap("turbo")
-clim([0 1]);
-xlim([-0 nBins+0.5]); xticks([1 nBins]); xticklabels({'0','185'}); xlabel('Position (cm) Familiar RZ')
-ylim([-0 nBins+0.5]); yticks([1 nBins]); yticklabels({'0','185'}); ylabel('Position (cm) Novel RZ')
-% plot([r1posInd r1posInd],[0 nBins],'w--',[0 nBins],[r2posInd r2posInd],'w--')
-plot([0 nBins],[0 nBins],'w--');
-plot([0 nBins/2],[nBins/2 nBins],'w--',[nBins/2 nBins],[0 nBins/2],'w--');
-% cbarLims = [0 1];
-% cbar = colorbar('Ticks',cbarLims,'TickLabels',cbarLims); clim(cbarLims); % ,'position', [0.9 0.12 0.05 0.3]
-% ylabel(cbar,'Pearson Correlation of PV','FontSize',12,'Rotation',90)
-set(gca,'FontSize',16,'FontName','Arial','YDir','normal')
-
 end
 
 function [fhandle] = plotPVCorrComp(dat1, dat2, nMice, pval)

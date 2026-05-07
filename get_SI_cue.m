@@ -1,4 +1,4 @@
-function [cueSI,uFR,pkFR,pkLoc,spkmap,bnoccs,rastMt,binfr,binedges] = get_SI_cue(root,unit,sess,qstruc,dbnsz)
+function [cueSI,uFR,pkFR,pkLoc,smRMap,rastMt,binfr,binedges] = get_SI_cue(root,unit,sess,qstruc,dbnsz)
 %% Returns the Spatial Information of a Unit
 %
 % Inputs:
@@ -64,7 +64,7 @@ occct = sum(bnoccs,1);
 
 spksmooth = smoothdata(spkct,'gaussian',5);
 occsmooth = smoothdata(occct,'gaussian',5);
-ratemap   = spkmap ./ bnoccs;
+smRMap   = smoothdata(spkmap,2,'gaussian',5) ./ smoothdata(bnoccs,2,'gaussian',5);
 
 %needs NaN to be 0
 binfr = spksmooth ./ occsmooth;
