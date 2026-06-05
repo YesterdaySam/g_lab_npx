@@ -220,7 +220,7 @@ if contains(meta.prbType,'NPX2.0')
             root.lfpinfo.lfpShank(i) = 3;
         end
     end
-    tmpDepthMap = probeDepthMap(root);  %Create depth map with potential shifts due to recording bank hot swapping
+    tmpDepthMap = probeDepthMap(meta);  %Create depth map with potential shifts due to recording bank hot swapping
     root.lfpinfo.lfpDepth = tmpDepthMap(root.lfpinfo.lfpch+1)';
 else 
     root.lfpinfo.lfpShank = zeros(length(root.lfpinfo.lfpch),1);

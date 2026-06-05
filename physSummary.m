@@ -1,15 +1,14 @@
 % Summarize ephys script
 
 %% Load root from scratch
-spath = 'D:\Data\Kelton\analyses\KW093\KW093_03292026_rec_D4_RMed2';
-datpath = 'D:\Data\Kelton\probe_data\KW093\KW093_03292026_rec_D4_RMed2_g0';
+spath = 'D:\Data\Kelton\analyses\KW098\KW098_05072026_rec_D4_RMed2';
+datpath = 'D:\Data\Kelton\probe_data\KW098\KW098_05072026_rec_D4_RMed1_g0';
 
 loadKS(datpath,spath,1); 
 root = alignBhvrTS(spath,spath,spath);
 % root = addPseudoTSB(spath,spath);
 
 %% Load existing root file
-% spath = 'D:\Data\Kelton\analyses\KW031\KW031_02182025_rec_D4_LLat1';
 saveFlag = 1;
 
 cd(spath)
@@ -63,7 +62,7 @@ root = get_lfpXdepth(root,[6 10; 150 250]);
 %     root.thEnv(i,:) = hilbert(thetaLFPSh);  % Operates along rows
 % end
 
-root = get_layerBounds(root,100,0.25);    % Assign units to layers, min layer width 100um, prominence cut off 0.25
+root = get_lyrBounds_hpc(root,100,0.25);    % Assign units to layers, min layer width 100um, prominence cut off 0.25
 
 %% Plot PSD (not very informative)
 

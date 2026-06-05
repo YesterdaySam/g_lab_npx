@@ -57,7 +57,7 @@ elseif typeflag == 2
 elseif typeflag == 3
     maxDat      = max(datStruc.trueSI);
     datGood     = datStruc.trueSI;
-    datSig      = datStruc.sig <= 0.05;
+    datSig      = datStruc.sigSI <= 0.05;
     % binSig      = histcounts(datGood(datSig),spBins); %Do accumulator instead
     xlabstr     = 'Spatial Information (bits/spike)';
 elseif typeflag == 4

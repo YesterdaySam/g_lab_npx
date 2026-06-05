@@ -1,4 +1,4 @@
-function [binedges, lckmap, bnlck, fhandle, fhandle2] = plot_lickpos(sess,bnsz,plotflag)
+function [binedges, lckmap, lckRate, fhandle, fhandle2] = plot_lickpos(sess,bnsz,plotflag)
 %% Create linearized lick posiition (binned by space)
 % Inputs
 %   sess     = struct from importBhvr.m
@@ -8,7 +8,7 @@ function [binedges, lckmap, bnlck, fhandle, fhandle2] = plot_lickpos(sess,bnsz,p
 % Outputs
 %   binedges = bin edges (m)
 %   lckmap   = Nx2 of [lick positions (m), trial]
-%   bnlck    = lick rate (Hz) per spatial bin normalized by time in bin
+%   lckRate  = lick rate (Hz) per spatial bin normalized by time in bin
 %   fhandle  = handle to raster figure
 %   fhandle2 = handle to trial averaged rate figure
 %
@@ -34,7 +34,7 @@ nbins           = size(binedges,2);
 
 % Find licks
 lckmap  = [];
-bnlck = ones(nlaps,nbins-1);
+lckRate = ones(nlaps,nbins-1);
 
 for i = 1:nlaps
     % Find index of licks for this lap
@@ -44,8 +44,8 @@ for i = 1:nlaps
     lckmap = [lckmap; sess.pos(tmplck), i*ones(numel(tmplck),1)];
     
     bnocc = histcounts(sess.pos(sess.ind(sess.lapstt(i):sess.lapend(i))),binedges);
-    bnlck(i,:) = histcounts(sess.pos(tmplck),binedges);
-    bnlck(i,:) = bnlck(i,:) ./ (bnocc / sess.samprate);  %Normalize to time in each bin
+    lckRate(i,:) = histcounts(sess.pos(tmplck),binedges);
+    lckRate(i,:) = lckRate(i,:) ./ (bnocc / sess.samprate);  %Normalize to time in each bin
 end
 
 % Find rewards after valid lap starts
@@ -69,13 +69,13 @@ if plotflag
     ylabel('Trial #')
     set(gca,'FontSize',12,'FontName','Arial')
 
-    sem = std(bnlck,'omitnan')/sqrt(nlaps);
-    ciup = rmmissing(mean(bnlck,1,'omitnan') + sem*1.96);
-    cidn = rmmissing(mean(bnlck,1,'omitnan') - sem*1.96);
+    sem = std(lckRate,'omitnan')/sqrt(nlaps);
+    ciup = rmmissing(mean(lckRate,1,'omitnan') + sem*1.96);
+    cidn = rmmissing(mean(lckRate,1,'omitnan') - sem*1.96);
 
     fhandle2 = figure; hold on
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
-    plot(binedges(1:end-1)*100,mean(bnlck,1,'omitnan'),'b','LineWidth',2)
+    plot(binedges(1:end-1)*100,mean(lckRate,1,'omitnan'),'b','LineWidth',2)
     patch(100*[binedges(1:length(cidn)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'b','FaceAlpha',0.5,'EdgeColor','none')
     xlabel('Position (cm)'); xlim([0 200])
     ylabel('Average Licks/s');

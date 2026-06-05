@@ -27,7 +27,7 @@ cmap(5).map = summer(5);
 
 fhandle = figure; hold on
 legcell = {};
-nChXSh = height(root.lfpinfo)/numel(unique(root.lfpinfo.lfpShank));
+% nChXSh = height(root.lfpinfo)/numel(unique(root.lfpinfo.lfpShank));
 grid on
 for sh = 1:nShanks
     for band = 1:size(root.bands,1)
@@ -35,9 +35,15 @@ for sh = 1:nShanks
         legcell(band) = {[num2str(root.bands(band,1)) '-' num2str(root.bands(band,2)) 'Hz']};
     end
     for band = 1:size(root.bands,1)
-        [tmpMax, tmpInd] = max(root.uPSD(band,root.lfpinfo.lfpShank == sh-1));
-        tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh-1);
-        plot(tmpMax+1,tmpD(tmpInd),'<','Color',cmap(band).map(sh,:))
+        try
+            tmpInd = root.uPSDMax(band,sh);
+            tmpMax = root.uPSD(band,root.uPSDMax(band,sh));
+            plot(tmpMax+1,root.lfpinfo.lfpDepth(tmpInd),'<','Color',cmap(band).map(sh,:))
+        catch
+            [tmpMax, tmpInd] = max(root.uPSD(band,root.lfpinfo.lfpShank == sh-1));
+            tmpD = root.lfpinfo.lfpDepth(root.lfpinfo.lfpShank == sh-1);
+            plot(tmpMax+1,tmpD(tmpInd),'<','Color',cmap(band).map(sh,:))
+        end
         if band == 2; plot([tmpMax tmpMax]+1,root.lyrbounds(:,sh),':_','Color',cmap(band).map(sh,:)); end
     end
 end

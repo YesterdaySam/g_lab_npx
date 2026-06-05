@@ -1,5 +1,5 @@
-function [root] = get_layerBounds(root,minWidth,minProm)
-%% Assigns units based on peak in ripple band power
+function [root] = get_lyrBounds_hpc(root,minWidth,minProm)
+%% Assigns hpc units based on peak in ripple band power
 %
 % Inputs:
 % root = root object. Must have uPSDMax field

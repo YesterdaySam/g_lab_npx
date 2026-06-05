@@ -59,11 +59,11 @@ for i = 1:size(bhvrFile,1)
 
     % % for fox cue
     % try
-        sess.randCue   = sess.aidat(:,5); %take care to account for switching
-        sess.fixedCue    = sess.aidat(:,6);
-
-        [~, sess.fixedCueInd] = findpeaks(double(sess.fixedCue > 0.5));
-        [~, sess.randCueInd] = findpeaks(double(sess.randCue > 0.5));
+        % sess.randCue   = sess.aidat(:,5); %take care to account for switching
+        % sess.fixedCue    = sess.aidat(:,6);
+        % 
+        % [~, sess.fixedCueInd] = findpeaks(double(sess.fixedCue > 0.5));
+        % [~, sess.randCueInd] = findpeaks(double(sess.randCue > 0.5));
     % 
     %     if ~isempty(sess.fixedCueInd) & ~isempty(sess.randCueInd) %if lights exist, within 500ms dont count
     %         keepFix = 1;

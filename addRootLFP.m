@@ -10,6 +10,7 @@ function [root] = addRootLFP(spath)
 % Created 1/15/26 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
+cd(spath)
 rootF = dir('*_root.mat'); 
 lfpF  = dir('*_lfp.mat'); 
 load([spath '\' rootF.name])

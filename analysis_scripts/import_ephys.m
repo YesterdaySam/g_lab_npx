@@ -1,0 +1,363 @@
+%% Wrapper for importing ephys and performing processing steps
+
+spaths        = {'D:\Data\Kelton\analyses\KW097\KW097_05062026_rec_D5_LLat2'};
+datpaths      = {'D:\Data\Kelton\probe_data\KW097\KW097_05062026_rec_D5_LLat2_g0'};
+region       = 1; % 1 = CA1 or Sub; 2 = EC
+ovrwrtRoot   = 0;
+ovrwrtDatS   = 0;
+splitLap     = [2];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
+% ripRef       = [];
+saveFlag     = true;
+doMakeRoot   = true;
+doDepthPlots = true;
+doSpikeXSess = true;
+doLFPxDepth  = true;
+lfpBands     = [6 10; 150 250];
+doBursts     = true;
+doUnitType   = true;
+doAssignLyr  = true;
+doCountSum   = true;
+doRipples    = true;
+doSplitLFP   = true;
+doPhysSum    = true;
+doUnitParams = true;
+doShuffles   = true;
+nShuf        = 250;
+
+%% Start loop
+
+for j = 1:length(spaths)
+    spath = spaths{j};
+    datpath = datpaths{j};
+
+    strs = split(spath,'\');
+    disp(['Processing ephys for ' strs{end}])
+
+    %% Load existing root file
+
+    clear root sess
+    cd(spath)
+
+    sessfile = dir("*_session.mat");
+    load(sessfile.name)
+    try
+        rootfile = dir("*_root.mat");
+        load(rootfile.name)
+        rootMade = true;
+    catch
+        rootMade = false;
+        disp('Failed to import root')
+    end
+
+    if rootMade & ~ovrwrtRoot
+        disp(['Loaded root and session for ' strs{end}])
+
+    else
+    %% Create root
+        try
+            if doMakeRoot
+                loadKS(datpath,spath,1);    % With overwrite set to 1
+                root = alignBhvrTS(spath,spath,spath);
+                disp(['Root made and TS aligned for ' strs{end}])
+            end
+        catch
+            disp('Failed to create root')
+        end
+
+        %% Plot Amp X Depth x FR
+
+        try
+            if doDepthPlots
+                adfrFig = plot_ampXdepthxFR(root);
+                frdFig = plot_datXdepth(root,0,1,0,0);
+
+                if saveFlag
+                    saveas(adfrFig,[root.name '_AmpDepthFR_all.png'])
+                    saveas(frdFig,[root.name '_FRDepth_good.png'])
+                end
+                disp('Made depth plots')
+            end
+        catch
+            disp('Failed to make depth plots')
+        end
+
+        %% Summarize spike counts across session
+
+        try
+            if doSpikeXSess
+                tmpSpikeDensityFig = plot_spikeDensity(root,60);
+                if saveFlag; saveas(tmpSpikeDensityFig,[root.name '_spikeDensity.png']); end
+
+                disp('Made spike density plots')
+            end
+        catch
+            disp('Failed to summarize spike density plots')
+        end
+
+        %% Estimate LFP power by depth
+
+        try
+            if doLFPxDepth
+                root = get_lfpXdepth(root,lfpBands);
+                if region == 1
+                    root = get_lyrBounds_hpc(root,100,0.25);    % Assign layer boundaries, min layer width 100um, prominence cut off 0.25
+                elseif region == 2
+                    [root,tmpDat] = get_lyrBounds_ec(root,sess);    % Assign layer boundaries and units to layers
+                end
+                lfpPowerFig = plot_lfpXdepth(root);
+                if saveFlag; saveas(lfpPowerFig,[root.name '_LFPPower.png']); end
+
+                disp('Calculated LFP power by bands and set layers')
+            end
+        catch
+            disp('Failed to calculate LFP by depth and set layers')
+        end
+
+        %% Add bursts to root
+
+        try
+            if doBursts
+                root = burst2root(root,sess);
+                disp('Added bursts to root')
+            end
+        catch
+            disp('Failed to add bursts to root')
+        end
+
+        %% Assign putative unit type (0 = IN; 1 = Principle) and FR Variance by time
+
+        try
+            if doUnitType
+                [root, INsFig] = get_estCellType(root,0.5,0.4,100,1);    % FW = 15; FWHM = 5; FR = 100; Plotflag = 1
+                % [root, INsFig] = get_umapCellType(root,1);
+
+                if saveFlag; saveas(INsFig,[root.name '_FW_class.png']); end
+
+                disp('Assigned unit types')
+            end
+        catch
+            disp('Failed to assign unit types')
+        end
+
+        %% Assign and plot units by layer and type
+
+        try
+            if doAssignLyr
+                if region == 1
+                    root = get_layerUnits(root);
+
+                    uTypeDepthFig = plot_layerUnits(root,1,0,0);
+                    if saveFlag; saveas(uTypeDepthFig,[root.name '_uTypeXDepth.png']); end
+
+                elseif region == 2
+                    uTypeDepthFig = plot_layerUnits(root,1,0,0);
+
+                    thDepthFig = plot_datXdepth(root,tmpDat,1,0,0,2); % theta
+                    plot(tmpDat.thAng(tmpDat.lyrID == 5)+180, tmpD(tmpDat.lyrID == 5),'k*')
+                    plot(tmpDat.thAng(tmpDat.lyrID == 3)+180, tmpD(tmpDat.lyrID == 3),'c*')
+                    plot(tmpDat.thAng(tmpDat.lyrID == 2)+180, tmpD(tmpDat.lyrID == 2),'m*')
+                    % legend('Data','EC5','EC3','EC2')
+                    set(gcf,'units','normalized','position',[0.4 0.2 0.15 0.6]);
+                    if saveFlag
+                        saveas(uTypeDepthFig,[root.name '_uTypeXDepth.png'])
+                        saveas(thDepthFig,[root.name '_thXdepthXlyr.png'])
+                    end
+                end
+
+                disp('Assigned units to layers')
+            end
+        catch
+            disp('Failed to assign units to layers and plot')
+        end
+
+        %% Summarize counts by shank and depth
+
+        try
+            if doCountSum
+                [depthCountFig, shankCountFig] = plot_count_shank(root,region);
+
+                if saveFlag
+                    saveas(depthCountFig,[root.name '_count_good.png'])
+                    saveas(shankCountFig,[root.name '_shankCount_good.png'])
+                end
+                disp('Plotted good units by shank and depth')
+            end
+        catch
+            disp('Failed to summarize counts by shank and depth')
+        end
+
+        %% Get ripples
+
+        try
+            if doRipples
+                chans = root.uPSDMax(2,:);
+                for i = 1:length(chans)
+                    ripStruc(i).ripples = get_ripples(root,chans(i),sess,3,5,[15 250]);
+                end
+                root.ripStruc = ripStruc;
+
+                if root.prbType == 'NPX1.0'
+                    root.ripRef = 1;
+                else
+                    root.ripRef = 0;    % Place holder that will error if not manually corrected
+                end
+
+                disp(['Found ripples and assigned ripRef to shank ' num2str(root.ripRef-1)])
+            end
+        catch
+            disp('Failed to get SPWRs and assign ripRef')
+        end
+
+        %% Split out LFP to improve subsequent root save/load speed
+
+        try
+            if doSplitLFP
+                lfp.name     = root.name;
+                lfp.lfp      = root.lfp;
+                lfp.fs_lfp   = root.fs_lfp;
+                lfp.lfpinfo  = root.lfpinfo;
+                lfp.lfp_tsb  = root.lfp_tsb;
+                lfp.bands    = root.bands;
+                lfp.uPSDMax  = root.uPSDMax;
+                lfp.uPSD     = root.uPSD;
+
+                nshanks = numel(unique(root.lfpinfo.lfpShank));
+
+                root.lfp     = root.lfp(root.uPSDMax(2,:),:);
+                root.uPSD    = root.uPSD(:,root.uPSDMax(2,:));
+                root.lfpinfo = root.lfpinfo(root.uPSDMax(2,:),:);
+                root.uPSDMax = [repmat(1:nshanks,size(root.bands,2),1)]; % Set uPSD to match updated LFP info
+
+                save([lfp.name '_lfp'],'lfp','-v7.3')
+
+                disp('Split LFP out to separate file')
+            end
+        catch
+            disp('Failed to save LFP separately')
+        end
+
+        %% Save updated root
+
+        try
+            saveRoot(root,spath)
+            disp('Saved updated root')
+        catch
+            disp('Failed to save updated root')
+        end
+
+        %% Plot phys compact
+        close all
+
+        try
+            if doPhysSum
+                plotPhysCompact(root,sess,spath,1)
+
+                disp(['Finished phys summary for ' root.name])
+            end
+        catch
+            disp('Failed to make individual unit plots')
+        end
+    end
+
+    %% Proceed to making a data struct
+    try
+        datfile = dir("*_dat.mat");
+        load(datfile.name)
+        datMade = true;
+    catch
+        datMade = false;
+        disp('Failed to load data struct')
+    end
+
+    if datMade & ~ovrwrtDatS
+        disp(['Loaded dat for ' strs{end}])
+
+    else
+        %% Get Real Unit parameters
+
+        try
+            if doUnitParams
+                if splitLap(j) == 0
+                    datStruc = get_unitParams(root,root.good,sess,[],true,true,true,doRipples,false,0,false);
+                end
+
+                if splitLap(j) > 0
+                    [sessFrst, sessLast, rootFrst, rootLast] = splitRec(sess,root);
+                    % rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
+                    % rwdShift = sess.rwdTrials(rwdShift);
+                    % 
+                    % frstHalfInds         = [sess.ind(1) sess.lapend(rwdShift)];
+                    % lastHalfInds         = [sess.lapstt(rwdShift+1) sess.ind(end)];
+                    % [sessFrst, rootFrst] = epochStruc(sess,root,frstHalfInds);
+                    % [sessLast, rootLast] = epochStruc(sess,root,lastHalfInds);
+                end
+
+                if splitLap(j) == 1
+                    frstHalf = get_unitParams(rootFrst,root.good,sessFrst,[],true,true,true,doRipples,false,0,false);
+                    lastHalf = get_unitParams(rootLast,root.good,sessLast,[],true,true,true,doRipples,false,0,false);
+                elseif splitLap(j) == 2
+                    sessFrst = get_QTwin(sessFrst,sessFrst.rwdind);
+                    sessLast = get_QTwin(sessLast,sessLast.rwdind);
+
+                    qfrst.q = sessFrst.qInd;
+                    qfrst.stt = sessFrst.qStt;
+                    qfrst.end = sessFrst.qEnd;
+                    qfrst.qID = sessFrst.qTrialID;
+                    qlast.q = sessLast.qInd;
+                    qlast.stt = sessLast.qStt;
+                    qlast.end = sessLast.qEnd;
+                    qlast.qID = sessLast.qTrialID;
+
+                    frstHalf = get_unitParams(rootFrst,root.good,sessFrst,[],true,true,true,doRipples,true,qfrst,false);
+                    lastHalf = get_unitParams(rootLast,root.good,sessLast,[],true,true,true,doRipples,true,qlast,false);
+                end
+            end
+
+            disp('Created data structure and calculated unit parameters')
+        catch
+            disp('Failed to calculate real unit parameters')
+        end
+
+        %% Get shuffle unit parameters
+
+        try
+            if doShuffles
+                if splitLap(j) == 0
+                    datStruc = get_shufParams(root,root.good,sess,datStruc,nShuf);
+                end
+
+                if splitLap(j) == 1
+                    frstHalf = get_shufParams(rootFrst,root.good,sessFrst,frstHalf,nShuf,true,true);
+                    lastHalf = get_shufParams(rootLast,root.good,sessLast,lastHalf,nShuf,true,true);
+                elseif splitLap(j) == 2
+                    frstHalf = get_shufParams(rootFrst,root.good,sessFrst,frstHalf,nShuf,true,false,true,qfrst);
+                    lastHalf = get_shufParams(rootLast,root.good,sessLast,lastHalf,nShuf,true,false,true,qlast);
+                end
+            end
+
+            disp('Ran shuffles')
+        catch
+            disp('Failed to do shuffles')
+        end
+
+        %% Save dat strucs
+
+        try
+            if splitLap(j) == 0
+                save([root.name '_dat'],'datStruc')
+            else
+                save([root.name '_dat'],'frstHalf','lastHalf','rootFrst','rootLast','sessFrst','sessLast')
+            end
+
+            disp('Saved data structure')
+        catch
+            disp('Failed to save data structure')
+        end
+
+    end
+
+%% End processing
+
+disp(['Done processing ephys for ' strs{end}])
+
+end

@@ -35,8 +35,8 @@ vColors2 = [.35 .35 .35; 1 .25 .25];
 
 clear ps stats
 
-%% Combine Sub RZ Shift Behavior data
-combine_bhvrDat(datT,fname,groupSDir,2);
+%% Combine EC Behavior data
+combine_bhvrDat(datT,fname,groupSDir);
 
 %% Combine data
 combine_rzShiftDat(subDatT,fname,groupSDir,'ca1',2); % sessType = 2
