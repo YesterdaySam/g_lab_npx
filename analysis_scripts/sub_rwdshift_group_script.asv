@@ -9,9 +9,9 @@ datT = import_xldat("D:\Data\Kelton\analyses\group_analyses","dat_include.xlsx")
 groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort_060426';
 cd(groupSDir) 
 
-mInclude = {'KW101','KW097','KW077','KW073','ZM032','ZM006',...
-    'KW100','KW099','HE002','KW082','KW079','KW074','ZM012','ZM029',...
-    'KW094','KW091','KW087','KW080','ZM018','ZM020'}; %By row: Learners, Partials, Non-learners
+mInclude = {'KW101','KW097','KW099','KW077','KW073','ZM032','ZM006',...
+    'KW100','HE002','KW082','KW079','KW074','ZM012','ZM018','ZM020','ZM029',...
+    'KW094','KW091','KW087','KW080'}; %By row: Learners, Partials, Non-learners
 sessType = 2;
 % useInds = datT.include == 1;
 for i = 1:height(datT)
@@ -22,6 +22,7 @@ datT(~useInds,:) = [];  %Clean excluded sessions
 saveFlag = 1;
 sbase = 'subRwdShift_';
 fname = [sbase 'groupDat'];
+bvName = [sbase 'groupDat_bhvr'];
 
 dbnsz = 0.05;
 histoBnsz = 5;
@@ -35,13 +36,13 @@ vColors2 = [.35 .35 .35; 1 .25 .25];
 
 clear ps stats
 
-%% Combine EC Behavior data
-combine_bhvrDat(datT,fname,groupSDir);
+%% Combine Sub RZ Shift Behavior data
+combine_bhvrDat(datT,bvName,groupSDir,2);
 
 %% Combine data
 combine_rzShiftDat(subDatT,fname,groupSDir,'ca1',2); % sessType = 2
 
-%% Load previously saved data
+%% Load previously saved ephys data
 cd(groupSDir)
 load(fname)
 
@@ -67,10 +68,64 @@ bstFrstID = useCC & bsDat(:,1) > 0;
 bstLastID = useCC & bsDat(:,2) > 0;
 bstBothID = bstFrstID & bstLastID;
 
+%% Load saved behavior data
+cd(groupSDir)
+load(bvName)
+nMice = length(unique(recID(:,1)));
+mID = unique(recID(:,1));
+
+mLern = [101 99 97 77 73 32 6];
+mPart = [100 2 82 79 74 12 18 20 29];
+mNonl = [94 91 87 80];
+
+lernInds = [];
+partInds = [];
+nonlInds = [];
+
+for i = 1:size(recID,1)
+    if ~isempty(find(mLern == recID(i,1), 1))
+        lernInds = [lernInds; find(recID(:,1) == recID(i,1))];
+    elseif ~isempty(find(mPart == recID(i,1), 1))
+        partInds = [partInds; find(recID(:,1) == recID(i,1))];
+    else
+        nonlInds = [nonlInds; find(recID(:,1) == recID(i,1))];
+    end
+end
+
 %% Behavior comparisons
+% Learners: Nov LDI < -0.4, Nov Laps > 40
+% Partials: Nov Rewarded laps > 30% | Nov Laps < 40
+% Non learners: Nov LDI > -0.4, Nov Rewarded laps < 30%
 
 uLckDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
+uLapRwd = [vertcat(bvDat.uPreLapRwd), vertcat(bvDat.uPstLapRwd)];
+nLaps = [vertcat(bvDat.preNLap), vertcat(bvDat.pstNLap)];
 uRZVel = [vertcat(bvDat.uPreRZVel), vertcat(bvDat.uPstRZVel)];
+
+plot_2d_bhvr(uLckDI,lernInds,partInds,nonlInds);
+plot([-1 1],[-0.4 -0.4],'k--')
+xlabel('mean Fam LSI'); xlim([-1 1])
+ylabel('mean Nov LSI'); ylim([-1 1])
+
+plot_2d_bhvr(uLapRwd,lernInds,partInds,nonlInds);
+plot([0 1],[0.3 0.3],'k--')
+xlabel('P(Fam Lap Rewarded)'); xlim([0 1])
+ylabel('P(Nov Lap Rewarded)'); ylim([0 1])
+
+plot_2d_bhvr(nLaps,lernInds,partInds,nonlInds);
+plot([0 100],[40 40],'k--')
+xlabel('N Laps Fam'); xlim([0 inf])
+ylabel('N Laps Nov'); ylim([0 inf])
+
+figure;
+plot3(uLckDI(lernInds,2),nLaps(lernInds,2),uLapRwd(lernInds,2),'bo',...
+    uLckDI(partInds,2),nLaps(partInds,2),uLapRwd(partInds,2),'co',...
+    uLckDI(nonlInds,2),nLaps(nonlInds,2),uLapRwd(nonlInds,2),'ro');
+xlabel('LSI Nov');
+ylabel('N Laps Nov');
+zlabel('P(Nov Lap Rewarded');
+
+%% Statistical Quantification
 
 [~,ps.bhv_PPLckDI,~,stats.bhv_PPLckDI] = ttest(uLckDI(:,1),uLckDI(:,2));
 [~,ps.bhv_PPRZ1,~,stats.bhv_PPRZ1] = ttest(uRZVel(:,1),uRZVel(:,3));
@@ -115,24 +170,36 @@ end
 % end
 
 %% Averaged lick and velocity profiles
+lBins = 0:0.03:1.85;
+mBin = round(length(lBins)/2);
 
 for i = 1:length(mID)
-    uPreVel(i,:) = mean(bvDat(i).preVMap,'omitnan');
-    uPstVel(i,:) = mean(bvDat(i).pstVMap,'omitnan');
-
+    preRZBin = find(lBins > bvDat(i).rzPos(1),1);
+    pstRZBin = find(lBins > bvDat(i).rzPos(2),1);
+    
+    uPreVel(i,:) = mean(bvDat(i).preSpVelMap,'omitnan');
+    uPreVel(i,:) = circshift(uPreVel(i,:), mBin - preRZBin);
+    uPstVel(i,:) = mean(bvDat(i).pstSpVelMap,'omitnan');
+    uPstVel(i,:) = circshift(uPstVel(i,:), mBin - pstRZBin);
+    
     uPreLck(i,:) = mean(bvDat(i).preLMap,'omitnan');
+    uPreLck(i,:) = circshift(uPreLck(i,:), mBin - preRZBin);
     uPstLck(i,:) = mean(bvDat(i).pstLMap,'omitnan');
+    uPstLck(i,:) = circshift(uPstLck(i,:), mBin - preRZBin);
 end
 
+%%
 xcoords = [10 40; 100 130];
-uVelF = plot_bhvrTraceCI(circshift(uPreVel,30,2),circshift(uPstVel,30,2),[0.45 0.45 0.45; 0 0 0],xcoords,[0 50]);
+% uVelF = plot_bhvrTraceCI(circshift(uPreVel,30,2),circshift(uPstVel,30,2),[0.45 0.45 0.45; 0 0 0],xcoords,[0 50]);
+uVelF = plot_bhvrTraceCI(uPreVel(partInds,:),uPstVel(partInds,:),[0.45 0.45 0.45; 0 0 0],xcoords,[0 50]);
 xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
 ylabel('Velocity (cm/s)'); ylim([0 50]); xlim([0 186])
-
-uLckF = plot_bhvrTraceCI(circshift(uPreLck,10,2),circshift(uPstLck,10,2),[0.45 0.45 0.45; 0 0 0],xcoords,[0 12]);
+%%
+% uLckF = plot_bhvrTraceCI(circshift(uPreLck,10,2),circshift(uPstLck,10,2),[0.45 0.45 0.45; 0 0 0],xcoords,[0 12]);
+uVelF = plot_bhvrTraceCI(uPreLck(partInds,:),uPstVel(partInds,:),[0.45 0.45 0.45; 0 0 0],xcoords,[0 50]);
 xticks([0 40 80 120 160]); xticklabels([-30 10 50 90 130]);
 ylabel('Lick rate (Hz)'); ylim([0 12]); xlim([0 186])
-
+%%
 if saveFlag
     fsave(uVelF,[sbase 'bhv_meanVelPrePst'])
     fsave(uLckF,[sbase 'bhv_meanLckPrePst'])
@@ -1611,3 +1678,10 @@ legend({'Familiar','Novel'},'Location','northeast')
 set(gca,'FontSize',12,'FontName','Arial')
 end
 
+function [fhandle] = plot_2d_bhvr(dat,learn,partial,nonlearn)
+figure; hold on; axis square
+plot(dat(learn,1),dat(learn,2),'bo')
+plot(dat(partial,1),dat(partial,2),'co')
+plot(dat(nonlearn,1),dat(nonlearn,2),'ro')
+set(gca,'FontSize',16,'FontName','Arial')
+end

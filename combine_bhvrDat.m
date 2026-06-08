@@ -61,6 +61,13 @@ for i = 1:height(datT)
         bvDat(ct).uPreLckDI = mean(bvDat(ct).preLckDI,'omitnan');
         bvDat(ct).uPstLckDI = mean(bvDat(ct).pstLckDI,'omitnan');
 
+        bvDat(ct).preNLap = length(sessFrst.valTrials);
+        bvDat(ct).pstNLap = length(sessLast.valTrials);
+        bvDat(ct).preLapRwd = get_trialSuccess(sessFrst);
+        bvDat(ct).pstLapRwd = get_trialSuccess(sessLast);
+        bvDat(ct).uPreLapRwd = mean(bvDat(ct).preLapRwd,'omitnan');
+        bvDat(ct).uPstLapRwd = mean(bvDat(ct).pstLapRwd,'omitnan');
+
         bvDat(ct).preSpVelMap = plot_lap_velCCorr(sessFrst,0.03,0.002,0);
         bvDat(ct).vCorPre = corr(bvDat(ct).preSpVelMap', mean(bvDat(ct).preSpVelMap(end-29:end,:))','rows','complete');
         bvDat(ct).pstSpVelMap = plot_lap_velCCorr(sessLast,0.03,0.002,0);
