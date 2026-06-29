@@ -42,7 +42,8 @@ if plotflag
     xticks(1:90:length(binedges1)); xticklabels(binedges1(1:90:length(binedges1))*100);
     yticks(30:30:size(vMap1,1));
     ylabel('Trial #'); ylabel(cbar,'Velocity (cm/s)','FontSize',12,'Rotation',90)
-    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    % set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    set(gca,'FontSize',12,'FontName','Arial')
 
     pstHeatmapF = figure;
     set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.45])
@@ -53,7 +54,8 @@ if plotflag
     ylabel('Trial #'); ylabel(cbar,'Velocity (cm/s)','FontSize',12,'Rotation',90)
     xticks(1:90:length(binedges2)); xticklabels(binedges2(1:90:length(binedges2))*100);
     yticks(30:30:size(vMap2,1));
-    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    % set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    set(gca,'FontSize',12,'FontName','Arial')
 
     sem1 = std(bnvel1,'omitnan')/sqrt(sess1.nlaps);
     ciup1 = rmmissing(mean(bnvel1,1,'omitnan') + sem1*1.96);
@@ -79,6 +81,7 @@ if plotflag
     xlabel('Position'); xlim([0 100*max(binedges2)])
     ylabel('Velocity (cm/s)')
     legend('Familiar RZ','Novel RZ')
-    set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    % set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
+    set(gca,'FontSize',12,'FontName','Arial')
 end
 end

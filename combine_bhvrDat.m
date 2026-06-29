@@ -34,6 +34,12 @@ for i = 1:height(datT)
     recID = [recID; str2num(datT.mouse{i}(end-2:end)), datT.session(i)];
 
     bvDat(ct).rzPos = [datT.rzloc1(i) datT.rzloc2(i)];
+    % if bvDat(ct).rzPos(1) == 0.1
+    %     lsiPosFam = [bvDat(ct).rzPos(1) sess.maxPos + bvDat(ct).rzPos(1)-0.3];
+    % else
+    %     lsiPosFam = [bvDat(ct).rzPos(1) bvDat(ct).rzPos(1)-0.3];
+    % end
+    % lsiPosNov = [bvDat(ct).rzPos(2) bvDat(ct).rzPos(2)-0.3];
 
     if sessType == 1
         % === Concatenate Behavior data ===
@@ -58,6 +64,9 @@ for i = 1:height(datT)
 
         [~,bvDat(ct).preLckDI] = get_lickDiscrim(sessFrst,bvDat(ct).rzPos*100);
         [~,bvDat(ct).pstLckDI] = get_lickDiscrim(sessLast,bvDat(ct).rzPos*100);
+        % [~,bvDat(ct).preLckDI] = get_lickDiscrim(sessFrst,lsiPosFam*100);
+        % [~,bvDat(ct).pstLckDI] = get_lickDiscrim(sessLast,lsiPosNov*100);
+
         bvDat(ct).uPreLckDI = mean(bvDat(ct).preLckDI,'omitnan');
         bvDat(ct).uPstLckDI = mean(bvDat(ct).pstLckDI,'omitnan');
 

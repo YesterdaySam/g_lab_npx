@@ -45,10 +45,14 @@
 % Operant CA1 RZ Randomization
 % spath = 'D:\Data\Kelton\analyses\FG068\FG068_02022026_rec_D3_RMed1'; % 20m rest
 
+% Operant Sub Parital-learners
+spath = 'D:\Data\Kelton\analyses\KW079\KW079_11112025_rec_D2_RLat2'; % 20m rest
+
 % Operant Sub Non-learners
 % spath = 'D:\Data\Kelton\analyses\ZM018\ZM018_02232026_rec_D3_LLat1'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\ZM020\ZM020_02232026_rec_D1_RLat1'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW087\KW087_02082026_rec_D2_RLat2'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\KW080\KW080_11252025_rec_D1_RLat1'; % 20m rest
 
 % Operant EC RZ Shift
 % spath = 'D:\Data\Kelton\analyses\KW093\KW093_03292026_rec_D4_RMed2'; % 20m rest

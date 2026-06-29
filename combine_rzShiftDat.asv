@@ -20,7 +20,7 @@ lcMap = [];     % [frstHalf.posfr, lastHalf.posfr];
 rpDat = [];     % [frstHalf.ripParticip, frstHalf.ripModBin, lastHalf.ripParticip, lastHalf.ripModBin]
 rpRat = [];     % [frstHalf.ripRate, lastHalf.ripRate];
 rpMap = [];     % [frstHalf.swrfr, lastHalf.swrfr];
-rpMapZ = [];    % [frstHalf.swrz, lastHalf.swrz];
+% rpMapZ = [];    % [frstHalf.swrz, lastHalf.swrz];
 % rpMod = [];     % [frstHalf.ripModBins, lastHalf.ripModBins];
 pvStr = [];     % [frstHalf.pvXlap, lastHalf.pvXlap] Struc containing PVC data per lap
 
@@ -60,7 +60,7 @@ for i = 1:height(datT)
     nShanks = numel(unique(root.info.shankID));
 
     % % === Assign regions for each unit ===
-    roiUnits = zeros(height(root.info),1);
+    roiUnits = zeros(length(root.good),1);
     for j = 1:nShanks
         tmpUnits = root.info.shankID == j-1;
         if datT{i,6+j}{1} == 'ca1'
@@ -142,26 +142,24 @@ for i = 1:height(datT)
     lcMap = [lcMap; frstHalf.posfr, lastHalf.posfr];
 
     % === Concatenate SPWR Modulation data ===
-    % for j = 1:length(root.good)
-    %     cc = root.good(j);
-    %     % frstHalf.ripParticipation(j) = get_RipParticipation(rootFrst,cc,sessFrst,root.ripRef,150);
-    %     % lastHalf.ripParticipation(j) = get_RipParticipation(rootLast,cc,sessLast,root.ripRef,150);
-    %     % [spwr_frst,~,frstHalf.swrz(j,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,150,5,0);
-    %     % [spwr_last,~,lastHalf.swrz(j,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,150,5,0);
-    %     % frstHalf.ripModBins(j,:) = get_confband(squeeze(frstHalf.shufSPWR(:,j,:)),spwr_frst);
-    %     % lastHalf.ripModBins(j,:) = get_confband(squeeze(lastHalf.shufSPWR(:,j,:)),spwr_last);
-    %     % frstHalf.ripModBinCt(i) = sum(frstHalf.ripModBins);
-    %     % lastHalf.ripModBinCt(i) = sum(lastHalf.ripModBins);
-    %     % frstHalf.burstIndex(j) = get_burstIndex(rootFrst,sessFrst,cc);
-    %     % lastHalf.burstIndex(j) = get_burstIndex(rootLast,sessLast,cc);
-    % end
+    for j = 1:length(root.good)
+        cc = root.good(j);
+        frstHalf.ripParticipation(j) = get_RipParticipation(rootFrst,cc,sessFrst,root.ripRef,150);
+        lastHalf.ripParticipation(j) = get_RipParticipation(rootLast,cc,sessLast,root.ripRef,150);
+        % [spwr_frst,~,frstHalf.swrz(j,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,150,5,0);
+        % [spwr_last,~,lastHalf.swrz(j,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,150,5,0);
+        % frstHalf.ripModBins(j,:) = get_confband(squeeze(frstHalf.shufSPWR(:,j,:)),spwr_frst);
+        % lastHalf.ripModBins(j,:) = get_confband(squeeze(lastHalf.shufSPWR(:,j,:)),spwr_last);
+        % frstHalf.burstIndex(j) = get_burstIndex(rootFrst,sessFrst,cc);
+        % lastHalf.burstIndex(j) = get_burstIndex(rootLast,sessLast,cc);
+    end
 
     rpDat = [rpDat; frstHalf.ripParticipation', lastHalf.ripParticipation'];
     % rpDat = [rpDat; frstHalf.ripParticipation', frstHalf.ripModBinCt', ...
     %     lastHalf.ripParticipation', lastHalf.ripModBinCt'];
     rpRat = [rpRat; frstHalf.ripRate, lastHalf.ripRate];
-    % rpMap = [rpMap; frstHalf.swrfr, lastHalf.swrfr];
-    rpMapZ = [rpMapZ; frstHalf.swrz lastHalf.swrz];
+    rpMap = [rpMap; frstHalf.swrfr, lastHalf.swrfr];
+    % rpMapZ = [rpMapZ; frstHalf.swrz lastHalf.swrz];
     % rpMod = [rpMod; frstHalf.ripModBins lastHalf.ripModBins];
 
     % bsDat = [bsDat; frstHalf.burstIndex', lastHalf.burstIndex'];
@@ -171,58 +169,46 @@ for i = 1:height(datT)
     % siStr(ct).pstBlockSI = lastHalf.subEpochSI;
 
     % === Concatenate PV data ===
-    try
-        bothSIUnits = useUnits & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
-    catch
-        bothSIUnits = useUnits & (lastHalf.sig <= 0.05 & frstHalf.sig <= 0.05);
-    end
+    bothSIUnits = useUnits & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
     bothCA1 = bothSIUnits & roiUnits(root.goodind) == 1;
     bothSub = bothSIUnits & roiUnits(root.goodind) == 2;
     idMat = logical(eye(length(frstHalf.binpos)));
 
-    % if sum(bothCA1) > 1
-    %     frstHalf.pvOddca1 = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
-    %     frstHalf.pvEvnca1 = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
-    %     lastHalf.pvOddca1 = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
-    %     lastHalf.pvEvnca1 = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
-    %     uPVPrePreCA1 = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothCA1);
-    %     uPVPrePstCA1 = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothCA1,idMat);
-    %     uPVPstPreCA1 = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothCA1,idMat);
-    %     uPVPstPstCA1 = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothCA1);
-    %     frstHalf.pvXlapca1 = [uPVPrePreCA1, uPVPrePstCA1];
-    %     lastHalf.pvXlapca1 = [uPVPstPreCA1, uPVPstPstCA1];
-    % end
-    % 
-    % if sum(bothSub) > 1
-    %     frstHalf.pvOddsub = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
-    %     frstHalf.pvEvnsub = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
-    %     lastHalf.pvOddsub = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
-    %     lastHalf.pvEvnsub = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
-    %     uPVPrePreSub = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothSub);
-    %     uPVPrePstSub = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothSub,idMat);
-    %     uPVPstPreSub = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothSub,idMat);
-    %     uPVPstPstSub = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothSub);
-    %     frstHalf.pvXlapsub = [uPVPrePreSub, uPVPrePstSub];
-    %     lastHalf.pvXlapsub = [uPVPstPreSub, uPVPstPstSub];
-    % end
+    frstHalf.pvOddca1 = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
+    frstHalf.pvEvnca1 = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
+    lastHalf.pvOddca1 = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
+    lastHalf.pvEvnca1 = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
+    frstHalf.pvOddsub = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
+    frstHalf.pvEvnsub = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
+    lastHalf.pvOddsub = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
+    lastHalf.pvEvnsub = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
+
+    uPVPrePreCA1 = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothCA1);
+    uPVPrePstCA1 = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothCA1,idMat);
+    uPVPstPreCA1 = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothCA1,idMat);
+    uPVPstPstCA1 = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothCA1);
+    frstHalf.pvXlapca1 = [uPVPrePreCA1, uPVPrePstCA1];
+    lastHalf.pvXlapca1 = [uPVPstPreCA1, uPVPstPstCA1];
+    uPVPrePreSub = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothSub);
+    uPVPrePstSub = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothSub,idMat);
+    uPVPstPreSub = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothSub,idMat);
+    uPVPstPstSub = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothSub);
+    frstHalf.pvXlapsub = [uPVPrePreSub, uPVPrePstSub];
+    lastHalf.pvXlapsub = [uPVPstPreSub, uPVPstPstSub];
 
     if sessType == 2
-        if sum(bothCA1) > 1
-            pvStr(ct).preBlockPVca1 = frstHalf.pvXlapca1;
-            pvStr(ct).pstBlockPVca1 = lastHalf.pvXlapca1;
-            pvStr(ct).preEvnca1     = frstHalf.pvEvnca1; % Not actually the pvc, just the frmap used to make it
-            pvStr(ct).preOddca1     = frstHalf.pvOddca1;
-            pvStr(ct).pstEvnca1     = lastHalf.pvEvnca1;
-            pvStr(ct).pstOddca1     = lastHalf.pvOddca1;
-        end
-        if sum(bothSub) > 1
-            pvStr(ct).preBlockPVsub = frstHalf.pvXlapsub;
-            pvStr(ct).pstBlockPVsub = lastHalf.pvXlapsub;
-            pvStr(ct).preEvnsub     = frstHalf.pvEvnsub; % Not actually the pvc, just the frmap used to make it
-            pvStr(ct).preOddsub     = frstHalf.pvOddsub;
-            pvStr(ct).pstEvnsub     = lastHalf.pvEvnsub;
-            pvStr(ct).pstOddsub     = lastHalf.pvOddsub;
-        end
+        pvStr(ct).preBlockPVca1 = frstHalf.pvXlapca1;
+        pvStr(ct).pstBlockPVca1 = lastHalf.pvXlapca1;
+        pvStr(ct).preEvnca1     = frstHalf.pvEvnca1; % Not actually the pvc, just the frmap used to make it
+        pvStr(ct).preOddca1     = frstHalf.pvOddca1;
+        pvStr(ct).pstEvnca1     = lastHalf.pvEvnca1;
+        pvStr(ct).pstOddca1     = lastHalf.pvOddca1;
+        pvStr(ct).preBlockPVsub = frstHalf.pvXlapsub;
+        pvStr(ct).pstBlockPVsub = lastHalf.pvXlapsub;
+        pvStr(ct).preEvnsub     = frstHalf.pvEvnsub; % Not actually the pvc, just the frmap used to make it
+        pvStr(ct).preOddsub     = frstHalf.pvOddsub;
+        pvStr(ct).pstEvnsub     = lastHalf.pvEvnsub;
+        pvStr(ct).pstOddsub     = lastHalf.pvOddsub;
     elseif sessType == 3
         pvStr(ct).preBlockPV = frstHalf.pvXlapRR;
         pvStr(ct).pstBlockPV = lastHalf.pvXlapRR;
@@ -273,12 +259,12 @@ for i = 1:height(datT)
 
     ct = ct + 1;
 
-    % save([root.name '_dat'],'frstHalf','lastHalf','rootFrst','rootLast','sessFrst','sessLast')
+    % save([root.name '_RwdShift_Data2'],'frstHalf','lastHalf');
 end
 
 cd(sdir)
 
 % save(fname,'frDat','recID','useCC','lcDat','lcMap','thDat','thMap','rpDat','rpRat','rpMap','rpMapZ','rpMod','bsDat','vlDat','bvDat','pvStr')
-save(fname,'recID','useCC','rgDat','lcDat','lcMap','rpDat','rpRat','rpMap','rpMapZ','pvStr')
+save(fname,'recID','useCC','lcDat','lcMap','rpDat','rpRat','rpMap','pvStr')
 
 end

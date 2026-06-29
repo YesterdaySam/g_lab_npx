@@ -6,6 +6,10 @@ arguments
     vColors = [.35 .35 .35; 1 .25 .25];
 end
 
+rmNan = isnan(dat(:,1)) |  isnan(dat(:,2));
+
+dat(rmNan,:) = [];
+
 fhandle = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.1 0.27])
 b = bar(mean(dat),'FaceColor','flat','HandleVisibility','off');
