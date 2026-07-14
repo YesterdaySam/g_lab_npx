@@ -1,11 +1,19 @@
 %% Wrapper for importing ephys and performing processing steps
 
-spaths       = {'D:\Data\Kelton\analyses\KW106\KW106_06242026_rec_D1_RMed1'};
-datpaths     = {'D:\Data\Kelton\probe_data\KW106\KW106_06242026_rec_D1_RMed1_g0'};
-region       = 2; % 1 = CA1 or Sub; 2 = EC
+spaths       = {'D:\Data\Kelton\analyses\KW097\KW097_05062026_rec_D5_LLat2',...
+                'D:\Data\Kelton\analyses\KW106\KW106_06252026_rec_D2_RLat1',...
+                'D:\Data\Kelton\analyses\KW106\KW106_06262026_rec_D3_RMed2',...
+                'D:\Data\Kelton\analyses\ZM035\ZM035_06112026_rec_D1_LLat1',...
+                'D:\Data\Kelton\analyses\ZM035\ZM035_06122026_rec_D2_LLat2'};
+datpaths     = {'D:\Data\Kelton\probe_data\KW097\KW097_05062026_rec_D5_LLat2_g0',...
+                'D:\Data\Kelton\probe_data\KW106\KW106_06252026_rec_D2_RLat1_g0',...
+                'D:\Data\Kelton\probe_data\KW106\KW106_06262026_rec_D3_RMed2_g0',...
+                'D:\Data\Kelton\probe_data\ZM035\ZM035_06112026_rec_D1_LLat1_g0',...
+                'D:\Data\Kelton\probe_data\ZM035\ZM035_06122026_rec_D2_LLat2_g0'};
+region       = [1,1,2,1,1]; % 1 = CA1 or Sub; 2 = EC
 ovrwrtRoot   = 0;
 ovrwrtDatS   = 1;
-splitLap     = [0];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
+splitLap     = [2,0,0,1,2];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
 % ripRef       = [];
 saveFlag     = true;
 doMakeRoot   = true;
@@ -46,26 +54,26 @@ for j = 1:length(spaths)
         rootMade = true;
     catch
         rootMade = false;
-        warning('Failed to import root')
+        disp('Failed to import root')
     end
 
     if rootMade & ~ovrwrtRoot
         disp(['Loaded root and session for ' strs{end}])
 
     else
-    %% Create root
+        %% Create root
         try
             if doMakeRoot
                 loadKS(datpath,spath,1);    % With overwrite set to 1
                 root = alignBhvrTS(spath,spath,spath);
                 disp(['Root made and TS aligned for ' strs{end}])
+                rm_phy_files(datpath);
             end
         catch
             warning('Failed to create root')
         end
 
         %% Plot Amp X Depth x FR
-
         try
             if doDepthPlots
                 adfrFig = plot_ampXdepthxFR(root);
@@ -82,7 +90,6 @@ for j = 1:length(spaths)
         end
 
         %% Summarize spike counts across session
-
         try
             if doSpikeXSess
                 tmpSpikeDensityFig = plot_spikeDensity(root,60);
@@ -95,13 +102,12 @@ for j = 1:length(spaths)
         end
 
         %% Estimate LFP power by depth
-
         try
             if doLFPxDepth
                 root = get_lfpXdepth(root,lfpBands);
-                if region == 1
+                if region(j) == 1
                     root = get_lyrBounds_hpc(root,100,0.25);    % Assign layer boundaries, min layer width 100um, prominence cut off 0.25
-                elseif region == 2
+                elseif region(j) == 2
                     [root,tmpDat] = get_lyrBounds_ec(root,sess);    % Assign layer boundaries and units to layers
                 end
                 lfpPowerFig = plot_lfpXdepth(root);
@@ -114,7 +120,6 @@ for j = 1:length(spaths)
         end
 
         %% Add bursts to root
-
         try
             if doBursts
                 root = burst2root(root,sess);
@@ -125,7 +130,6 @@ for j = 1:length(spaths)
         end
 
         %% Assign putative unit type (0 = IN; 1 = Principle) and FR Variance by time
-
         try
             if doUnitType
                 [root, INsFig] = get_estCellType(root,0.5,0.4,100,1);    % FW = 15; FWHM = 5; FR = 100; Plotflag = 1
@@ -140,16 +144,15 @@ for j = 1:length(spaths)
         end
 
         %% Assign and plot units by layer and type
-
         try
             if doAssignLyr
-                if region == 1
+                if region(j) == 1
                     root = get_layerUnits(root);
 
                     uTypeDepthFig = plot_layerUnits(root,1,0,0);
                     if saveFlag; saveas(uTypeDepthFig,[root.name '_uTypeXDepth.png']); end
 
-                elseif region == 2
+                elseif region(j) == 2
                     tmpD = root.info.depth(root.goodind);
 
                     uTypeDepthFig = plot_layerUnits(root,1,0,0);
@@ -158,7 +161,7 @@ for j = 1:length(spaths)
                     plot(tmpDat.thAng(tmpDat.lyrID == 5)+180, tmpD(tmpDat.lyrID == 5),'k*')
                     plot(tmpDat.thAng(tmpDat.lyrID == 3)+180, tmpD(tmpDat.lyrID == 3),'c*')
                     plot(tmpDat.thAng(tmpDat.lyrID == 2)+180, tmpD(tmpDat.lyrID == 2),'m*')
-                    % legend('Data','EC5','EC3','EC2')
+                    legend('off'); % legend('Data','EC5','EC3','EC2')
                     set(gcf,'units','normalized','position',[0.4 0.2 0.15 0.6]);
                     if saveFlag
                         saveas(uTypeDepthFig,[root.name '_uTypeXDepth.png'])
@@ -173,10 +176,9 @@ for j = 1:length(spaths)
         end
 
         %% Summarize counts by shank and depth
-
         try
             if doCountSum
-                [depthCountFig, shankCountFig] = plot_count_shank(root,region);
+                [depthCountFig, shankCountFig] = plot_count_shank(root,region(j));
 
                 if saveFlag
                     saveas(depthCountFig,[root.name '_count_good.png'])
@@ -189,7 +191,6 @@ for j = 1:length(spaths)
         end
 
         %% Get ripples
-
         try
             if doRipples
                 chans = root.uPSDMax(2,:);
@@ -211,7 +212,6 @@ for j = 1:length(spaths)
         end
 
         %% Split out LFP to improve subsequent root save/load speed
-
         try
             if doSplitLFP
                 lfp.name     = root.name;
@@ -239,7 +239,6 @@ for j = 1:length(spaths)
         end
 
         %% Save updated root
-
         try
             saveRoot(root,spath)
             disp('Saved updated root')
@@ -276,7 +275,6 @@ for j = 1:length(spaths)
 
     else
         %% Get Real Unit parameters
-
         try
             if doUnitParams
                 if splitLap(j) == 0
@@ -321,7 +319,6 @@ for j = 1:length(spaths)
         end
 
         %% Get shuffle unit parameters
-
         try
             if doShuffles
                 if splitLap(j) == 0
@@ -343,7 +340,6 @@ for j = 1:length(spaths)
         end
 
         %% Save dat strucs
-
         try
             if splitLap(j) == 0
                 save([root.name '_dat'],'datStruc')
@@ -359,7 +355,6 @@ for j = 1:length(spaths)
     end
 
 %% End processing
-
 disp(['Done processing ephys for ' strs{end}])
 
 end

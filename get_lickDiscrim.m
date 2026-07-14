@@ -55,13 +55,13 @@ for i = sess.valTrials
     if ~isempty(rwdInd) % Add 1 lick for first lick in RZ 1 or 2, depending on reward site
         try
         rwdPos = sess.pos(sess.rwdind(rwdInd)); %Find where reward is delivered
-        if rwdPos > rzPos(1) & rwdPos < rzPos(1) + 0.3 % Hardcoded 30cm RZ
+        if rwdPos > rzPos(1) & rwdPos < rzPos(1) + rzLen
             tmpRZ1lcks(1,1) = tmpRZ1lcks(1,1) + 1;
-        elseif rwdPos > rzPos(2) & rwdPos < rzPos(2) + 0.3 % Hardcoded 30cm RZ
+        elseif rwdPos > rzPos(2) & rwdPos < rzPos(2) + rzLen
             tmpRZ2lcks(1,1) = tmpRZ2lcks(1,1) + 1;
         end
         catch
-            disp('uh on')
+            disp('uh oh')
         end
     end
     

@@ -6,15 +6,14 @@
 % ========================================================================%
 
 datT = import_xldat("D:\Data\Kelton\analyses\group_analyses","dat_include.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort_060426';
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort_070926';
 cd(groupSDir) 
 
-mInclude = {'KW101','KW097','KW099','KW077','KW073','ZM032','ZM006',...
-    'KW100','HE002','KW082','KW079','KW074','ZM012','ZM020','ZM029',...
-    'KW094','KW091','KW087','KW080'}; %By row: Learners, Partials, Non-learners
+mInclude = {'KW101','KW097','KW099','KW077','KW073','ZM032','ZM006','ZM035',...
+    'KW100','HE002','KW082','KW079','ZM012','ZM020','ZM029','KW091','KW087','KW080'}; %By row: Learners, Non-learners
 % mInclude = {'KW101','KW097','KW077','KW073','ZM032','ZM006',...
 %     'KW100','KW099','HE002','KW082','KW079','KW074','ZM012','ZM029',...
-%     'KW094','KW091','KW087','KW080','ZM020'}; % Original split
+%     'KW094','KW091','KW087','KW080','ZM020'}; % Original split with partials
 
 sessType = 2;
 % useInds = datT.include == 1;
@@ -117,9 +116,11 @@ load(bvName)
 nMice = length(unique(recID(:,1)));
 mID = unique(recID(:,1));
 
-mLern = [101 99 97 77 73 32 6];
-mPart = [100 2 82 79 74 12 20 29];
-mNonl = [91 87 80];
+mLern = [101 99 97 77 73 32 6 35];
+mNonl = [100 2 82 79 12 20 29 91 87 80];
+% mLern = [101 99 97 77 73 32 6 35];
+% mPart = [100 2 82 79 12 20 29];
+% mNonl = [91 87 80];
 % mLern = [101 97 77 73 32 6];  % Original split
 % mPart = [100 99 2 82 79 74 12 29];
 % mNonl = [94 91 87 80 18 20];
@@ -131,124 +132,153 @@ nonlInds = [];
 for i = 1:size(recID,1)
     if ~isempty(find(mLern == recID(i,1), 1))
         lernInds = [lernInds; find(recID(:,1) == recID(i,1))];
-    elseif ~isempty(find(mPart == recID(i,1), 1))
-        partInds = [partInds; find(recID(:,1) == recID(i,1))];
+    % elseif ~isempty(find(mPart == recID(i,1), 1))
+    %     partInds = [partInds; find(recID(:,1) == recID(i,1))];
     else
         nonlInds = [nonlInds; find(recID(:,1) == recID(i,1))];
     end
 end
 
 %% Behavior comparisons
-% Learners: Nov LDI < -0.4
-% Partials: Nov Rewarded laps > 30%
-% Non learners: Nov LDI > -0.4, Nov Rewarded laps < 30%
+% Learners: Nov LSI * Nov P(Rwd) < -0.2
 
-uLckDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
+uLDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
+uLSI = [vertcat(bvDat.uPreLckSI), vertcat(bvDat.uPstLckSI)];
 uLapRwd = [vertcat(bvDat.uPreLapRwd), vertcat(bvDat.uPstLapRwd)];
 nLaps = [vertcat(bvDat.preNLap), vertcat(bvDat.pstNLap)];
 % uRZVel = [vertcat(bvDat.uPreRZVel), vertcat(bvDat.uPstRZVel)];
-rwdWtLSI = uLckDI .* uLapRwd;
-%%
-rwdWtlckSplitF = plot_2d_bhvr(rwdWtLSI,lernInds,partInds,nonlInds);
-plot([-1 1],[-0.3 -0.3],'k--')
-plot([0.3 0.3],[-1 1],'k--')
-plot(rwdWtLSI(6,1),rwdWtLSI(6,2),'b*')
-plot(rwdWtLSI(7,1),rwdWtLSI(7,2),'c*')
-plot(rwdWtLSI(8,1),rwdWtLSI(8,2),'r*')
-xlabel('mean Fam Wtd LSI'); xlim([-1 1])
-ylabel('mean Nov Wtd LSI'); ylim([-1 1])
-legend('Learner','Partial','Non-learner')
-%%
-lckSplitF = plot_2d_bhvr(uLckDI,lernInds,partInds,nonlInds);
+rwdWtLDI = uLDI .* uLapRwd;
+rwdWtLSI = uLSI .* uLapRwd;
+
+rwdWtlckSplitF = plot_2d_bhvr(rwdWtLDI,lernInds,partInds,nonlInds);
+plot([-1 1],[-0.2 -0.2],'k--')
+plot([0.2 0.2],[-1 1],'k--')
+xlabel('uFam P(Rwd)*LSI'); xlim([-1 1])
+ylabel('uNov P(Rwd)*LSI'); ylim([-1 1])
+legend('Learner','Non-learner')
+
+ldiSplitF = plot_2d_bhvr(uLDI,lernInds,partInds,nonlInds);
 plot([-1 1],[-0.4 -0.4],'k--')
-plot(uLckDI(6,1),uLckDI(6,2),'b*')
-plot(uLckDI(7,1),uLckDI(7,2),'c*')
-plot(uLckDI(8,1),uLckDI(8,2),'r*')
 xlabel('mean Fam LSI'); xlim([-1 1])
 ylabel('mean Nov LSI'); ylim([-1 1])
-legend('Learner','Partial','Non-learner')
+legend('Learner','Non-learner')
+%%
+lsiSplitF = plot_2d_bhvr(rwdWtLSI,lernInds,partInds,nonlInds);
+plot([-1 1],[-0.4 -0.4],'k--')
+xlabel('mean Fam LSI'); xlim([-1 1])
+ylabel('mean Nov LSI'); ylim([-1 1])
+legend('Learner','Non-learner')
 %%
 rwdSplitF = plot_2d_bhvr(uLapRwd,lernInds,partInds,nonlInds);
 plot([0 1],[0.3 0.3],'k--')
-plot(uLapRwd(6,1),uLapRwd(6,2),'b*')
-plot(uLapRwd(7,1),uLapRwd(7,2),'c*')
-plot(uLapRwd(8,1),uLapRwd(8,2),'r*')
 xlabel('P(Fam Lap Rewarded)'); xlim([0 1])
 ylabel('P(Nov Lap Rewarded)'); ylim([0 1])
 
 lapSplitF = plot_2d_bhvr(nLaps,lernInds,partInds,nonlInds);
 plot([0 100],[40 40],'k--')
-plot(nLaps(6,1),nLaps(6,2),'b*')
-plot(nLaps(7,1),nLaps(7,2),'c*')
-plot(nLaps(8,1),nLaps(8,2),'r*')
 xlabel('N Laps Fam'); xlim([0 inf])
 ylabel('N Laps Nov'); ylim([0 inf])
 
 combiSplitF = figure;
-plot3(uLckDI(lernInds,2),nLaps(lernInds,2),uLapRwd(lernInds,2),'bo',...
-    uLckDI(partInds,2),nLaps(partInds,2),uLapRwd(partInds,2),'co',...
-    uLckDI(nonlInds,2),nLaps(nonlInds,2),uLapRwd(nonlInds,2),'ro');
+plot3(uLDI(lernInds,2),nLaps(lernInds,2),uLapRwd(lernInds,2),'bo',...
+    uLDI(partInds,2),nLaps(partInds,2),uLapRwd(partInds,2),'co',...
+    uLDI(nonlInds,2),nLaps(nonlInds,2),uLapRwd(nonlInds,2),'ro');
 xlabel('LSI Nov');
 ylabel('N Laps Nov');
 zlabel('P(Nov Lap Rewarded');
 
 if saveFlag
-    fsave(lckSplitF,[sbase 'bhv_lckPrePst'],1,0);
+    fsave(rwdWtlckSplitF,[sbase 'bhv_wtlckPrePst'],1,0);
+    fsave(ldiSplitF,[sbase 'bhv_lckPrePst'],1,0);
     fsave(rwdSplitF,[sbase 'bhv_rwdPrePst'],1,0);
     fsave(lapSplitF,[sbase 'bhv_lapPrePst'],1,0);
     fsave(combiSplitF,[sbase 'bhv_combiPst'],1,0);
 end
 
-%% Statistical Quantification
-
-grpVar = ones(size(uLckDI,1),1);
-grpVar(partInds) = 2;
-grpVar(nonlInds) = 3;
-
-[ps.anova_lsi_fam,~,aov.preLck] = anova1(uLckDI(:,1),grpVar,'off');
-[ps.anova_lsi_nov,~,aov.pstLck] = anova1(uLckDI(:,2),grpVar,'off');
-[ps.anova_lap_fam,~,aov.preLap] = anova1(nLaps(:,1),grpVar,'off');
-[ps.anova_lap_nov,~,aov.pstLap] = anova1(nLaps(:,2),grpVar,'off');
-
-lckBarFamF = plot_multiBar(uLckDI(:,1),grp,vColors);
-xticklabels({'Learn','Partial','Non-Lrn'}); text2bar(lckBarFamF,'mean Fam LSI',ps.anova_lsi_fam); ylim([-inf 1])
-lckBarNovF = plot_multiBar(uLckDI(:,2),grp,vColors);
-xticklabels({'Learn','Partial','Non-Lrn'}); text2bar(lckBarNovF,'mean Nov LSI',ps.anova_lsi_nov); ylim([-1,inf])
-
-lapBarFamF = plot_multiBar(nLaps(:,1),grp,vColors);
-xticklabels({'Learn','Partial','Non-Lrn'}); text2bar(lapBarFamF,'Laps',ps.anova_lap_fam); ylim([0 inf])
-lapBarNovF = plot_multiBar(nLaps(:,2),grp,vColors);
-xticklabels({'Learn','Partial','Non-Lrn'}); text2bar(lapBarNovF,'Laps',ps.anova_lap_nov); ylim([0 inf])
-
-if saveFlag
-    fsave(lckBarFamF,[sbase 'bhv_LSI_fam_bar'],1,0)
-    fsave(lckBarNovF,[sbase 'bhv_LSI_nov_bar'],1,0)
-    fsave(lapBarFamF,[sbase 'bhv_lap_fam_bar'],1,0)
-    fsave(lapBarNovF,[sbase 'bhv_lap_nov_bar'],1,0)
-end
-
-%% Behavior comparisons for last 20 laps in each RZ 
-% uLckDI20 = [vertcat(bvDat.uPreLckDI20), vertcat(bvDat.uPstLckDI20)];
-% uRZVel20 = [vertcat(bvDat.uPreRZVel20), vertcat(bvDat.uPstRZVel20)];
+%% Statistical Quantification - 3 way
 % 
-% [~,ps.bhv_PPLckDI20,~,stats.bhv_PPLckDI20] = ttest(uLckDI20(:,1),uLckDI20(:,2));
-% [~,ps.bhv_PPRZ120,~,stats.bhv_PPRZ120] = ttest(uRZVel20(:,1),uRZVel20(:,3));
-% [~,ps.bhv_PPRZ220,~,stats.bhv_PPRZ220] = ttest(uRZVel20(:,2),uRZVel20(:,4));
+% grpVar = ones(size(uLckDI,1),1);
+% grpVar(partInds) = 2;
+% grpVar(nonlInds) = 3;
 % 
-% uLckDIFig = plot_barXmouse(uLckDI20);
-% ylabel('Lick DI ((RZ - AZ) / (RZ + AZ))'); ylim([-1 1])
+% [ps.anova_lsi_fam,~,aov.preLck] = anova1(uLckDI(:,1),grpVar,'off');
+% [ps.anova_lsi_nov,~,aov.pstLck] = anova1(uLckDI(:,2),grpVar,'off');
+% [ps.anova_lap_fam,~,aov.preLap] = anova1(nLaps(:,1),grpVar,'off');
+% [ps.anova_lap_nov,~,aov.pstLap] = anova1(nLaps(:,2),grpVar,'off');
 % 
-% uRZ1VlFig = plot_barXmouse(uRZVel20(:,[1,3]));
-% ylabel('Velocity (cm/s) 30cm Pre RZ1')
+% lckBarFamF = plot_multiBar(uLckDI(:,1),grp,vColors);
+% xticklabels({'Learn','Partial','Non-Lrn'}); text2bar(lckBarFamF,'mean Fam LSI',ps.anova_lsi_fam); ylim([-inf 1])
+% lckBarNovF = plot_multiBar(uLckDI(:,2),grp,vColors);
+% xticklabels({'Learn','Partial','Non-Lrn'}); text2bar(lckBarNovF,'mean Nov LSI',ps.anova_lsi_nov); ylim([-1,inf])
 % 
-% uRZ2VlFig = plot_barXmouse(uRZVel20(:,[2,4]));
-% ylabel('Velocity (cm/s) 30cm Pre RZ2')
+% lapBarFamF = plot_multiBar(nLaps(:,1),grp,vColors);
+% xticklabels({'Learn','Partial','Non-Lrn'}); text2bar(lapBarFamF,'Laps',ps.anova_lap_fam); ylim([0 inf])
+% lapBarNovF = plot_multiBar(nLaps(:,2),grp,vColors);
+% xticklabels({'Learn','Partial','Non-Lrn'}); text2bar(lapBarNovF,'Laps',ps.anova_lap_nov); ylim([0 inf])
 % 
 % if saveFlag
-%     fsave(uLckDIFig,[sbase 'bhv_LckDI20_bar'])
-%     fsave(uRZ1VlFig,[sbase 'bhv_RZ1Vl20_bar'])
-%     fsave(uRZ2VlFig,[sbase 'bhv_RZ2Vl20_bar'])
+%     fsave(lckBarFamF,[sbase 'bhv_LSI_fam_bar'],1,0)
+%     fsave(lckBarNovF,[sbase 'bhv_LSI_nov_bar'],1,0)
+%     fsave(lapBarFamF,[sbase 'bhv_lap_fam_bar'],1,0)
+%     fsave(lapBarNovF,[sbase 'bhv_lap_nov_bar'],1,0)
 % end
+
+%% Statistical Quantification - Learn Vs Non Learn
+vColors = [0 0 1; 1 0 0];
+grp(1).inds = lernInds;
+grp(2).inds = nonlInds;
+
+[~,ps.ttest_lsi_fam,~,stats.ttest_lsi_fam] = ttest2(uLDI(lernInds,1),uLDI(nonlInds,1));
+[~,ps.ttest_lsi_nov,~,stats.ttest_lsi_nov] = ttest2(uLDI(lernInds,2),uLDI(nonlInds,2));
+[~,ps.ttest_lap_fam,~,stats.ttest_lap_fam] = ttest2(nLaps(lernInds,1),nLaps(nonlInds,1));
+[~,ps.ttest_lap_nov,~,stats.ttest_lap_nov] = ttest2(nLaps(lernInds,2),nLaps(nonlInds,2));
+[~,ps.ttest_rwd_fam,~,stats.ttest_rwd_fam] = ttest2(uLapRwd(lernInds,1),uLapRwd(nonlInds,1));
+[~,ps.ttest_rwd_nov,~,stats.ttest_rwd_nov] = ttest2(uLapRwd(lernInds,2),uLapRwd(nonlInds,2));
+
+lckBarF = plotMiniBar(uLDI(lernInds,1),uLDI(nonlInds,1),vColors);
+xticklabels({'Learn','Non-Lrn'}); text2bar(lckBarF,'mean Fam LSI',ps.ttest_lsi_fam); ylim([-1 1])
+
+lckBarN = plotMiniBar(uLDI(lernInds,2),uLDI(nonlInds,2),vColors);
+xticklabels({'Learn','Non-Lrn'}); text2bar(lckBarN,'mean Nov LSI',ps.ttest_lsi_nov); ylim([-1 1])
+
+lapBarF = plotMiniBar(nLaps(lernInds,1),nLaps(nonlInds,1),vColors);
+xticklabels({'Learn','Non-Lrn'}); text2bar(lapBarF,'mean Fam Laps',ps.ttest_lap_fam); ylim([0 170])
+
+lapBarN = plotMiniBar(nLaps(lernInds,2),nLaps(nonlInds,2),vColors);
+xticklabels({'Learn','Non-Lrn'}); text2bar(lapBarN,'mean Nov Laps',ps.ttest_lap_nov); ylim([0 170])
+
+rwdBarF = plotMiniBar(uLapRwd(lernInds,1),uLapRwd(nonlInds,1),vColors);
+xticklabels({'Learn','Non-Lrn'}); text2bar(rwdBarF,'mean Fam P(rwd)',ps.ttest_rwd_fam); ylim([0 1])
+
+rwdBarN = plotMiniBar(uLapRwd(lernInds,2),uLapRwd(nonlInds,2),vColors);
+xticklabels({'Learn','Non-Lrn'}); text2bar(rwdBarN,'mean Nov P(rwd)',ps.ttest_rwd_nov); ylim([0 1])
+
+if saveFlag
+    fsave(lckBarF,[sbase 'bhv_LSI_fam_bar'],1,0)
+    fsave(lckBarN,[sbase 'bhv_LSI_nov_bar'],1,0)
+    fsave(lapBarF,[sbase 'bhv_lap_fam_bar'],1,0)
+    fsave(lapBarN,[sbase 'bhv_lap_nov_bar'],1,0)
+    fsave(rwdBarF,[sbase 'bhv_rwd_fam_bar'],1,0)
+    fsave(rwdBarN,[sbase 'bhv_rwd_nov_bar'],1,0)
+end
+
+%% Behavior comparisons first L1-10 vs L41-50 in F vs N
+trialLDIF = zeros(length(lernInds),max(nLaps(:,1)));
+trialLDIN = zeros(length(lernInds),max(nLaps(:,2)));
+
+for i = 1:length(lernInds)
+    trialLDIF(i,1:nLaps(lernInds(i),1)) = bvDat(lernInds(i)).preLckDI;
+    trialLDIN(i,1:nLaps(lernInds(i),2)) = bvDat(lernInds(i)).pstLckDI;
+end
+uLDI10 = [mean(trialLDIF(:,1:10), 2), mean(trialLDIN(:,1:10),2)]; 
+uLDI50 = [mean(trialLDIF(:,41:50),2), mean(trialLDIN(:,41:50),2)]; 
+
+[~,ps.ttest_lsi_10v50_fam,~,stats.ttest_lsi_10v50_fam] = ttest(uLDI10(:,1),uLDI50(:,1));
+[~,ps.ttest_lsi_10v50_nov,~,stats.ttest_lsi_10v50_nov] = ttest(uLDI10(:,2),uLDI50(:,2));
+[~,ps.ttest_lsi_10v50_dlt,~,stats.ttest_lsi_10v50_dlt] = ttest(uLDI50(:,2) - uLDI10(:,2),uLDI50(:,1) - uLDI10(:,1));
+
+figure; hold on
+plot(1:50, mean(trialLDIF(:,1:50)), 51:100, mean(trialLDIN(:,1:50)))
 
 %% Averaged lick and velocity profiles
 lBins = 0:0.03:1.85;
@@ -1532,14 +1562,14 @@ end
 % swrBothCounts = [groupcounts(recID(swrFrstID,1)) groupcounts(recID(swrLastID,1))];
 % uLckDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
 
-mdlLPreXspwr = get_linfit(uLckDI(:,1),swrBothRatio(:,1));
-mdlLPstXspwr = get_linfit(uLckDI(:,2),swrBothRatio(:,2));
+mdlLPreXspwr = get_linfit(uLDI(:,1),swrBothRatio(:,1));
+mdlLPstXspwr = get_linfit(uLDI(:,2),swrBothRatio(:,2));
 
 lckXspwrF = figure; hold on
-plot(uLckDI(:,1),swrBothRatio(:,1),'o','Color',vColors2(1,:))
-plot(uLckDI(:,2),swrBothRatio(:,2),'o','Color',vColors2(2,:))
-plot(uLckDI(:,1),mdlLPreXspwr.ypred,'Color',vColors2(1,:),'LineWidth',2)
-plot(uLckDI(:,2),mdlLPstXspwr.ypred,'Color',vColors2(2,:),'LineWidth',2)
+plot(uLDI(:,1),swrBothRatio(:,1),'o','Color',vColors2(1,:))
+plot(uLDI(:,2),swrBothRatio(:,2),'o','Color',vColors2(2,:))
+plot(uLDI(:,1),mdlLPreXspwr.ypred,'Color',vColors2(1,:),'LineWidth',2)
+plot(uLDI(:,2),mdlLPstXspwr.ypred,'Color',vColors2(2,:),'LineWidth',2)
 xlim([-1 1]); xlabel('Lick DI');
 ylim([0 1]); ylabel('P(SPWR-mod)');
 legend({'Familiar','Novel'},'location','ne')
@@ -1552,10 +1582,10 @@ text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims), ['R = ' num2str(mdlLPs
 text(xlims(2) - .9*diff(xlims), ylims(2)-.3*diff(ylims),  ['p = ' num2str(mdlLPstXspwr.p, 3)], 'Color', vColors2(2,:), 'FontSize', 12)
 
 % Compare delta of lckDI and delta of P(SPWR-Mod)
-mdlDeltaLPreXspwr = get_linfit(uLckDI(:,2)-uLckDI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1));
+mdlDeltaLPreXspwr = get_linfit(uLDI(:,2)-uLDI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1));
 dlckXdspwrF = figure; hold on
-plot(uLckDI(:,2)-uLckDI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1),'ko')
-plot(uLckDI(:,2)-uLckDI(:,1),mdlDeltaLPreXspwr.ypred,'Color','k','LineWidth',2)
+plot(uLDI(:,2)-uLDI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1),'ko')
+plot(uLDI(:,2)-uLDI(:,1),mdlDeltaLPreXspwr.ypred,'Color','k','LineWidth',2)
 xlabel('\Delta Lick DI');
 ylabel('\Delta P(SPWR-mod)');
 set(gca,'FontSize',16,'FontName','Arial')
@@ -1908,7 +1938,8 @@ xrands1 = (rand(nUnits(1),1)-0.5)*0.2;
 xrands2 = (rand(nUnits(2),1)-0.5)*0.2;
 
 fhandle = figure; hold on;
-set(gcf,'units','normalized','position',[0.4 0.35 0.1 0.2])
+set(gcf,'units','normalized','position',[0.4 0.5 0.13 0.25])
+% set(gcf,'units','normalized','position',[0.4 0.35 0.1 0.2])
 % b = bar([1.15 2.15],bardat,0.3,'FaceColor','flat','BarWidth',0.5);
 % b.CData = vColors;
 plot(xrands1+1,dat1,'.','Color',vColors(1,:),'MarkerSize',10)
