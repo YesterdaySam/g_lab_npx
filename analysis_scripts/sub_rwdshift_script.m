@@ -326,33 +326,33 @@ end
 
 for i = 1:nUnits
     cc = root.good(i);
-    lfpInd = root.info.shankID(root.info.cluster_id == cc)+1;   % Account for 0-indexing
-    [frstHalf.trueSI(i),~,frstHalf.truePk(i),frstHalf.trueLc(i),~,~,frstHalf.posfr(i,:),frstHalf.binedges] = get_SI(rootFrst,cc,sessFrst,dbnsz);
-    [lastHalf.trueSI(i),~,lastHalf.truePk(i),lastHalf.trueLc(i),~,~,lastHalf.posfr(i,:),lastHalf.binedges] = get_SI(rootLast,cc,sessLast,dbnsz);
-    frstHalf.frStandRun(i,:) = get_frStandVRun(rootFrst,cc,sessFrst);
-    lastHalf.frStandRun(i,:) = get_frStandVRun(rootLast,cc,sessLast);
-    [~,~,frstHalf.trueVelMdl(i)] = plot_frXvel(rootFrst,cc,sessFrst,2,0);
-    [~,~,lastHalf.trueVelMdl(i)] = plot_frXvel(rootLast,cc,sessLast,2,0);
-    [frstHalf.thetastats(i),frstHalf.thetafr(i,:)] = plot_thetaMod(rootFrst,cc,lfpInd,2*pi/36,0);
-    [lastHalf.thetastats(i),lastHalf.thetafr(i,:)] = plot_thetaMod(rootLast,cc,lfpInd,2*pi/36,0);
+    % lfpInd = root.info.shankID(root.info.cluster_id == cc)+1;   % Account for 0-indexing
+    % [frstHalf.trueSI(i),~,frstHalf.truePk(i),frstHalf.trueLc(i),~,~,frstHalf.posfr(i,:),frstHalf.binedges] = get_SI(rootFrst,cc,sessFrst,dbnsz);
+    % [lastHalf.trueSI(i),~,lastHalf.truePk(i),lastHalf.trueLc(i),~,~,lastHalf.posfr(i,:),lastHalf.binedges] = get_SI(rootLast,cc,sessLast,dbnsz);
+    % frstHalf.frStandRun(i,:) = get_frStandVRun(rootFrst,cc,sessFrst);
+    % lastHalf.frStandRun(i,:) = get_frStandVRun(rootLast,cc,sessLast);
+    % [~,~,frstHalf.trueVelMdl(i)] = plot_frXvel(rootFrst,cc,sessFrst,2,0);
+    % [~,~,lastHalf.trueVelMdl(i)] = plot_frXvel(rootLast,cc,sessLast,2,0);
+    % [frstHalf.thetastats(i),frstHalf.thetafr(i,:)] = plot_thetaMod(rootFrst,cc,lfpInd,2*pi/36,0);
+    % [lastHalf.thetastats(i),lastHalf.thetafr(i,:)] = plot_thetaMod(rootLast,cc,lfpInd,2*pi/36,0);
     [frstHalf.swrfr(i,:),~,frstHalf.swrz(i,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,wlen,histoBnsz,0); % Not actual firing rate map, just spk map
     [lastHalf.swrfr(i,:),~,lastHalf.swrz(i,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,wlen,histoBnsz,0);
-    [~,frstHalf.rwdfr(i,:),frstHalf.trueRI(i)] = plot_frXrwdtime(rootFrst,cc,sessFrst,0.25,5,0);
-    [~,lastHalf.rwdfr(i,:),lastHalf.trueRI(i)] = plot_frXrwdtime(rootLast,cc,sessLast,0.25,5,0);
-    [~,frstHalf.frMap(:,:,i),frstHalf.spkMap(:,:,i)] = get_frXpos(rootFrst,cc,sessFrst,0.05,1.85,1);
-    [~,lastHalf.frMap(:,:,i),lastHalf.spkMap(:,:,i)] = get_frXpos(rootLast,cc,sessLast,0.05,1.85,1);
+    % [~,frstHalf.rwdfr(i,:),frstHalf.trueRI(i)] = plot_frXrwdtime(rootFrst,cc,sessFrst,0.25,5,0);
+    % [~,lastHalf.rwdfr(i,:),lastHalf.trueRI(i)] = plot_frXrwdtime(rootLast,cc,sessLast,0.25,5,0);
+    % [~,frstHalf.frMap(:,:,i),frstHalf.spkMap(:,:,i)] = get_frXpos(rootFrst,cc,sessFrst,0.05,1.85,1);
+    % [~,lastHalf.frMap(:,:,i),lastHalf.spkMap(:,:,i)] = get_frXpos(rootLast,cc,sessLast,0.05,1.85,1);
     % frstHalf.burstIndex(i) = get_burstIndex(rootFrst,sessFrst,cc);
     % lastHalf.burstIndex(i) = get_burstIndex(rootLast,sessLast,cc);
     % [binedges,binBR,bstmap,uBR] = get_burstsXpos(root,unit,sess);
 end
 
-frstHalf = subEpochSI(sessFrst,rootFrst,frstHalf,10);
-lastHalf = subEpochSI(sessLast,rootLast,lastHalf,10);
+% frstHalf = subEpochSI(sessFrst,rootFrst,frstHalf,10);
+% lastHalf = subEpochSI(sessLast,rootLast,lastHalf,10);
 
-frstHalf.ripRate = size(rootFrst.ripStruc(ripRef).ripples,1) / (sum(not(sessFrst.runInds)) / sess.samprate);    %Normalize based on standing periods
-lastHalf.ripRate = size(rootLast.ripStruc(ripRef).ripples,1) / (sum(not(sessLast.runInds)) / sess.samprate);
-frstHalf.binpos = frstHalf.binedges(1:end-1)+0.5*dbnsz;
-lastHalf.binpos = lastHalf.binedges(1:end-1)+0.5*dbnsz;
+% frstHalf.ripRate = size(rootFrst.ripStruc(ripRef).ripples,1) / (sum(not(sessFrst.runInds)) / sess.samprate);    %Normalize based on standing periods
+% lastHalf.ripRate = size(rootLast.ripStruc(ripRef).ripples,1) / (sum(not(sessLast.runInds)) / sess.samprate);
+% frstHalf.binpos = frstHalf.binedges(1:end-1)+0.5*dbnsz;
+% lastHalf.binpos = lastHalf.binedges(1:end-1)+0.5*dbnsz;
 
 %% Behavioral comparison
 % Lick discrimination

@@ -142,20 +142,30 @@ end
 %% Behavior comparisons
 % Learners: Nov LSI * Nov P(Rwd) < -0.2
 
-uLSI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
+uLDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
+uLSI = [vertcat(bvDat.uPreLckSI), vertcat(bvDat.uPstLckSI)];
 uLapRwd = [vertcat(bvDat.uPreLapRwd), vertcat(bvDat.uPstLapRwd)];
+% for i = 1:length(bvDat)
+%     uRZVel(i,:) = [mean(bvDat(i).preSpVelMap), mean(bvDat(i).pstSpVelMap)];
+% end
 nLaps = [vertcat(bvDat.preNLap), vertcat(bvDat.pstNLap)];
-% uRZVel = [vertcat(bvDat.uPreRZVel), vertcat(bvDat.uPstRZVel)];
+rwdWtLDI = uLDI .* uLapRwd;
 rwdWtLSI = uLSI .* uLapRwd;
 
-rwdWtlckSplitF = plot_2d_bhvr(rwdWtLSI,lernInds,partInds,nonlInds);
+rwdWtlckSplitF = plot_2d_bhvr(rwdWtLDI,lernInds,partInds,nonlInds);
 plot([-1 1],[-0.2 -0.2],'k--')
 plot([0.2 0.2],[-1 1],'k--')
 xlabel('uFam P(Rwd)*LSI'); xlim([-1 1])
 ylabel('uNov P(Rwd)*LSI'); ylim([-1 1])
 legend('Learner','Non-learner')
 
-lckSplitF = plot_2d_bhvr(uLSI,lernInds,partInds,nonlInds);
+ldiSplitF = plot_2d_bhvr(uLDI,lernInds,partInds,nonlInds);
+plot([-1 1],[-0.4 -0.4],'k--')
+xlabel('mean Fam LSI'); xlim([-1 1])
+ylabel('mean Nov LSI'); ylim([-1 1])
+legend('Learner','Non-learner')
+
+lsiSplitF = plot_2d_bhvr(rwdWtLSI,lernInds,partInds,nonlInds);
 plot([-1 1],[-0.4 -0.4],'k--')
 xlabel('mean Fam LSI'); xlim([-1 1])
 ylabel('mean Nov LSI'); ylim([-1 1])
@@ -172,16 +182,16 @@ xlabel('N Laps Fam'); xlim([0 inf])
 ylabel('N Laps Nov'); ylim([0 inf])
 
 combiSplitF = figure;
-plot3(uLSI(lernInds,2),nLaps(lernInds,2),uLapRwd(lernInds,2),'bo',...
-    uLSI(partInds,2),nLaps(partInds,2),uLapRwd(partInds,2),'co',...
-    uLSI(nonlInds,2),nLaps(nonlInds,2),uLapRwd(nonlInds,2),'ro');
+plot3(uLDI(lernInds,2),nLaps(lernInds,2),uLapRwd(lernInds,2),'bo',...
+    uLDI(partInds,2),nLaps(partInds,2),uLapRwd(partInds,2),'co',...
+    uLDI(nonlInds,2),nLaps(nonlInds,2),uLapRwd(nonlInds,2),'ro');
 xlabel('LSI Nov');
 ylabel('N Laps Nov');
 zlabel('P(Nov Lap Rewarded');
 
 if saveFlag
     fsave(rwdWtlckSplitF,[sbase 'bhv_wtlckPrePst'],1,0);
-    fsave(lckSplitF,[sbase 'bhv_lckPrePst'],1,0);
+    fsave(ldiSplitF,[sbase 'bhv_lckPrePst'],1,0);
     fsave(rwdSplitF,[sbase 'bhv_rwdPrePst'],1,0);
     fsave(lapSplitF,[sbase 'bhv_lapPrePst'],1,0);
     fsave(combiSplitF,[sbase 'bhv_combiPst'],1,0);
@@ -220,17 +230,17 @@ vColors = [0 0 1; 1 0 0];
 grp(1).inds = lernInds;
 grp(2).inds = nonlInds;
 
-[~,ps.ttest_lsi_fam,~,stats.ttest_lsi_fam] = ttest2(uLSI(lernInds,1),uLSI(nonlInds,1));
-[~,ps.ttest_lsi_nov,~,stats.ttest_lsi_nov] = ttest2(uLSI(lernInds,2),uLSI(nonlInds,2));
+[~,ps.ttest_lsi_fam,~,stats.ttest_lsi_fam] = ttest2(uLDI(lernInds,1),uLDI(nonlInds,1));
+[~,ps.ttest_lsi_nov,~,stats.ttest_lsi_nov] = ttest2(uLDI(lernInds,2),uLDI(nonlInds,2));
 [~,ps.ttest_lap_fam,~,stats.ttest_lap_fam] = ttest2(nLaps(lernInds,1),nLaps(nonlInds,1));
 [~,ps.ttest_lap_nov,~,stats.ttest_lap_nov] = ttest2(nLaps(lernInds,2),nLaps(nonlInds,2));
 [~,ps.ttest_rwd_fam,~,stats.ttest_rwd_fam] = ttest2(uLapRwd(lernInds,1),uLapRwd(nonlInds,1));
 [~,ps.ttest_rwd_nov,~,stats.ttest_rwd_nov] = ttest2(uLapRwd(lernInds,2),uLapRwd(nonlInds,2));
 
-lckBarF = plotMiniBar(uLSI(lernInds,1),uLSI(nonlInds,1),vColors);
+lckBarF = plotMiniBar(uLDI(lernInds,1),uLDI(nonlInds,1),vColors);
 xticklabels({'Learn','Non-Lrn'}); text2bar(lckBarF,'mean Fam LSI',ps.ttest_lsi_fam); ylim([-1 1])
 
-lckBarN = plotMiniBar(uLSI(lernInds,2),uLSI(nonlInds,2),vColors);
+lckBarN = plotMiniBar(uLDI(lernInds,2),uLDI(nonlInds,2),vColors);
 xticklabels({'Learn','Non-Lrn'}); text2bar(lckBarN,'mean Nov LSI',ps.ttest_lsi_nov); ylim([-1 1])
 
 lapBarF = plotMiniBar(nLaps(lernInds,1),nLaps(nonlInds,1),vColors);
@@ -255,19 +265,33 @@ if saveFlag
 end
 
 %% Behavior comparisons first L1-10 vs L41-50 in F vs N
-trialLSIF = zeros(length(lernInds),max(nLaps(:,1)));
-trialLSIN = zeros(length(lernInds),max(nLaps(:,2)));
+trialLDIF = zeros(length(lernInds),max(nLaps(:,1)));
+trialLDIN = zeros(length(lernInds),max(nLaps(:,2)));
 
 for i = 1:length(lernInds)
-    trialLSIF(i,1:nLaps(lernInds(i),1)) = bvDat(lernInds(i)).preLckDI;
-    trialLSIN(i,1:nLaps(lernInds(i),2)) = bvDat(lernInds(i)).pstLckDI;
+    trialLDIF(i,1:nLaps(lernInds(i),1)) = bvDat(lernInds(i)).preLckDI;
+    trialLDIN(i,1:nLaps(lernInds(i),2)) = bvDat(lernInds(i)).pstLckDI;
 end
-uLSI10 = [mean(trialLSIF(:,1:10),2), mean(trialLSIN(:,1:10),2)]; 
-uLSI50 = [mean(trialLSIF(:,41:50),2), mean(trialLSIN(:,41:50),2)]; 
+uLDI10 = [mean(trialLDIF(:,1:10), 2), mean(trialLDIN(:,1:10),2)]; 
+uLDI50 = [mean(trialLDIF(:,41:50),2), mean(trialLDIN(:,41:50),2)]; 
 
-[~,ps.ttest_lsi_10v50_fam,~,stats.ttest_lsi_10v50_fam] = ttest2(uLSI10(:,1),uLSI50(:,1));
-[~,ps.ttest_lsi_10v50_nov,~,stats.ttest_lsi_10v50_nov] = ttest2(uLSI10(:,2),uLSI50(:,2));
-[~,ps.ttest_lsi_10v50_nov,~,stats.ttest_lsi_10v50_nov] = ttest2(uLSI50(:,2) - uLSI10(:,2),uLSI50(:,1) - uLSI10(:,2));
+[~,ps.ttest_lsi_10v50_fam,~,stats.ttest_lsi_10v50_fam] = ttest(uLDI10(:,1),uLDI50(:,1));
+[~,ps.ttest_lsi_10v50_nov,~,stats.ttest_lsi_10v50_nov] = ttest(uLDI10(:,2),uLDI50(:,2));
+[~,ps.ttest_lsi_10v50_dlt,~,stats.ttest_lsi_10v50_dlt] = ttest(uLDI50(:,2) - uLDI10(:,2),uLDI50(:,1) - uLDI10(:,1));
+[rhos.corr_lapXLDI_fam, ps.corr_lapXLDI_fam] = corr([1:50]',mean(trialLDIF(:,1:50))');  % Should I use all data points instead of average?
+[rhos.corr_lapXLDI_nov, ps.corr_lapXLDI_nov] = corr([1:50]',mean(trialLDIN(:,1:50))');
+
+mdlF = get_linfit(1:50,mean(trialLDIF(:,1:50)));
+mdlN = get_linfit(1:50,mean(trialLDIN(:,1:50)));
+
+figure; hold on
+plot(1:50, mean(trialLDIF(:,1:50)),'k', 51:100, mean(trialLDIN(:,1:50)),'r')
+plot(1:50,mdlF.ypred, 'k', 'LineWidth',2)
+plot(51:100,mdlN.ypred,'k','LineWidth',2)
+ylabel("Mean LDI"); xlabel("Lap #")
+set(gca,'FontSize',12,'FontName','Arial')
+
+plotBar2(uLDI10(:,1),uLDI50(:,1),[.5 .5 .5; .2 .2 .2]);
 
 %% Averaged lick and velocity profiles
 lBins = 0:0.03:1.85;
@@ -289,13 +313,14 @@ for i = 1:length(mID)
 end
 
 % Average group types pre and post separately
-vColors = [0 0 1; 0 1 1; 1 0 0];
+% vColors = [0 0 1; 0 1 1; 1 0 0];
+vColors = [0 0 1; 1 0 0];
 grp(1).inds = lernInds;
-grp(2).inds = partInds;
-grp(3).inds = nonlInds;
+% grp(2).inds = partInds;
+grp(2).inds = nonlInds;
 
 groupLckPreF = plot_3bhvrTraceCI(uPreLck,grp,vColors);
-ylim([0 15]); ylabel('Licks (Hz)'); legend('Learner','Partial','Non-learner')
+ylim([0 15]); ylabel('Licks (Hz)'); legend('Learner','Non-learner')
 groupLckPstF = plot_3bhvrTraceCI(uPstLck,grp,vColors);
 ylim([0 15]); ylabel('Licks (Hz)')
 
@@ -307,15 +332,15 @@ xlim([-100 100]); ylim([0 45]); ylabel('Velocity (cm/s)')
 % Plot pre/post by group
 uLckLernF = plot_bhvrTraceCI(uPreLck(lernInds,:),uPstLck(lernInds,:),[0 0 0; 1 0 0]);
 ylim([0 15]); ylabel('Licks (Hz)'); legend('Familiar','Novel')
-uLckPartF = plot_bhvrTraceCI(uPreLck(partInds,:),uPstLck(partInds,:),[0 0 0; 1 0 0]);
-ylim([0 15]); ylabel('Licks (Hz)')
+% uLckPartF = plot_bhvrTraceCI(uPreLck(partInds,:),uPstLck(partInds,:),[0 0 0; 1 0 0]);
+% ylim([0 15]); ylabel('Licks (Hz)')
 uLckNonLF = plot_bhvrTraceCI(uPreLck(nonlInds,:),uPstLck(nonlInds,:),[0 0 0; 1 0 0]);
 ylim([0 15]); ylabel('Licks (Hz)')
 
 uVelLernF = plot_bhvrTraceCI(uPreVel(lernInds,:),uPstVel(lernInds,:),[0 0 0; 1 0 0]);
 ylim([0 45]); ylabel('Velocity (cm/s)')
-uVelPartF = plot_bhvrTraceCI(uPreVel(partInds,:),uPstVel(partInds,:),[0 0 0; 1 0 0]);
-ylim([0 45]); ylabel('Velocity (cm/s)')
+% uVelPartF = plot_bhvrTraceCI(uPreVel(partInds,:),uPstVel(partInds,:),[0 0 0; 1 0 0]);
+% ylim([0 45]); ylabel('Velocity (cm/s)')
 uVelNonLF = plot_bhvrTraceCI(uPreVel(nonlInds,:),uPstVel(nonlInds,:),[0 0 0; 1 0 0]);
 ylim([0 45]); ylabel('Velocity (cm/s)')
 
@@ -1551,14 +1576,14 @@ end
 % swrBothCounts = [groupcounts(recID(swrFrstID,1)) groupcounts(recID(swrLastID,1))];
 % uLckDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
 
-mdlLPreXspwr = get_linfit(uLSI(:,1),swrBothRatio(:,1));
-mdlLPstXspwr = get_linfit(uLSI(:,2),swrBothRatio(:,2));
+mdlLPreXspwr = get_linfit(uLDI(:,1),swrBothRatio(:,1));
+mdlLPstXspwr = get_linfit(uLDI(:,2),swrBothRatio(:,2));
 
 lckXspwrF = figure; hold on
-plot(uLSI(:,1),swrBothRatio(:,1),'o','Color',vColors2(1,:))
-plot(uLSI(:,2),swrBothRatio(:,2),'o','Color',vColors2(2,:))
-plot(uLSI(:,1),mdlLPreXspwr.ypred,'Color',vColors2(1,:),'LineWidth',2)
-plot(uLSI(:,2),mdlLPstXspwr.ypred,'Color',vColors2(2,:),'LineWidth',2)
+plot(uLDI(:,1),swrBothRatio(:,1),'o','Color',vColors2(1,:))
+plot(uLDI(:,2),swrBothRatio(:,2),'o','Color',vColors2(2,:))
+plot(uLDI(:,1),mdlLPreXspwr.ypred,'Color',vColors2(1,:),'LineWidth',2)
+plot(uLDI(:,2),mdlLPstXspwr.ypred,'Color',vColors2(2,:),'LineWidth',2)
 xlim([-1 1]); xlabel('Lick DI');
 ylim([0 1]); ylabel('P(SPWR-mod)');
 legend({'Familiar','Novel'},'location','ne')
@@ -1571,10 +1596,10 @@ text(xlims(2) - .9*diff(xlims), ylims(2)-.25*diff(ylims), ['R = ' num2str(mdlLPs
 text(xlims(2) - .9*diff(xlims), ylims(2)-.3*diff(ylims),  ['p = ' num2str(mdlLPstXspwr.p, 3)], 'Color', vColors2(2,:), 'FontSize', 12)
 
 % Compare delta of lckDI and delta of P(SPWR-Mod)
-mdlDeltaLPreXspwr = get_linfit(uLSI(:,2)-uLSI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1));
+mdlDeltaLPreXspwr = get_linfit(uLDI(:,2)-uLDI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1));
 dlckXdspwrF = figure; hold on
-plot(uLSI(:,2)-uLSI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1),'ko')
-plot(uLSI(:,2)-uLSI(:,1),mdlDeltaLPreXspwr.ypred,'Color','k','LineWidth',2)
+plot(uLDI(:,2)-uLDI(:,1),swrBothRatio(:,2)-swrBothRatio(:,1),'ko')
+plot(uLDI(:,2)-uLDI(:,1),mdlDeltaLPreXspwr.ypred,'Color','k','LineWidth',2)
 xlabel('\Delta Lick DI');
 ylabel('\Delta P(SPWR-mod)');
 set(gca,'FontSize',16,'FontName','Arial')

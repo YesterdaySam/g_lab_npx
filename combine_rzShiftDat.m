@@ -12,6 +12,7 @@ function [] = combine_rzShiftDat(datT,fname,sdir,sessType)
 % Updated 5/5/26 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
+overwrite = 0;
 recID = [];     % [mouseID, recDay, recUnit ID, dist2center, dist2border]
 useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
 rgDat = [];     % [recording region for each unit 1 = ca1; 2 = sub; 0 = other
@@ -23,8 +24,8 @@ rpMap = [];     % [frstHalf.swrfr, lastHalf.swrfr];
 rpMapZ = [];    % [frstHalf.swrz, lastHalf.swrz];
 % rpMod = [];     % [frstHalf.ripModBins, lastHalf.ripModBins];
 pvStr = [];     % [frstHalf.pvXlap, lastHalf.pvXlap] Struc containing PVC data per lap
+frDat = [];     % [frstHalf.standFR, frstHalf.runFR, lastHalf.standFR, lastHalf.runFR]
 
-% frDat = [];     % [frstHalf.standFR, frstHalf.runFR, lastHalf.standFR, lastHalf.runFR]
 % recID = [];     % [mouseID, recDay, recUnit ID, dist2center, dist2border]
 % useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
 % lcDat = [];     % [frstHalf.si_p, frstHalf.si, frstHalf.pkFR, frstHalf.pkLoc, lastHalf.si_p, lastHalf.si, lastHalf.pkFR, lastHalf.pkLoc]
@@ -42,9 +43,19 @@ pvStr = [];     % [frstHalf.pvXlap, lastHalf.pvXlap] Struc containing PVC data p
 % bvDat = [];     % [frstHalf.lckDI, frstHalf.preRZV, lastHalf.lckDI, lastHalf.preRZV
 % pvStr = [];     % [frstHalf.pvXlap, lastHalf.pvXlap] Struc containing PVC data per lap
 
-ct    = 1;
+% Load in previously saved data if crashed in midst of run
+if overwrite == 0
+    try
+        cd(sdir)
+        physfile = dir('*_phys.mat');
+        load(physfile.name)
+    catch
+    end
+else
+    ct    = 1;
+end
 
-for i = 1:height(datT)
+for i = ct:height(datT)
 
     % === Load data ===
     cd(datT.fpath{i})
@@ -71,41 +82,6 @@ for i = 1:height(datT)
     end
     rgDat = [rgDat; roiUnits(root.goodind)];
 
-    % % === Identify units to include ===
-    % roiUnits = zeros(length(root.good),1);
-    % for j = 1:nShanks
-    %     tmpUnits = root.info.shankID == j-1;
-    %     if datT{i,6+j}{1} == 'ca1'
-    %         if region == 'ca1'
-    %             roiUnits(tmpUnits) = 1;
-    %         else
-    %             roiUnits(tmpUnits) = 0;
-    %         end
-    %     elseif datT{i,6+j}{1} == 'sub'
-    %         if region == 'sub'
-    %             roiUnits(tmpUnits) = 1;
-    %         else
-    %             roiUnits(tmpUnits) = 0;
-    %         end
-    %     elseif datT{i,6+j}{1} == 'bdr'
-    %         roiUnits(tmpUnits) = 0;
-    %     end
-    % end
-    % if sum(roiUnits) == 0
-    %     continue
-    % end
-
-    % % Redundant remake first/last root and sess
-    % rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
-    % if isfield(sess,'rwdTrials')
-    %     rwdShift = sess.rwdTrials(rwdShift);
-    % end
-    % 
-    % frstHalfInds         = [sess.ind(1) sess.lapend(rwdShift)];
-    % lastHalfInds         = [sess.lapstt(sess.valTrials(rwdShift+1)) sess.ind(end)];
-    % [sessFrst, rootFrst] = epochStruc(sess,root,frstHalfInds);
-    % [sessLast, rootLast] = epochStruc(sess,root,lastHalfInds);
-
     pkExclude = frstHalf.truePk < 1 & lastHalf.truePk < 1;
     useUnits = root.info.lyrID(root.goodind) == 1 & root.info.fr(root.goodind) > 0.1 ...
         & root.info.uType(root.goodind) & ~pkExclude;
@@ -122,8 +98,8 @@ for i = 1:height(datT)
     %         lastHalf.trueVelMdl(j).p, lastHalf.trueVelMdl(j).b, lastHalf.trueVelMdl(j).r];
     % end
 
-    % % === Concatenate FR data ===
-    % frDat = [frDat; frstHalf.frStandRun, lastHalf.frStandRun];
+    % === Concatenate FR data ===
+    frDat = [frDat; frstHalf.frStandRun, lastHalf.frStandRun];
 
     % % === Concatenate Theta Modulation data ===
     % [thAng1, thMRL1, thP1] = get_thAng(frstHalf.thetastats);
@@ -166,10 +142,6 @@ for i = 1:height(datT)
 
     % bsDat = [bsDat; frstHalf.burstIndex', lastHalf.burstIndex'];
 
-    % % === Concatenate SI over 10-trial blocks ===
-    % siStr(ct).preBlockSI = frstHalf.subEpochSI;
-    % siStr(ct).pstBlockSI = lastHalf.subEpochSI;
-
     % === Concatenate PV data ===
     try
         bothSIUnits = useUnits & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
@@ -180,31 +152,31 @@ for i = 1:height(datT)
     bothSub = bothSIUnits & roiUnits(root.goodind) == 2;
     idMat = logical(eye(length(frstHalf.binpos)));
 
-    % if sum(bothCA1) > 1
-    %     frstHalf.pvOddca1 = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
-    %     frstHalf.pvEvnca1 = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
-    %     lastHalf.pvOddca1 = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
-    %     lastHalf.pvEvnca1 = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
-    %     uPVPrePreCA1 = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothCA1);
-    %     uPVPrePstCA1 = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothCA1,idMat);
-    %     uPVPstPreCA1 = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothCA1,idMat);
-    %     uPVPstPstCA1 = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothCA1);
-    %     frstHalf.pvXlapca1 = [uPVPrePreCA1, uPVPrePstCA1];
-    %     lastHalf.pvXlapca1 = [uPVPstPreCA1, uPVPstPstCA1];
-    % end
-    % 
-    % if sum(bothSub) > 1
-    %     frstHalf.pvOddsub = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
-    %     frstHalf.pvEvnsub = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
-    %     lastHalf.pvOddsub = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
-    %     lastHalf.pvEvnsub = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
-    %     uPVPrePreSub = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothSub);
-    %     uPVPrePstSub = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothSub,idMat);
-    %     uPVPstPreSub = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothSub,idMat);
-    %     uPVPstPstSub = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothSub);
-    %     frstHalf.pvXlapsub = [uPVPrePreSub, uPVPrePstSub];
-    %     lastHalf.pvXlapsub = [uPVPstPreSub, uPVPstPstSub];
-    % end
+    if sum(bothCA1) > 1 && ~isfield(frstHalf,'pvXlapca1')
+        frstHalf.pvOddca1 = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
+        frstHalf.pvEvnca1 = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
+        lastHalf.pvOddca1 = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
+        lastHalf.pvEvnca1 = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothCA1),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothCA1),1,"omitnan")),[],1))';
+        uPVPrePreCA1 = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothCA1);
+        uPVPrePstCA1 = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothCA1,idMat);
+        uPVPstPreCA1 = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothCA1,idMat);
+        uPVPstPstCA1 = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothCA1);
+        frstHalf.pvXlapca1 = [uPVPrePreCA1, uPVPrePstCA1];
+        lastHalf.pvXlapca1 = [uPVPstPreCA1, uPVPstPstCA1];
+    end
+
+    if sum(bothSub) > 1 && ~isfield(frstHalf,'pvXlapsub')
+        frstHalf.pvOddsub = (squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
+        frstHalf.pvEvnsub = (squeeze(mean(frstHalf.frMap(2:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(frstHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
+        lastHalf.pvOddsub = (squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
+        lastHalf.pvEvnsub = (squeeze(mean(lastHalf.frMap(2:2:end,:,bothSub),1,"omitnan")) ./ max(squeeze(mean(lastHalf.frMap(1:2:end,:,bothSub),1,"omitnan")),[],1))';
+        uPVPrePreSub = get_pvXtime(frstHalf.posfr,frstHalf.frMap,bothSub);
+        uPVPrePstSub = get_pvXtime(lastHalf.posfr,frstHalf.frMap,bothSub,idMat);
+        uPVPstPreSub = get_pvXtime(frstHalf.posfr,lastHalf.frMap,bothSub,idMat);
+        uPVPstPstSub = get_pvXtime(lastHalf.posfr,lastHalf.frMap,bothSub);
+        frstHalf.pvXlapsub = [uPVPrePreSub, uPVPrePstSub];
+        lastHalf.pvXlapsub = [uPVPstPreSub, uPVPstPstSub];
+    end
 
     if sessType == 2
         if sum(bothCA1) > 1
@@ -232,53 +204,12 @@ for i = 1:height(datT)
         pvStr(ct).pstOdd     = lastHalf.pvOddRR;
      end
 
-    % === Concatenate Behavior data ===
-    % [~,~,preLckMap] = plot_lickpos(sessFrst,0.03,0);
-    % [~,~,pstLckMap] = plot_lickpos(sessLast,0.03,0);
-    % 
-    % bvDat(ct).preLckDI    = frstHalf.lckDI;
-    % bvDat(ct).uPreLckDI   = frstHalf.ulckDI;
-    % bvDat(ct).preRZVel    = frstHalf.preRZV;
-    % bvDat(ct).uPreRZVel   = frstHalf.uPreRZV;
-    % bvDat(ct).pstLckDI    = lastHalf.lckDI;
-    % bvDat(ct).uPstLckDI   = lastHalf.ulckDI;
-    % bvDat(ct).pstRZVel    = lastHalf.preRZV;
-    % bvDat(ct).uPstRZVel   = lastHalf.uPreRZV;
-    % bvDat(ct).uPreRZVel20 = frstHalf.uPreRZV20;
-    % bvDat(ct).uPreLckDI20 = frstHalf.ulckDI20;
-    % bvDat(ct).uPstRZVel20 = lastHalf.uPreRZV20;
-    % bvDat(ct).uPstLckDI20 = lastHalf.ulckDI20;
-    % bvDat(ct).preVMap     = frstHalf.spVelMap;
-    % bvDat(ct).pstVMap     = lastHalf.spVelMap;
-    % bvDat(ct).uPreVF20    = mean(frstHalf.spVelMap(1:20,:),'omitnan');
-    % bvDat(ct).uPreVL20    = mean(frstHalf.spVelMap(end-19:end,:),'omitnan');
-    % bvDat(ct).uPstVF20    = mean(lastHalf.spVelMap(1:20,:),'omitnan');
-    % bvDat(ct).uPstVL20    = mean(lastHalf.spVelMap(end-19:end,:),'omitnan');
-    % bvDat(ct).preLMap     = preLckMap;
-    % bvDat(ct).pstLMap     = pstLckMap;
-    % bvDat(ct).uPreLF20    = mean(preLckMap(1:20,:),'omitnan');
-    % bvDat(ct).uPreLL20    = mean(preLckMap(end-19:end,:),'omitnan');
-    % bvDat(ct).uPstLF20    = mean(pstLckMap(1:20,:),'omitnan');
-    % bvDat(ct).uPstLL20    = mean(pstLckMap(end-19:end,:),'omitnan');
-
-    % frstHalf.vCorXLap = corr(frstHalf.spVelMap', mean(frstHalf.spVelMap(end-29:end,:))','rows','complete');
-    % try
-    %     lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(lastHalf.spVelMap(31:60,:))','rows','complete');
-    % catch
-    %     lastHalf.vCorXLap = corr(lastHalf.spVelMap', mean(lastHalf.spVelMap(end-29:end,:))','rows','complete');
-    % end
-    % 
-    % bvDat(ct).vCorPre     = frstHalf.vCorXLap;
-    % bvDat(ct).vCorPst     = lastHalf.vCorXLap;
-
     ct = ct + 1;
 
-    % save([root.name '_dat'],'frstHalf','lastHalf','rootFrst','rootLast','sessFrst','sessLast')
+    cd(sdir)
+    save(fname,'recID','useCC','rgDat','lcDat','lcMap','rpDat','rpRat','rpMap','rpMapZ','pvStr','frDat','ct')
 end
 
 cd(sdir)
-
-% save(fname,'frDat','recID','useCC','lcDat','lcMap','thDat','thMap','rpDat','rpRat','rpMap','rpMapZ','rpMod','bsDat','vlDat','bvDat','pvStr')
-save(fname,'recID','useCC','rgDat','lcDat','lcMap','rpDat','rpRat','rpMap','rpMapZ','pvStr')
 
 end

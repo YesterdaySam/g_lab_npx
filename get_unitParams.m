@@ -1,4 +1,4 @@
-function [datStruc] = get_unitParams(root,ccs,sess,datStruc,doSpace,doVel,doTheta,doSPWR,doCueFR,qStruc,doOpto,dbnsz)
+function [datStruc] = get_unitParams(root,ccs,sess,datStruc,doSpace,doVel,doTheta,doSPWR,doCueFR,qStruc,doOpto,dbnsz,wlen,histoBnsz)
 %% Gets parameters for each unit in ccs based on flags
 %
 % Inputs:
@@ -35,6 +35,8 @@ arguments
     qStruc   = 0
     doOpto   = false
     dbnsz    = 0.05
+    wlen     = 150
+    histoBnsz= 5
 end
 
 datStruc.name   = root.name;
@@ -51,7 +53,7 @@ if doSpace
     datStruc.trueLc = zeros(length(ccs),1);
 end
 if doSPWR
-    datStruc.swrfr  = zeros(length(ccs),length(-125:5:125)-1);
+    datStruc.swrfr  = zeros(length(ccs),length(-wlen:histoBnsz:wlen)-1);
 end
 if doCueFR
     datStruc.qSI    = zeros(length(ccs),1);
@@ -76,7 +78,7 @@ for i = 1:length(ccs)
     end
 
     if doSPWR
-        datStruc.swrfr(i,:) = plot_frXripple(root,cc,sess,root.ripRef,125,5,0);
+        [datStruc.swrfr(i,:),~,datStruc.swrz(i,:)] = plot_frXripple(root,cc,sess,root.ripRef,wlen,histoBnsz,0);
     end
 
     if doCueFR

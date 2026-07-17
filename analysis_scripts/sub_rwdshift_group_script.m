@@ -42,7 +42,7 @@ clear ps stats
 %% Combine Sub RZ Shift Behavior data
 combine_bhvrDat(datT,bvName,groupSDir,2);
 
-%% Combine data
+%% Combine ephys data
 combine_rzShiftDat(datT,fname,groupSDir,2); % sessType = 2
 
 %% Load previously saved ephys data
@@ -71,15 +71,17 @@ siBothID = siFrstID & siLastID;
 % bstLastID = useCC & bsDat(:,2) > 0;
 % bstBothID = bstFrstID & bstLastID;
 
-mLern = [101 99 97 77 73 32 6];
-mPart = [100 2 82 79 74 12 20 29];
-mNonl = [91 87 80];
+mLern = [101 99 97 77 73 32 6 35];
+mNonl = [100 2 82 79 12 20 29 91 87 80];
+% mLern = [101 99 97 77 73 32 6];
+% mPart = [100 2 82 79 74 12 20 29];
+% mNonl = [91 87 80];
 lernInds = [];
 partInds = [];
 nonlInds = [];
 
 for i = 1:nMice
-    tmpUnits = find(recID(:,1) == mID(i) & rgDat == 2);
+    tmpUnits = find(recID(:,1) == mID(i) & rgDat == 2); % rgDat specifies region (1 = CA1; 2 = Sub)
     if ~isempty(find(mLern == mID(i), 1))
         lernInds = [lernInds; tmpUnits];
         mInds(i).grp = 1*ones(size(tmpUnits));
@@ -145,8 +147,10 @@ end
 uLDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
 uLSI = [vertcat(bvDat.uPreLckSI), vertcat(bvDat.uPstLckSI)];
 uLapRwd = [vertcat(bvDat.uPreLapRwd), vertcat(bvDat.uPstLapRwd)];
+% for i = 1:length(bvDat)
+%     uRZVel(i,:) = [mean(bvDat(i).preSpVelMap), mean(bvDat(i).pstSpVelMap)];
+% end
 nLaps = [vertcat(bvDat.preNLap), vertcat(bvDat.pstNLap)];
-% uRZVel = [vertcat(bvDat.uPreRZVel), vertcat(bvDat.uPstRZVel)];
 rwdWtLDI = uLDI .* uLapRwd;
 rwdWtLSI = uLSI .* uLapRwd;
 
@@ -162,13 +166,13 @@ plot([-1 1],[-0.4 -0.4],'k--')
 xlabel('mean Fam LSI'); xlim([-1 1])
 ylabel('mean Nov LSI'); ylim([-1 1])
 legend('Learner','Non-learner')
-%%
+
 lsiSplitF = plot_2d_bhvr(rwdWtLSI,lernInds,partInds,nonlInds);
 plot([-1 1],[-0.4 -0.4],'k--')
 xlabel('mean Fam LSI'); xlim([-1 1])
 ylabel('mean Nov LSI'); ylim([-1 1])
 legend('Learner','Non-learner')
-%%
+
 rwdSplitF = plot_2d_bhvr(uLapRwd,lernInds,partInds,nonlInds);
 plot([0 1],[0.3 0.3],'k--')
 xlabel('P(Fam Lap Rewarded)'); xlim([0 1])
@@ -276,9 +280,30 @@ uLDI50 = [mean(trialLDIF(:,41:50),2), mean(trialLDIN(:,41:50),2)];
 [~,ps.ttest_lsi_10v50_fam,~,stats.ttest_lsi_10v50_fam] = ttest(uLDI10(:,1),uLDI50(:,1));
 [~,ps.ttest_lsi_10v50_nov,~,stats.ttest_lsi_10v50_nov] = ttest(uLDI10(:,2),uLDI50(:,2));
 [~,ps.ttest_lsi_10v50_dlt,~,stats.ttest_lsi_10v50_dlt] = ttest(uLDI50(:,2) - uLDI10(:,2),uLDI50(:,1) - uLDI10(:,1));
+[rhos.corr_lapXLDI_fam, ps.corr_lapXLDI_fam] = corr([1:50]',mean(trialLDIF(:,1:50))');  % Should I use all data points instead of average?
+[rhos.corr_lapXLDI_nov, ps.corr_lapXLDI_nov] = corr([1:50]',mean(trialLDIN(:,1:50))');
 
-figure; hold on
-plot(1:50, mean(trialLDIF(:,1:50)), 51:100, mean(trialLDIN(:,1:50)))
+mdlF = get_linfit(1:50,mean(trialLDIF(:,1:50)));
+mdlN = get_linfit(1:50,mean(trialLDIN(:,1:50)));
+
+corLapLDIFNF = figure; hold on
+plot(1:50, mean(trialLDIF(:,1:50)),'k', 51:100, mean(trialLDIN(:,1:50)),'r')
+plot(1:50,mdlF.ypred, 'k', 'LineWidth',2)
+plot(51:100,mdlN.ypred,'k','LineWidth',2)
+ylabel("Mean LDI"); xlabel("Lap #")
+set(gca,'FontSize',12,'FontName','Arial')
+
+ldiBarF = plotBar2(uLDI10(:,1),uLDI50(:,1),[.5 .5 .5; .2 .2 .2]);
+xticklabels({'F1-10','F41-50'}); ylim([-1 1.1]); text2bar(ldiBarF,'Fam LDI',ps.ttest_lsi_10v50_fam);
+
+ldiBarN = plotBar2(uLDI10(:,2),uLDI50(:,2),[1 .5 .5; 1 .2 .2]);
+xticklabels({'N1-10','N41-50'}); ylim([-1 1]); text2bar(ldiBarN,'Nov LDI',ps.ttest_lsi_10v50_nov); 
+
+if saveFlag
+    fsave(corLapLDIFNF,[sbase 'bhv_lapXldi_corr'],1,0)
+    fsave(ldiBarF,[sbase 'bhv_LDI_F10v50_bar'],1,0)
+    fsave(ldiBarN,[sbase 'bhv_LDI_N10v50_bar'],1,0)
+end
 
 %% Averaged lick and velocity profiles
 lBins = 0:0.03:1.85;
@@ -300,13 +325,14 @@ for i = 1:length(mID)
 end
 
 % Average group types pre and post separately
-vColors = [0 0 1; 0 1 1; 1 0 0];
+% vColors = [0 0 1; 0 1 1; 1 0 0];
+vColors = [0 0 1; 1 0 0];
 grp(1).inds = lernInds;
-grp(2).inds = partInds;
-grp(3).inds = nonlInds;
+% grp(2).inds = partInds;
+grp(2).inds = nonlInds;
 
 groupLckPreF = plot_3bhvrTraceCI(uPreLck,grp,vColors);
-ylim([0 15]); ylabel('Licks (Hz)'); legend('Learner','Partial','Non-learner')
+ylim([0 15]); ylabel('Licks (Hz)'); legend('Learner','Non-learner')
 groupLckPstF = plot_3bhvrTraceCI(uPstLck,grp,vColors);
 ylim([0 15]); ylabel('Licks (Hz)')
 
@@ -318,15 +344,15 @@ xlim([-100 100]); ylim([0 45]); ylabel('Velocity (cm/s)')
 % Plot pre/post by group
 uLckLernF = plot_bhvrTraceCI(uPreLck(lernInds,:),uPstLck(lernInds,:),[0 0 0; 1 0 0]);
 ylim([0 15]); ylabel('Licks (Hz)'); legend('Familiar','Novel')
-uLckPartF = plot_bhvrTraceCI(uPreLck(partInds,:),uPstLck(partInds,:),[0 0 0; 1 0 0]);
-ylim([0 15]); ylabel('Licks (Hz)')
+% uLckPartF = plot_bhvrTraceCI(uPreLck(partInds,:),uPstLck(partInds,:),[0 0 0; 1 0 0]);
+% ylim([0 15]); ylabel('Licks (Hz)')
 uLckNonLF = plot_bhvrTraceCI(uPreLck(nonlInds,:),uPstLck(nonlInds,:),[0 0 0; 1 0 0]);
 ylim([0 15]); ylabel('Licks (Hz)')
 
 uVelLernF = plot_bhvrTraceCI(uPreVel(lernInds,:),uPstVel(lernInds,:),[0 0 0; 1 0 0]);
 ylim([0 45]); ylabel('Velocity (cm/s)')
-uVelPartF = plot_bhvrTraceCI(uPreVel(partInds,:),uPstVel(partInds,:),[0 0 0; 1 0 0]);
-ylim([0 45]); ylabel('Velocity (cm/s)')
+% uVelPartF = plot_bhvrTraceCI(uPreVel(partInds,:),uPstVel(partInds,:),[0 0 0; 1 0 0]);
+% ylim([0 45]); ylabel('Velocity (cm/s)')
 uVelNonLF = plot_bhvrTraceCI(uPreVel(nonlInds,:),uPstVel(nonlInds,:),[0 0 0; 1 0 0]);
 ylim([0 45]); ylabel('Velocity (cm/s)')
 

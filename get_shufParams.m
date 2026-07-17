@@ -1,4 +1,4 @@
-function [datStruc] = get_shufParams(root,ccs,sess,datStruc,nShufs,doSpace,doSPWR,doCueFR,qStruc,dbnsz)
+function [datStruc] = get_shufParams(root,ccs,sess,datStruc,nShufs,doSpace,doSPWR,doCueFR,qStruc,histoBnsz,wlen)
 %% Gets shuffled parameters for each unit in ccs based on flags
 %
 % Inputs:
@@ -30,11 +30,11 @@ arguments
     doSPWR  = false
     doCueFR = false
     qStruc  = 0
-    dbnsz   = 0.05
+    histoBnsz = 5;
+    wlen = 150;
 end
 
 tic
-nShufs = 250;
 
 if root.ripRef < 1
     disp('Missing ripRef for this recording, skipping SPWR processing')
@@ -45,7 +45,7 @@ if doSpace
     datStruc.shufSI = zeros(length(ccs),nShufs);
 end
 if doSPWR
-    datStruc.shufSPWR = zeros(nShufs,length(ccs),length(-125:5:125)-1);
+    datStruc.shufSPWR = zeros(nShufs,length(ccs),length(-wlen:histoBnsz:wlen)-1);
 end
 if doCueFR
     datStruc.shufQSI = zeros(length(ccs),nShufs);
@@ -63,11 +63,11 @@ for j = 1:nShufs
         cc = ccs(i);
 
         if doSpace
-            [datStruc.shufSI(i,j)] = get_SI(shiftroot,cc,shiftsess);
+            datStruc.shufSI(i,j) = get_SI(shiftroot,cc,shiftsess);
         end
 
         if doSPWR
-            datStruc.shufSPWR(j,i,:) = plot_frXripple(shiftroot,cc,shiftsess,root.ripRef,125,5,0);
+            datStruc.shufSPWR(j,i,:) = plot_frXripple(shiftroot,cc,shiftsess,root.ripRef,wlen,histoBnsz,0);
         end
 
         if doCueFR
