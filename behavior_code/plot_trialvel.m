@@ -39,6 +39,7 @@ end
 if plotflag
     fhandle = figure;
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+    fhandle = fixRatio(fhandle);
     imagesc(bnvel,[prctile(bnvel,1,'all'), prctile(bnvel,99,'all')]);
     % imagesc(bnvel, [0 max(bnvel,[],'all')])
     colormap("winter")
@@ -54,6 +55,7 @@ if plotflag
 
     fhandle2 = figure; hold on
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
+    fhandle2 = fixRatio(fhandle2);
     plot(binedges(1:end-1)*100,mean(bnvel,1,'omitnan'),'k','LineWidth',2)
     patch(100*[binedges(1:length(cidn)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'k','FaceAlpha',0.5,'EdgeColor','none')
     % plot(bnvel','Color',[.5 .5 .5])

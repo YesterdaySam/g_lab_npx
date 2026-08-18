@@ -53,6 +53,7 @@ end
 if plotflag
     fhandle = figure;
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+    fhandle = fixRatio(fhandle);
     colormap("parula")
     if normflag
         spkmap = normalize(spkmap,'range');

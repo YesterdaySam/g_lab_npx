@@ -27,7 +27,12 @@ for i = laps
     plot(xvals, sess.velshft(lapInds)./45 + ctpos,'r');    %
     % plot(xvals, sess.lck(lapInds)./max(sess.lck)./2 + ct,'b');
     plot(sess.ts(lcks) - sess.ts(sess.lapstt(i)), ones(size(lcks)) + ctpos-0.2, 'b|');
-    plot(sess.ts(sess.rwdind(i-1)) - sess.ts(sess.lapstt(i)), 1+ctpos, 'kv')
+
+    tmprwd = find(sess.rwdind > sess.lapstt(i) & sess.rwdind < sess.lapend(i), 1);
+    if ~isempty(tmprwd)
+        plot(sess.ts(sess.rwdind(tmprwd)) - sess.ts(sess.lapstt(i)), 1+ctpos, 'kv')
+    end
+
     ctpos = ctpos - 1.25;
     ctlap = ctlap + 1;
 end

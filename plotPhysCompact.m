@@ -117,6 +117,7 @@ for i = 1:nUnits
         else
             set(gcf,'units','normalized','position',[0.1 0.01 0.7 0.95])
         end
+        newfig = fixRatio(newfig);
 
         tcl = tiledlayout(newfig, 'flow');
 

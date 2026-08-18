@@ -11,7 +11,7 @@ function [] = combine_bhvrDat(datT,fname,sdir,sessType)
 % Updated 5/11/26 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
-recID = [];     % [mouseID, recDay]
+bhvID = [];     % [mouseID, recDay]
 bvDat = [];     % [frstHalf.lckDI, frstHalf.preRZV, lastHalf.lckDI, lastHalf.preRZV
 
 ct    = 1;
@@ -31,7 +31,7 @@ for i = 1:height(datT)
     end
 
     % === Concatenate recording data ===
-    recID = [recID; str2num(datT.mouse{i}(end-2:end)), datT.session(i)];
+    bhvID = [bhvID; str2num(datT.mouse{i}(end-2:end)), datT.session(i)];
 
     bvDat(ct).rzPos = [datT.rzloc1(i) datT.rzloc2(i)];
     % if bvDat(ct).rzPos(1) == 0.1
@@ -69,11 +69,15 @@ for i = 1:height(datT)
         bvDat(ct).pstLckDI = tmpLDI(length(sessFrst.valTrials)+1:end);
         [~,bvDat(ct).preLckSI] = get_lickDiscrim(sessFrst, [datT.rzloc1(i) mod(datT.rzloc1(i)-0.3,sess.maxPos)]*100);
         [~,bvDat(ct).pstLckSI] = get_lickDiscrim(sessLast, [datT.rzloc2(i) mod(datT.rzloc2(i)-0.3,sess.maxPos)]*100);
+        [~,bvDat(ct).preLckPsv] = get_lickDiscrim(sessFrst, [datT.rzloc1(i) datT.rzloc2(i)+0.3]*100); % Lick perseveration in actual non rewarded zone
+        [~,bvDat(ct).pstLckPsv] = get_lickDiscrim(sessLast, [datT.rzloc1(i)+0.3 datT.rzloc2(i)]*100);
 
         bvDat(ct).uPreLckDI = mean(bvDat(ct).preLckDI,'omitnan');
         bvDat(ct).uPstLckDI = mean(bvDat(ct).pstLckDI,'omitnan');
         bvDat(ct).uPreLckSI = mean(bvDat(ct).preLckSI,'omitnan');
         bvDat(ct).uPstLckSI = mean(bvDat(ct).pstLckSI,'omitnan');
+        bvDat(ct).uPreLckPsv = mean(bvDat(ct).preLckPsv,'omitnan');
+        bvDat(ct).uPstLckPsv = mean(bvDat(ct).pstLckPsv,'omitnan');
 
         bvDat(ct).preNLap = length(sessFrst.valTrials);
         bvDat(ct).pstNLap = length(sessLast.valTrials);
@@ -102,6 +106,6 @@ end
 
 cd(sdir)
 
-save(fname,'recID','bvDat')
+save(fname,'bhvID','bvDat')
 
 end

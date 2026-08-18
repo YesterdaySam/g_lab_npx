@@ -1,4 +1,4 @@
-function [fhandle1, fhandle2,lckmap,pslick] = plot_lickraster_rwd(sess,tsrange,bnsz,plotflag)
+function [fhandle,fhandle2,lckmap,pslick] = plot_lickraster_rwd(sess,tsrange,bnsz,plotflag)
 %% plot a peri-reward lick raster given a session struct
 % Inputs
 % session = struct from importBhvr.m
@@ -29,8 +29,9 @@ for i = 1:nrwd
 end
 
 if plotflag
-    fhandle1 = figure;      % Lick Raster
+    fhandle = figure;      % Lick Raster
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+    fhandle = fixRatio(fhandle);
     % plot(lckmap(:,1),lckmap(:,2),'|','Color',[.65 .65 1])
     plot(lckmap(:,1),lckmap(:,2),'k|')
     xlabel('Time to reward release')
@@ -40,6 +41,7 @@ if plotflag
 
     fhandle2 = figure;      % Smoothed average lickrate
     set(gcf,'units','normalized','position',[0.4 0.1 0.3 0.2])
+    fhandle2 = fixRatio(fhandle2);
     plot(-tsrange+bnsz:bnsz:tsrange, mean(pslick)/bnsz)
     xlabel('Time to reward release')
     ylabel('Avg. Licks/sec')

@@ -33,7 +33,9 @@
 % spath = 'D:\Data\Kelton\analyses\ZM006\ZM006_10172025_rec_D4_LLat2'; % 20m rest Already experienced a partial RZ Shift...
 % spath = 'D:\Data\Kelton\analyses\KW074\KW074_10212025_rec_D2_RLat2'; % 20m rest Not a great session behaviorally
 % spath = 'D:\Data\Kelton\analyses\KW077\KW077_11262025_rec_D2_RLat2'; % 20m rest
-spath = 'D:\Data\Kelton\analyses\ZM032\ZM032_05282026_rec_D1_RLat1'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\ZM032\ZM032_05282026_rec_D1_RLat1'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\KW101\KW101_05262026_rec_D1_RLat1'; % 15m rest
+% spath = 'D:\Data\Kelton\analyses\KW109\KW109_07222026_rec_D2_RLat1'; % 15m rest, EC3 archT inhib
 
 % Operant Sub RZ Randomization
 % spath = 'D:\Data\Kelton\analyses\KW073\KW073_10172025_rec_D4_LLat2'; % 20m rest
@@ -46,14 +48,13 @@ spath = 'D:\Data\Kelton\analyses\ZM032\ZM032_05282026_rec_D1_RLat1'; % 20m rest
 % Operant CA1 RZ Randomization
 % spath = 'D:\Data\Kelton\analyses\FG068\FG068_02022026_rec_D3_RMed1'; % 20m rest
 
-% Operant Sub Partial-learners
-% spath = 'D:\Data\Kelton\analyses\KW079\KW079_11112025_rec_D2_RLat2'; % 20m rest
-
 % Operant Sub Non-learners
+spath = 'D:\Data\Kelton\analyses\KW079\KW079_11112025_rec_D2_RLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\ZM018\ZM018_02232026_rec_D3_LLat1'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\ZM020\ZM020_02232026_rec_D1_RLat1'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW087\KW087_02082026_rec_D2_RLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW080\KW080_11252025_rec_D1_RLat1'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\KW102\KW102_05222026_rec_D4_RLat2';
 
 % Operant EC RZ Shift
 % spath = 'D:\Data\Kelton\analyses\KW093\KW093_03292026_rec_D4_RMed2'; % 20m rest
@@ -77,8 +78,8 @@ dbnsz = 0.05;
 histoBnsz = 5;
 wlen = 150;
 ripRef = root.ripRef;
-r1pos = 0.1;    % 10 cm
-r2pos = 1;      % 100cm
+r1pos = 0.4;    % 10 cm
+r2pos = 1.3;      % 100cm
 binpos = dbnsz/2:dbnsz:1.85-dbnsz/2;
 sbase = root.name;
 vColors2 = [.35 .35 .35; 1 .25 .25];
@@ -190,12 +191,12 @@ ylabel('Velocity Correlation'); xlabel('Lap');
 set(gca,'FontSize',16,'FontName','Arial')
 
 %% Plot example pre/post unit
-cc = 19;
+cc = 211;
 close all
 rzPosFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,1);
-rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
-rzThMFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,3);
-rzRwdFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,4);
+% rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
+% rzThMFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,3);
+% rzRwdFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,4);
 rzHmpFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,5);
 % rzSWRFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,7);
 
@@ -203,9 +204,9 @@ if saveFlag
     tblind = find(root.info.cluster_id == cc);
     sbase = ['unit_' num2str(cc) '_shank_' num2str(root.info.shankID(tblind)) '_rwdshift_'];
     saveas(rzPosFig,[sbase 'spatial'], 'png')
-    saveas(rzVelFig,[sbase 'velocity'],'png')
-    saveas(rzThMFig,[sbase 'thetaMod'],'png')
-    saveas(rzRwdFig,[sbase 'rewardT'], 'png')
+    % saveas(rzVelFig,[sbase 'velocity'],'png')
+    % saveas(rzThMFig,[sbase 'thetaMod'],'png')
+    % saveas(rzRwdFig,[sbase 'rewardT'], 'png')
     saveas(rzHmpFig,[sbase 'spatial_heatmap'], 'png')
     % saveas(rzSWRFig,[sbase 'spwrMod'], 'png')
 end
@@ -232,20 +233,22 @@ if saveFlag
 end
 
 %% Plot 1 unit's heatmap, burst raster and combined average traces
-cc = 209;
+cc = 711;
 sess.valTrials = sess.rwdTrials;
 sessFrst.valTrials = sessFrst.rwdTrials;
 sessLast.valTrials = sessLast.rwdTrials;
 
-hmFig = plot_trialHeatmap(root,cc,sess,dbnsz,0,1,1,3); hold on;
+% hmFig = plot_trialHeatmap(root,cc,sess,dbnsz,0,1,1,3); hold on;
+hmFig = plot_trialHeatmap(root,cc,sess,dbnsz); hold on;
 plot([1 length(binpos)],[rwdShift rwdShift],'w--','LineWidth',2);
-set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.4])
+set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.35])
+fixRatio(hmFig);
 set(gca,'FontSize',16,'FontName','Arial')
 
-[rasFig] = plot_burstSpkRaster(root,cc,sess);
-plot([1 length(binpos)],[rwdShift rwdShift],'w--','LineWidth',2);
-set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.4])
-set(gca,'FontSize',16,'FontName','Arial')
+% [rasFig] = plot_burstSpkRaster(root,cc,sess);
+% plot([1 length(binpos)],[rwdShift rwdShift],'w--','LineWidth',2);
+% set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.4])
+% set(gca,'FontSize',16,'FontName','Arial')
 
 [~,frMap1] = get_frXpos(rootFrst,cc,sessFrst,dbnsz);
 [ciup1, cidn1] = get_CI(frMap1);
@@ -264,8 +267,9 @@ ylim([0 ymax]); yticks([0 ymax]);
 xlim([0 max(xcoords)])
 xlabel('Position (cm)'); ylabel({'Firing Rate'; '(spk/s)'})
 set(gca,'FontSize',16,'FontName','Arial')
+fixRatio(frFig);
 % legend('Familiar', 'Novel')
-
+%%
 [~,bsMap1] = get_burstsXpos(rootFrst,cc,sessFrst,dbnsz);
 [ciup1, cidn1] = get_CI(bsMap1);
 [~,bsMap2] = get_burstsXpos(rootLast,cc,sessLast,dbnsz);
@@ -335,14 +339,14 @@ for i = 1:nUnits
     % [~,~,lastHalf.trueVelMdl(i)] = plot_frXvel(rootLast,cc,sessLast,2,0);
     % [frstHalf.thetastats(i),frstHalf.thetafr(i,:)] = plot_thetaMod(rootFrst,cc,lfpInd,2*pi/36,0);
     % [lastHalf.thetastats(i),lastHalf.thetafr(i,:)] = plot_thetaMod(rootLast,cc,lfpInd,2*pi/36,0);
-    [frstHalf.swrfr(i,:),~,frstHalf.swrz(i,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,wlen,histoBnsz,0); % Not actual firing rate map, just spk map
-    [lastHalf.swrfr(i,:),~,lastHalf.swrz(i,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,wlen,histoBnsz,0);
+    % [frstHalf.swrfr(i,:),~,frstHalf.swrz(i,:)] = plot_frXripple(rootFrst,cc,sessFrst,root.ripRef,wlen,histoBnsz,0); % Not actual firing rate map, just spk map
+    % [lastHalf.swrfr(i,:),~,lastHalf.swrz(i,:)] = plot_frXripple(rootLast,cc,sessLast,root.ripRef,wlen,histoBnsz,0);
     % [~,frstHalf.rwdfr(i,:),frstHalf.trueRI(i)] = plot_frXrwdtime(rootFrst,cc,sessFrst,0.25,5,0);
     % [~,lastHalf.rwdfr(i,:),lastHalf.trueRI(i)] = plot_frXrwdtime(rootLast,cc,sessLast,0.25,5,0);
     % [~,frstHalf.frMap(:,:,i),frstHalf.spkMap(:,:,i)] = get_frXpos(rootFrst,cc,sessFrst,0.05,1.85,1);
     % [~,lastHalf.frMap(:,:,i),lastHalf.spkMap(:,:,i)] = get_frXpos(rootLast,cc,sessLast,0.05,1.85,1);
-    % frstHalf.burstIndex(i) = get_burstIndex(rootFrst,sessFrst,cc);
-    % lastHalf.burstIndex(i) = get_burstIndex(rootLast,sessLast,cc);
+    [frstHalf.burstIndex(i),frstHalf.burstISI(i)] = get_burstIndex(rootFrst,sessFrst,cc);
+    [lastHalf.burstIndex(i),lastHalf.burstISI(i)] = get_burstIndex(rootLast,sessLast,cc);
     % [binedges,binBR,bstmap,uBR] = get_burstsXpos(root,unit,sess);
 end
 
@@ -571,10 +575,10 @@ lastHalf.rwdBin = find(lastHalf.binpos > r2pos,1);
 
 [frstRZ_SI_Wfl_fig] = plot_unitsXpos(rootFrst,sessFrst,root.good(frstSIUnits));
 plot([frstHalf.rwdBin frstHalf.rwdBin],[0 length(frstSIUnits)+1],'r--','LineWidth',2)
-title('Familiar RZ')
+title('All Units Familiar RZ')
 lastRZ_SI_Wfl_fig = plot_unitsXpos(rootLast,sessLast,root.good(lastSIUnits));
 plot([lastHalf.rwdBin lastHalf.rwdBin],[0 length(lastSIUnits)+1],'r--','LineWidth',2)
-title('Novel RZ')
+title('All Units Novel RZ')
 
 [frstRZ_bothSI_Wfl_fig,~,tmpsort] = plot_unitsXpos(rootFrst,sessFrst,root.good(bothSIUnits));
 plot([frstHalf.rwdBin frstHalf.rwdBin],[0 length(bothSIUnits)+1],'r--','LineWidth',2)
@@ -647,10 +651,10 @@ set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 if saveFlag
     sbase = root.name;
     save([sbase '_RwdShift_Data2'], 'frstHalf', 'lastHalf')
-    fsave(pvPrePstCompF,[sbase 'pvCorrPrePost'],1,1,0)
+    fsave(pvPrePstCompF,[sbase 'pvCorrPrePost'],1,0,0)
     saveas(pvXtimeFig,[sbase '_pvCorrXLaps.png'])
-    fsave(pvPreOddEvnFig,[sbase 'pvCorrPreOddEven'],1,1,0)
-    fsave(pvPstOddEvnFig,[sbase 'pvCorrPstOddEven'],1,1,0)
+    fsave(pvPreOddEvnFig,[sbase 'pvCorrPreOddEven'],1,0,0)
+    fsave(pvPstOddEvnFig,[sbase 'pvCorrPstOddEven'],1,0,0)
 end
 
 %% PV Corr vs Velocity Corr

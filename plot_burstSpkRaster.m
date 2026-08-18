@@ -59,6 +59,7 @@ if plotflag
     fhandle = figure;      % Positional Lick Raster
     hold on
     set(gcf,'units','normalized','position',[0.4 0.35 0.21 0.36])
+    fhandle = fixRatio(fhandle);
     plot(spkpos(:,1)*100,spkpos(:,2),'k|')
     plot(bstpos(:,1)*100,bstpos(:,2),'ro')
     plot(rwdpos(:,1)*100,rwdpos(:,2),'b*')

@@ -13,6 +13,7 @@ function [fhandle1, fhandle2] = plot_count_shank(root, region)
 if region == 1
     fhandle1 = figure; hold on
     set(gcf,'units','normalized','position',[0.4 0.2 0.1 0.6])
+    fhandle1 = fixRatio(fhandle1);
     tmpedges = min(root.info.depth):20:max(root.info.depth);
     binCounts = histcounts(root.info.depth(root.goodind),tmpedges);
     barh(tmpedges(1:end-1)+10,binCounts,'FaceColor',[0.5 0.7235 0.8705],'EdgeColor',[0 0.4470 0.7410])
@@ -23,6 +24,7 @@ if region == 1
 
     fhandle2 = figure; hold on
     set(gcf,'units','normalized','position',[0.4 0.2 0.3 0.15])
+    fhandle2 = fixRatio(fhandle2);
     tmpedges = 0:1:length(unique(root.info.shankID));
     binCounts = histcounts(root.info.shankID(root.goodind),tmpedges);
     b = bar(tmpedges(1:end-1),binCounts,'FaceColor',[0.5 0.7235 0.8705],'EdgeColor',[0 0.4470 0.7410]);
@@ -44,6 +46,7 @@ if region == 1
 elseif region == 2
     fhandle1 = figure; hold on
     set(gcf,'units','normalized','position',[0.4 0.2 0.1 0.6])
+    fhandle1 = fixRatio(fhandle1);
     tmpedges = min(root.info.depth):20:max(root.info.depth);
     goodDepths = root.info.depth(root.goodind);
     binCounts = histcounts(goodDepths,tmpedges);
@@ -64,6 +67,7 @@ elseif region == 2
 
     fhandle2 = figure; hold on
     set(gcf,'units','normalized','position',[0.4 0.2 0.08 0.4])
+    fhandle2 = fixRatio(fhandle2);
     binCounts = histcounts(root.info.lyrID(root.goodind),[2,3,5,6]);
     b = bar(0,binCounts,'stacked');
     b(1).FaceColor = [1 0 1];

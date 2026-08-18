@@ -63,7 +63,13 @@ denomPre = sum(posNormPre.^2);
 
 pvSparsePre = numerPre ./ denomPre ./ size(posNormPre,1);
 
+%% From combine_rzShiftDat.m
 
+% For debugging split laps
+% disp(['Split lap at ' num2str(length(sessFrst.lapend)), ' vs Noted at ', num2str(datT.splitLap(i))])
+% disp(['Fam Val Trials: ' num2str(length(sessFrst.valTrials)), ' vs Fam Rwd Trials: ', num2str(length(sessFrst.rwdTrials))])
+% disp(['Nov Val Trials: ' num2str(length(sessLast.valTrials)), ' vs Nov Rwd Trials: ', num2str(length(sessLast.rwdTrials))])
+% plot_bhvrTraces(sess,length(sessFrst.lapend)-3:length(sessFrst.lapend)+3);
 
 %%
 % function [fhandle] = plotDistroHisto(distro1,distro2,binpos,rzPos)

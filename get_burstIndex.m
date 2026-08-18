@@ -1,4 +1,4 @@
-function [bIndex] = get_burstIndex(root,sess,unit)
+function [bIndex,bISI,bLen] = get_burstIndex(root,sess,unit)
 % Finds bursts of spikes under thresh latency, return start, stop, length
 %
 % Inputs
@@ -18,12 +18,13 @@ arguments
     unit {double}
 end
 
-[~,~,bLengths] = get_bursts(root,sess,unit);
+[~,~,bLengths,bISI] = get_bursts(root,sess,unit);
 
 nBurstSpikes = sum(bLengths);
 nUnitSpikes  = sum(root.cl == unit);
 nNonBurstSpikes = nUnitSpikes - nBurstSpikes;
 
 bIndex = nBurstSpikes / nNonBurstSpikes;
+bLen = mean(bLengths);
 
 end

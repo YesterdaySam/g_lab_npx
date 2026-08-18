@@ -1,19 +1,14 @@
 %% Wrapper for importing ephys and performing processing steps
 
-spaths       = {'D:\Data\Kelton\analyses\KW097\KW097_05062026_rec_D5_LLat2',...
-                'D:\Data\Kelton\analyses\KW106\KW106_06252026_rec_D2_RLat1',...
-                'D:\Data\Kelton\analyses\KW106\KW106_06262026_rec_D3_RMed2',...
-                'D:\Data\Kelton\analyses\ZM035\ZM035_06112026_rec_D1_LLat1',...
-                'D:\Data\Kelton\analyses\ZM035\ZM035_06122026_rec_D2_LLat2'};
-datpaths     = {'D:\Data\Kelton\probe_data\KW097\KW097_05062026_rec_D5_LLat2_g0',...
-                'D:\Data\Kelton\probe_data\KW106\KW106_06252026_rec_D2_RLat1_g0',...
-                'D:\Data\Kelton\probe_data\KW106\KW106_06262026_rec_D3_RMed2_g0',...
-                'D:\Data\Kelton\probe_data\ZM035\ZM035_06112026_rec_D1_LLat1_g0',...
-                'D:\Data\Kelton\probe_data\ZM035\ZM035_06122026_rec_D2_LLat2_g0'};
-region       = [1,1,2,1,1]; % 1 = CA1 or Sub; 2 = EC
+spaths       = {'D:\Data\Kelton\analyses\KW111\KW111_08062026_rec_D1_RMed1',...
+                'D:\Data\Kelton\analyses\KW111\KW111_08072026_rec_D2_RLat2'};
+datpaths     = {'D:\Data\Kelton\probe_data\KW111\KW111_08062026_rec_D1_RMed1_g0',...
+                'D:\Data\Kelton\probe_data\KW111\KW111_08072026_rec_D2_RLat1_g0'};
+
+region       = [2 1]; % 1 = CA1 or Sub; 2 = EC
 ovrwrtRoot   = 0;
 ovrwrtDatS   = 1;
-splitLap     = [2,0,0,1,2];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
+splitLap     = [0 1];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
 % ripRef       = [];
 saveFlag     = true;
 doMakeRoot   = true;
@@ -163,6 +158,7 @@ for j = 1:length(spaths)
                     plot(tmpDat.thAng(tmpDat.lyrID == 2)+180, tmpD(tmpDat.lyrID == 2),'m*')
                     legend('off'); % legend('Data','EC5','EC3','EC2')
                     set(gcf,'units','normalized','position',[0.4 0.2 0.15 0.6]);
+                    thDepthFig = fixRatio(thDepthFig);
                     if saveFlag
                         saveas(uTypeDepthFig,[root.name '_uTypeXDepth.png'])
                         saveas(thDepthFig,[root.name '_thXdepthXlyr.png'])
@@ -214,21 +210,7 @@ for j = 1:length(spaths)
         %% Split out LFP to improve subsequent root save/load speed
         try
             if doSplitLFP
-                lfp.name     = root.name;
-                lfp.lfp      = root.lfp;
-                lfp.fs_lfp   = root.fs_lfp;
-                lfp.lfpinfo  = root.lfpinfo;
-                lfp.lfp_tsb  = root.lfp_tsb;
-                lfp.bands    = root.bands;
-                lfp.uPSDMax  = root.uPSDMax;
-                lfp.uPSD     = root.uPSD;
-
-                nshanks = numel(unique(root.lfpinfo.lfpShank));
-
-                root.lfp     = root.lfp(root.uPSDMax(2,:),:);
-                root.uPSD    = root.uPSD(:,root.uPSDMax(2,:));
-                root.lfpinfo = root.lfpinfo(root.uPSDMax(2,:),:);
-                root.uPSDMax = [repmat(1:nshanks,size(root.bands,2),1)]; % Set uPSD to match updated LFP info
+                [root, lfp] = rmRootLFP(root);
 
                 save([lfp.name '_lfp'],'lfp','-v7.3')
 

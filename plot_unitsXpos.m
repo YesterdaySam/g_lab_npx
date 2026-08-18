@@ -65,6 +65,7 @@ frMapSort = frMapNorm(sortInd,:);
 if plotflag
     fhandle = figure; hold on; axis square
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+    fhandle = fixRatio(fhandle);
     imagesc(frMapSort,[prctile(frMapSort,1,'all'), prctile(frMapSort,98,'all')]);
     % plot([2 2],[0 nUnits+1],'r--','LineWidth',2)
     plot([0 nBins+1],[0 nUnits+1],'k--','LineWidth',2)

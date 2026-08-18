@@ -76,6 +76,7 @@ legCt   = 1;
 fhandle = figure; thandle = tiledlayout(1,1); 
 ax1 = axes(thandle); hold on;
 set(gcf,'units','normalized','position',[0.4 0.2 0.3 0.6])
+fhandle = fixRatio(fhandle);
 if noiseflag
     sn = scatter(ax1, datNoise + root.info.shankID(root.noiseind).*maxDat, root.info.depth(root.noiseind), 'filled');
     sn.CData = cmapnoise(1:nnoise,:);

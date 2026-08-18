@@ -1,11 +1,11 @@
-function [decodeInfo] = decodePosBayes(root,sess,tau,useUnits)
+function [decodeInfo] = decodePosBayes(root,sess,useUnits,tau)
 %%% Use
 
 arguments
     root
     sess
-    tau = 0.5   % Time Window, seconds
     useUnits = root.goodind     % Binary vector 1xN where N = all units
+    tau = 0.5   % Time Window, seconds
 end
 
 decodeInfo = [];
@@ -18,7 +18,6 @@ else
     ccs = useUnits;
 end
 
-subsamp = sess.samprate / 50;
 for i = 1:length(ccs)
     cc = ccs(i);
     [~,~,~,~,~,~,posfr(i,:),binedges] = get_SI(root,cc,sess,dbnsz);
@@ -29,6 +28,7 @@ expectSpk = posfr' + (eps.^8); % pos x cell
 expectSpk = expectSpk * tau;
 ct = 1;
 
+subsamp = sess.samprate / 50;
 for i = 1:subsamp:length(newts)/10
     if newts(i) - tau/2 <= 0 || newts(i) + tau/2 >= sess.ts(end)  % Ignore times before/after the minimum window
         continue
@@ -42,7 +42,7 @@ for i = 1:subsamp:length(newts)/10
     nSpks = histcounts(spkIds,0:max(root.good)+1);  % Don't use groupcounts - about 2x slower!
     curSpk = nSpks(ccs);   % Spike counts in window for good units only
     % curSpk = curSpk(bothSIUnits);
-    useTmp = curSpk>=0;     % Use all or use only those which spiked
+    useTmp = curSpk>0;     % Use all or use only those which spiked
 
     % Group counts attempt
     % tmpSpk = groupcounts(spkIds,0:max(root.good)+1,'IncludeEmptyGroups',true);

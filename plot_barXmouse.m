@@ -12,6 +12,7 @@ dat(rmNan,:) = [];
 
 fhandle = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.1 0.27])
+fhandle = fixRatio(fhandle);
 b = bar(mean(dat),'FaceColor','flat','HandleVisibility','off');
 b.CData = vColors;
 errorbar(1:2,mean(dat),std(dat)/sqrt(size(dat,1)),'k.','HandleVisibility','off')

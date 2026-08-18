@@ -50,6 +50,7 @@ cidnvel = rmmissing(mean(bnvel,1,'omitnan') - semvel*1.96);
 
 fhandle = figure; hold on;
 set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
+fhandle = fixRatio(fhandle);
 plot(edgesVel(1:end-1)*100,mean(bnvel,1,'omitnan'),'k','LineWidth',2)
 patch(100*[edgesVel(1:length(cidnvel)),fliplr(edgesVel(1:length(cidnvel)))],[cidnvel,fliplr(ciupvel)],'k','FaceAlpha',0.5,'EdgeColor','none')
 xlabel('Position'); % xlim([0 200])
@@ -61,7 +62,7 @@ ciuplck = rmmissing(mean(bnlck,1,'omitnan') + semlck*1.96);
 cidnlck = rmmissing(mean(bnlck,1,'omitnan') - semlck*1.96);
 
 yyaxis right
-set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
+% set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
 plot(edgesLck(1:end-1)*100,mean(bnlck,1,'omitnan'),'b','LineWidth',2)
 patch(100*[edgesLck(1:length(cidnlck)),fliplr(edgesLck(1:length(cidnlck)))],[cidnlck,fliplr(ciuplck)],'b','FaceAlpha',0.5,'EdgeColor','none')
 ylabel('Average Licks/s'); ylim([0 max(mean(bnlck,1,'omitnan'))+1])

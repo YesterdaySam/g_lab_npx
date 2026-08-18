@@ -1,6 +1,6 @@
 %% Fix LFP Channel assignment and layer boundaries
 
-spath = 'D:\Data\Kelton\analyses\KW106\KW106_06252026_rec_D2_RLat1';
+spath = 'D:\Data\Kelton\analyses\KW111\KW111_08072026_rec_D2_RLat2';
 cd(spath)
 rootfile = dir('*_root.mat');
 load(rootfile.name)
@@ -9,10 +9,10 @@ load(sessfile.name)
 
 ripRef = 4;
 shanks = [4];
-depths = [540];
+depths = [510];
 lyrShs = [1,2,3,4];
-lyrBds = [30  30  60 360; ...
-          360 420 510 510];
+lyrBds = [0  90  180 210; ...
+          360 510 570 570];
 % lyrShs = [1];
 % lyrBds = [60; ...
 %           240];

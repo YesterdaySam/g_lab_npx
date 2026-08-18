@@ -65,6 +65,7 @@ end
 
 fhandle = figure;
 set(gcf,'units','normalized','position',[0.25 0.25 0.5 0.35])
+fhandle = fixRatio(fhandle);
 
 tcl = tiledlayout(fhandle, 'flow');
 

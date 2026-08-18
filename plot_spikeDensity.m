@@ -45,6 +45,7 @@ end
 
 fhandle = figure;
 set(gcf,'units','normalized','position',[0.4 0.05 0.3 0.85])
+fhandle = fixRatio(fhandle);
 
 cmapGrey = gray(nShanks + 1);
 cmapRed  = hot(nShanks + 5);

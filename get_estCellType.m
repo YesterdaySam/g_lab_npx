@@ -1,4 +1,4 @@
-function [root, histoFig] = get_estCellType(root,fwThresh,pkvyThresh,frThresh,plotflag)
+function [root, fhandle] = get_estCellType(root,fwThresh,pkvyThresh,frThresh,plotflag)
 %% Calculates waveform width and FWHM to automatically assign cell type
 %
 % Inputs:
@@ -108,7 +108,7 @@ root.info.uType = ~INWFs;
 %% Plot for visual inspection
 
 if plotflag
-    histoFig = figure; set(gcf,"Position",[680 300 495 630])
+    fhandle = figure; set(gcf,"Position",[680 300 495 630])
     subplot(3,1,1:2); hold on
     plot(unitPkVy(INWFs),unitFW(INWFs),'ro')
     plot(unitPkVy(~INWFs),unitFW(~INWFs),'bo')

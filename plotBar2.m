@@ -13,6 +13,7 @@ semdat = [std(dat1)/sqrt(nUnits(1)); std(dat2)/sqrt(nUnits(2))];
 
 fhandle = figure; hold on;
 set(gcf,'units','normalized','position',[0.4 0.35 0.15 0.27])
+fhandle = fixRatio(fhandle);
 b = bar([1.15 2.15],bardat,0.3,'FaceColor','flat','BarWidth',0.5);
 b.CData = vColors;
 errorbar([1.15 2.15],bardat,semdat,'k.')

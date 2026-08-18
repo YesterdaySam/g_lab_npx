@@ -1,4 +1,4 @@
-function [fhandle,frMapPk] = plot_unitPkHisto(frMapRaw,binedges,matchWfl)
+function [fhandle,frMapPk] = plot_unitPkHisto(frMapRaw,binedges,matchWfl,plotflag)
 %% Finds the first peak location in each row of frMapRaw and plots
 %    distribution as a normalized histogram
 %
@@ -18,6 +18,7 @@ arguments
     frMapRaw
     binedges
     matchWfl = 0
+    plotflag = 1
 end
 
 nBins = size(frMapRaw,2);
@@ -31,19 +32,25 @@ for i = 1:nUnits
     frMapPk(i,tmpbns(1)) = 1;
 end
 
-fhandle = figure; hold on
-set(gcf,'units','normalized','position',[0.4 0.35 0.25 0.14])
-plot(binedges(1:end-1) + 0.5*diff(binedges(1:2)),sum(frMapPk)./sum(frMapPk,'all'),'Color',[0.25 0.15 1])
-% bar(binedges(1:end-1) + 0.5*diff(binedges(1:2)),sum(frMapPk)./sum(frMapPk,'all'),'FaceColor',[0.25 0.15 1])
-xlim([0 max(binedges)])
+if plotflag
+    fhandle = figure; hold on
+    set(gcf,'units','normalized','position',[0.4 0.35 0.25 0.14])
+    plot(binedges(1:end-1) + 0.5*diff(binedges(1:2)),sum(frMapPk)./sum(frMapPk,'all'),'Color',[0.25 0.15 1])
+    % bar(binedges(1:end-1) + 0.5*diff(binedges(1:2)),sum(frMapPk)./sum(frMapPk,'all'),'FaceColor',[0.25 0.15 1])
+    xlim([0 max(binedges)])
 
-if matchWfl
-    set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.14])
-    set(gca,'Position',[0.11 0.17 0.8 0.80])
-    nEdges = nBins+1;
-    xticks([binedges(1), binedges(round(nEdges/2)), binedges(nEdges)])
+    if matchWfl
+        set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.14])
+        set(gca,'Position',[0.11 0.17 0.8 0.80])
+        nEdges = nBins+1;
+        xticks([binedges(1), binedges(round(nEdges/2)), binedges(nEdges)])
+    else
+        ylabel('Probability')
+    end
+    fhandle = fixRatio(fhandle);
+    set(gca,'FontSize',12,'FontName','Arial')
 else
-    ylabel('Probability')
+    fhandle = false;
 end
-set(gca,'FontSize',12,'FontName','Arial')
+
 end

@@ -60,9 +60,9 @@ for i = 1:nlaps
 end
 
 if plotflag
-    fhandle = figure;      % Positional Lick Raster
-    hold on
+    fhandle = figure; hold on     % Positional Lick Raster
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+    fhandle = fixRatio(fhandle);
     plot(lckmap(:,1)*100,lckmap(:,2),'k|')
     plot(rwdmap(:,1)*100,rwdmap(:,2),'r*')
     xlabel('Position (cm)')
@@ -75,6 +75,7 @@ if plotflag
 
     fhandle2 = figure; hold on
     set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.3])
+    fhandle2 = fixRatio(fhandle2);
     plot(binedges(1:end-1)*100,mean(lckRate,1,'omitnan'),'b','LineWidth',2)
     patch(100*[binedges(1:length(cidn)),fliplr(binedges(1:length(cidn)))],[cidn,fliplr(ciup)],'b','FaceAlpha',0.5,'EdgeColor','none')
     xlabel('Position (cm)'); xlim([0 200])

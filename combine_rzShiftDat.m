@@ -1,18 +1,26 @@
-function [] = combine_rzShiftDat(datT,fname,sdir,sessType)
+function [] = combine_rzShiftDat(datT,fname,sdir,sessType,overwrite)
 %% 
 % Inputs:
 %   datT = a table organizing sessions by mouse and recording day
 %   fname = name of the file containing data variables
-%   (Deprecated) region = string, e.g. 'ca1' for matching the region ID of each shank in datT
 %   sdir = location to save combined data variables
 %   sessType = 1 = Fixed RZ; 2 = RZ Shift; 3 = RZ Rand
+%   overwrite = binary, whether to overwrite or use previously saved vars
 %
 % Outputs:
 %   None (variables saved in-function)
+%
 % Updated 5/5/26 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
-overwrite = 0;
+arguments
+    datT
+    fname
+    sdir
+    sessType
+    overwrite = 0;
+end
+
 recID = [];     % [mouseID, recDay, recUnit ID, dist2center, dist2border]
 useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
 rgDat = [];     % [recording region for each unit 1 = ca1; 2 = sub; 0 = other
@@ -25,30 +33,20 @@ rpMapZ = [];    % [frstHalf.swrz, lastHalf.swrz];
 % rpMod = [];     % [frstHalf.ripModBins, lastHalf.ripModBins];
 pvStr = [];     % [frstHalf.pvXlap, lastHalf.pvXlap] Struc containing PVC data per lap
 frDat = [];     % [frstHalf.standFR, frstHalf.runFR, lastHalf.standFR, lastHalf.runFR]
+bsDat = [];     % [frstHalf.burstIndex, burstISI, burstLen, lastHalf.burstIndex, burstISI, burstLen];
 
-% recID = [];     % [mouseID, recDay, recUnit ID, dist2center, dist2border]
-% useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
-% lcDat = [];     % [frstHalf.si_p, frstHalf.si, frstHalf.pkFR, frstHalf.pkLoc, lastHalf.si_p, lastHalf.si, lastHalf.pkFR, lastHalf.pkLoc]
-% lcMap = [];     % [frstHalf.posfr, lastHalf.posfr];
-% % siStr = [];     % Struc containing binned SI data per 10 laps
+% siStr = [];     % Struc containing binned SI data per 10 laps
 % vlDat = [];     % [frstHalf sig., frstHalf slope, frstHalf R, lastHalf sig., lastHalf slope, lastHalf R]
 % thDat = [];     % [frstHalf.p, frstHalf.mrl, frstHalf.ang, lastHalf.p, lastHalf.mrl, lastHalf.ang]
 % thMap = [];     % [frstHalf.thetafr, lastHalf.thetafr];
-% rpDat = [];     % [frstHalf.ripParticip, frstHalf.ripModBin, lastHalf.ripParticip, lastHalf.ripModBin]
-% rpRat = [];     % [frstHalf.ripRate, lastHalf.ripRate];
-% rpMap = [];     % [frstHalf.swrfr, lastHalf.swrfr];
-% rpMapZ = [];    % [frstHalf.swrz, lastHalf.swrz];
 % rpMod = [];     % [frstHalf.ripModBins, lastHalf.ripModBins];
-% bsDat = [];     % [frstHalf.burstIndex, lastHalf.burstIndex];
-% bvDat = [];     % [frstHalf.lckDI, frstHalf.preRZV, lastHalf.lckDI, lastHalf.preRZV
-% pvStr = [];     % [frstHalf.pvXlap, lastHalf.pvXlap] Struc containing PVC data per lap
 
 % Load in previously saved data if crashed in midst of run
 if overwrite == 0
     try
         cd(sdir)
         physfile = dir('*_phys.mat');
-        load(physfile.name)
+        load(physfile.name) % saved with ct value
     catch
     end
 else
@@ -84,13 +82,21 @@ for i = ct:height(datT)
 
     pkExclude = frstHalf.truePk < 1 & lastHalf.truePk < 1;
     useUnits = root.info.lyrID(root.goodind) == 1 & root.info.fr(root.goodind) > 0.1 ...
-        & root.info.uType(root.goodind) & ~pkExclude;
+            & root.info.uType(root.goodind) & ~pkExclude;
     nCCs = length(root.good);
 
     % === Concatenate recording data ===
     useCC = logical([useCC; useUnits]);
     recID = [recID; str2num(datT.mouse{i}(end-2:end))*ones(nCCs,1), ...
         datT.session(i)*ones(nCCs,1), root.good]; %, frstHalf.d2cs, frstHalf.d2bs];
+
+    % === Concatenate burst data ===
+    bsDat = [bsDat; frstHalf.burstIndex',frstHalf.burstISI',frstHalf.burstLen', ...
+            lastHalf.burstIndex',lastHalf.burstISI',lastHalf.burstLen'];
+    % % Make a burst metric figure
+    bstFig = plot_burstMetrics(root,sess,useUnits,roiUnits);
+    if ct == 1; legend('CA1','Sub'); end
+    fsave(bstFig,[root.name '_burstMetrics'],1,1);
 
     % % === Concatenate Velocity-FR data ===
     % for j = 1:length(root.good)
@@ -110,10 +116,10 @@ for i = ct:height(datT)
     % === Concatenate SI and Peak data ===
     try
         lcDat = [lcDat; frstHalf.sigSI, frstHalf.trueSI, frstHalf.truePk, frstHalf.trueLc, ...
-            lastHalf.sigSI, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
+                lastHalf.sigSI, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
     catch
         lcDat = [lcDat; frstHalf.sig, frstHalf.trueSI, frstHalf.truePk, frstHalf.trueLc, ...
-            lastHalf.sig, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
+                lastHalf.sig, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
     end
     lcMap = [lcMap; frstHalf.posfr, lastHalf.posfr];
 
@@ -139,8 +145,6 @@ for i = ct:height(datT)
     % rpMap = [rpMap; frstHalf.swrfr, lastHalf.swrfr];
     rpMapZ = [rpMapZ; frstHalf.swrz lastHalf.swrz];
     % rpMod = [rpMod; frstHalf.ripModBins lastHalf.ripModBins];
-
-    % bsDat = [bsDat; frstHalf.burstIndex', lastHalf.burstIndex'];
 
     % === Concatenate PV data ===
     try
@@ -206,8 +210,9 @@ for i = ct:height(datT)
 
     ct = ct + 1;
 
+    save([rootFrst.name '_dat'],'frstHalf','lastHalf','rootFrst','sessFrst','rootLast','sessLast')
     cd(sdir)
-    save(fname,'recID','useCC','rgDat','lcDat','lcMap','rpDat','rpRat','rpMap','rpMapZ','pvStr','frDat','ct')
+    save(fname,'recID','useCC','rgDat','lcDat','lcMap','rpDat','rpRat','rpMap','rpMapZ','pvStr','frDat','bsDat','ct')
 end
 
 cd(sdir)

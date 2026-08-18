@@ -20,7 +20,9 @@ nBins = size(dat,1);
 nTicks = length(binticks); 
 
 fhandle = figure; hold on; axis square
-set(gcf,'units','normalized','position',[0.4 0.35 0.3 0.5])
+set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.36])
+fhandle = fixRatio(fhandle);
+
 imagesc(dat,[prctile(dat,0,'all'), prctile(dat,99,'all')])
 colormap("turbo")
 clim(cl);

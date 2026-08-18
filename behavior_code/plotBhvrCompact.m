@@ -64,6 +64,7 @@ if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
     else
         set(gcf,'units','normalized','position',[0.1 0.1 0.7 0.7])
     end
+    newfig = fixRatio(newfig);
 
     tcl = tiledlayout(newfig, 'flow');
 

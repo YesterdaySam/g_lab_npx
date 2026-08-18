@@ -1,16 +1,18 @@
-function [fhandle] = text2bar(fhandle,textstring,tmpP,xloc,npoints)
+function [fhandle] = text2bar(fhandle,labelstr,tmpP,xloc,yloc,col,npoints)
 
 arguments
     fhandle
-    textstring
+    labelstr
     tmpP
-    xloc = 0.6;
-    npoints = 0;
+    xloc = 0.6
+    yloc = 0.1
+    col = 'k'
+    npoints = 0
 end
 
 figure(fhandle)     % Make fhandle active
 
-ylabel(textstring)
+ylabel(labelstr)
 ylims = ylim;
 xlims = xlim;
 
@@ -27,9 +29,9 @@ else
     sigStr = 'n.s.';
 end
 
-text(xlims(2) - xloc*diff(xlims), ylims(2)-.1*diff(ylims), sigStr, 'FontSize', 12)
-text(xlims(2) - xloc*diff(xlims), ylims(2)-.15*diff(ylims), pstr, 'FontSize', 12)
+text(xlims(2) - xloc*diff(xlims), ylims(2)-yloc*diff(ylims), sigStr, 'FontSize', 12, 'Color',col)
+text(xlims(2) - xloc*diff(xlims), ylims(2)-(yloc + 0.05)*diff(ylims), pstr, 'FontSize', 12, 'Color',col)
 if npoints ~= 0
-    text(xlims(2) - xloc*diff(xlims), ylims(2)-.2*diff(ylims), ['n = ' npoints], 'FontSize', 12)
+    text(xlims(2) - xloc*diff(xlims), ylims(2)-(yloc + 0.1)*diff(ylims), ['n = ' npoints], 'FontSize', 12)
 end
 end
