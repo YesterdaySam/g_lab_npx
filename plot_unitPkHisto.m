@@ -1,4 +1,4 @@
-function [fhandle,frMapPk] = plot_unitPkHisto(frMapRaw,binedges,matchWfl,plotflag)
+function [fhandle,frMapPk,pPk] = plot_unitPkHisto(frMapRaw,binedges,matchWfl,plotflag)
 %% Finds the first peak location in each row of frMapRaw and plots
 %    distribution as a normalized histogram
 %
@@ -32,10 +32,12 @@ for i = 1:nUnits
     frMapPk(i,tmpbns(1)) = 1;
 end
 
+pPk = sum(frMapPk)./sum(frMapPk,'all'); % 1xN vector of P(Peak)
+
 if plotflag
     fhandle = figure; hold on
     set(gcf,'units','normalized','position',[0.4 0.35 0.25 0.14])
-    plot(binedges(1:end-1) + 0.5*diff(binedges(1:2)),sum(frMapPk)./sum(frMapPk,'all'),'Color',[0.25 0.15 1])
+    plot(binedges(1:end-1) + 0.5*diff(binedges(1:2)),pPk,'Color',[0.25 0.15 1])
     % bar(binedges(1:end-1) + 0.5*diff(binedges(1:2)),sum(frMapPk)./sum(frMapPk,'all'),'FaceColor',[0.25 0.15 1])
     xlim([0 max(binedges)])
 

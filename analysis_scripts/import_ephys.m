@@ -1,14 +1,12 @@
 %% Wrapper for importing ephys and performing processing steps
 
-spaths       = {'D:\Data\Kelton\analyses\KW111\KW111_08062026_rec_D1_RMed1',...
-                'D:\Data\Kelton\analyses\KW111\KW111_08072026_rec_D2_RLat2'};
-datpaths     = {'D:\Data\Kelton\probe_data\KW111\KW111_08062026_rec_D1_RMed1_g0',...
-                'D:\Data\Kelton\probe_data\KW111\KW111_08072026_rec_D2_RLat1_g0'};
+spaths       = {'D:\Data\Kelton\analyses\KW112\KW112_08182026_rec_D2_RMed1'};
+datpaths     = {'D:\Data\Kelton\probe_data\KW112\KW112_08182026_rec_D2_RMed1_g0'};
 
-region       = [2 1]; % 1 = CA1 or Sub; 2 = EC
+region       = [1]; % 1 = CA1 or Sub; 2 = EC
 ovrwrtRoot   = 0;
 ovrwrtDatS   = 1;
-splitLap     = [0 1];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
+splitLap     = [1];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
 % ripRef       = [];
 saveFlag     = true;
 doMakeRoot   = true;

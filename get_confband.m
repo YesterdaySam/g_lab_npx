@@ -1,7 +1,9 @@
-function [p_final,fhandle] = get_confband(shufMat,orig_dat,plotFlag,binedges,bnsz)
+function [sigBins,fhandle] = get_confband(shufMat,orig_dat,plotFlag,binedges,bnsz)
 %% Returns the items in orig_dat that fall beyond global confidence band
 % Employs Fujisawa et al. 2008 point-wise and global confidence bands
-% For all shuffles, find how often orig_count fell above or below
+% For all shuffles, find how often orig_count fell above or below the 5%
+% pointwise bands, but only if at least 1 bin exceeds the 5% global band
+% using a controlled Family wise error rate of 5%
 %
 % Inputs:
 % shufMat = MxN matrix of shuffled data, M = nShuffles, N = length of
@@ -9,8 +11,7 @@ function [p_final,fhandle] = get_confband(shufMat,orig_dat,plotFlag,binedges,bns
 % orig_dat = 1xN vector of original data values
 %
 % Outputs:
-% p_final = spatial bin edges
-% binfr = spatial-binned firing rate
+% sigBins = 1xN vector of crossing pointwise bands, if global alpha passed
 % fhandle = handle to figure
 %
 % Created 7/15/24 LKW; Grienberger Lab; Brandeis University
@@ -47,7 +48,12 @@ end
 pt_delta = pt_delta - 0.05; %Correct for final loop iteration adjustment
 
 % Final check if true data exceeds globally set pointwise bands at any point
-p_final = orig_dat > prctile(shufMat,97.5+pt_delta,1) | orig_dat < prctile(shufMat,2.5-pt_delta,1);
+globalCheck = orig_dat > prctile(shufMat,97.5+pt_delta,1) | orig_dat < prctile(shufMat,2.5-pt_delta,1);
+if sum(globalCheck) > 0 
+    sigBins = orig_dat > prctile(shufMat,97.5,1) | orig_dat < prctile(shufMat,2.5,1);
+else
+    sigBins = false(size(orig_dat));
+end
 
 if plotFlag
     fhandle = figure; hold on
@@ -62,7 +68,7 @@ if plotFlag
     plot(xcoords,prctile(shufMat,2.5,1) ./ sum(orig_dat,'all'),'b-','HandleVisibility','off')
     plot(xcoords,prctile(shufMat,97.5+pt_delta,1) ./ sum(orig_dat,'all'),'m-')
     plot(xcoords,prctile(shufMat,2.5-pt_delta,1) ./ sum(orig_dat,'all'),'m-','HandleVisibility','off')
-    if sum(p_final) > 0
+    if sum(globalCheck) > 0
         plot(xcoords(sig_over | sig_undr),orig_dat(sig_over | sig_undr) ./ sum(orig_dat,'all')+.01,'k*')
     end
     ylabel('Probability')

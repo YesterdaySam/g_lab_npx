@@ -34,8 +34,10 @@
 % spath = 'D:\Data\Kelton\analyses\KW074\KW074_10212025_rec_D2_RLat2'; % 20m rest Not a great session behaviorally
 % spath = 'D:\Data\Kelton\analyses\KW077\KW077_11262025_rec_D2_RLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\ZM032\ZM032_05282026_rec_D1_RLat1'; % 20m rest
+spath = 'D:\Data\Kelton\analyses\KW099\KW099_05062026_rec_D2_RLat2'; % 15m rest
 % spath = 'D:\Data\Kelton\analyses\KW101\KW101_05262026_rec_D1_RLat1'; % 15m rest
 % spath = 'D:\Data\Kelton\analyses\KW109\KW109_07222026_rec_D2_RLat1'; % 15m rest, EC3 archT inhib
+% spath = 'D:\Data\Kelton\analyses\ZM035\ZM035_06112026_rec_D1_LLat1';
 
 % Operant Sub RZ Randomization
 % spath = 'D:\Data\Kelton\analyses\KW073\KW073_10172025_rec_D4_LLat2'; % 20m rest
@@ -49,7 +51,7 @@
 % spath = 'D:\Data\Kelton\analyses\FG068\FG068_02022026_rec_D3_RMed1'; % 20m rest
 
 % Operant Sub Non-learners
-spath = 'D:\Data\Kelton\analyses\KW079\KW079_11112025_rec_D2_RLat2'; % 20m rest
+% spath = 'D:\Data\Kelton\analyses\KW079\KW079_11112025_rec_D2_RLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\ZM018\ZM018_02232026_rec_D3_LLat1'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\ZM020\ZM020_02232026_rec_D1_RLat1'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW087\KW087_02082026_rec_D2_RLat2'; % 20m rest
@@ -232,6 +234,24 @@ if saveFlag
     % fsave(exBhvrTracesFig,[sbase '_exampleBhvrTraces'])
 end
 
+%% Plot example SPWR relative to behavior
+
+% Hunt for good ripples by eye, plug in timestamp to useRip below
+% riplf = bandpass(root.lfp(root.ripRef,:), [150, 250], root.fs_lfp);
+% figure; hold on;
+% plot(sess.ts(root.lfp_tsb),root.lfp(root.ripRef,:)); plot(sess.ts(root.lfp_tsb),riplf);
+% plot(sess.ts(root.ripStruc(root.ripRef).ripples(:,2)), ones(size(root.ripStruc(root.ripRef).ripples(:,2))),'r*')
+
+subSh = 2;
+tbuffer = round(1*root.fs_lfp);
+useRip = find(sess.ts(root.ripStruc(root.ripRef).ripples(:,2)) > 1513,1);
+useTwin = [root.ripStruc(root.ripRef).ripples(useRip,2)-tbuffer,  root.ripStruc(root.ripRef).ripples(useRip,2)+tbuffer];
+exSpwrTracesF = plot_bhvrLFPoverlay(root,sess,useTwin,subSh);
+
+if saveFlag
+    fsave(exSpwrTracesF,[sbase '_exampleSpwr_win1sec'])
+end
+
 %% Plot 1 unit's heatmap, burst raster and combined average traces
 cc = 711;
 sess.valTrials = sess.rwdTrials;
@@ -300,21 +320,28 @@ end
 
 sess = getErrorTrials(sess);
 
-%% Plot example units relative to ripples and bursts
-cc = 488;
+%% Plot good units relative to ripples and bursts
 
-ripref = root.ripRef; % Index of ripStruc to use as reference ripples
-postShiftInd = find(sess.ts(root.ripStruc(ripref).ripples(:,3)) > sess.ts(sess.lapstt(rwdShift)),1);
+mkdir('ripPlots'); cd('ripPlots')
+for i = 1:length(root.good)
+    cc = root.good(i);
 
-[~,~,~,ripFig] = plot_frXripple(root,cc,sess,ripref,wlen,histoBnsz);
-ylim([0 size(root.ripStruc(root.ripRef).ripples,1)])
-set(gcf,'units','normalized','position',[0.4 0.35 0.17 0.32])
-plot([-wlen wlen],[postShiftInd postShiftInd],'k--')
+    ripref = root.ripRef; % Index of ripStruc to use as reference ripples
+    postShiftInd = find(sess.ts(root.ripStruc(ripref).ripples(:,3)) > sess.ts(sess.lapstt(rwdShift)),1);
 
-if saveFlag
-    sbase = [root.name '_cc' num2str(cc) '_rwdshift_'];
-    fsave(ripFig,[sbase 'swrMod'])
+    [~,~,~,ripFig] = plot_frXripple(root,cc,sess,ripref,wlen,histoBnsz);
+    ylim([0 size(root.ripStruc(root.ripRef).ripples,1)])
+    set(gcf,'units','normalized','position',[0.4 0.35 0.17 0.32])
+    fixRatio(ripFig);
+    plot([-wlen wlen],[postShiftInd postShiftInd],'k--')
+
+    if saveFlag
+        sbase = [root.name '_cc' num2str(cc) '_rwdshift_'];
+        fsave(ripFig,[sbase 'swrMod'])
+        close all
+    end
 end
+cd('..')
 
 %% Get real unit and epoch parameters
 

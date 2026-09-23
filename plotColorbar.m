@@ -7,6 +7,7 @@ end
 
 fhandle = figure;
 set(gcf,'units','normalized','position',[0.4 0.35 0.05 0.39])
+fhandle = fixRatio(fhandle);
 ax = axes;
 cbar = colorbar(ax, 'AxisLocation','in','Position',[0.05 0.05 0.6 0.9]);
 ax.Visible = 'off';

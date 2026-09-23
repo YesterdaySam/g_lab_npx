@@ -13,8 +13,8 @@ function [sess2,root2] = epochStruc(sess, root, indrange)
 
 %% Session
 sess2 = sess;
-rstInd = indrange(1) - 1;
-indrange = indrange(1):indrange(2);
+rstInd = indrange(1) - 1;   % Subtract off this ind
+indrange = indrange(1):indrange(2); 
 
 % Analog data
 try
@@ -52,12 +52,12 @@ try
     indtimes = sess.ts(root.tsb(indroot));
     indlfp  = [find(root.lfp_tsb >= indrange(1),1) find(root.lfp_tsb <= indrange(end),1,'last')];
 
-    root2.ts        = root.ts(indroot(1):indroot(2)) - indtimes(1);
+    root2.tsb       = root.tsb(indroot(1):indroot(2))  - rstInd;
+    root2.ts        = sess2.ts(root2.tsb);
     root2.cl        = root.cl(indroot(1):indroot(2));
     root2.syncpulse = sess2.slx;    % Crude replacement
     root2.tspulse   = sess2.ts;     % Crude replacement
     root2.lfp       = root.lfp(:,indlfp(1):indlfp(2));
-    root2.tsb       = root.tsb(indroot(1):indroot(2))  - rstInd;
     root2.lfp_tsb   = root.lfp_tsb(indlfp(1):indlfp(2)) - rstInd;
     root2.thEnv     = root.thEnv(:,indlfp(1):indlfp(2));
     for i = 1:length(root2.ripStruc)

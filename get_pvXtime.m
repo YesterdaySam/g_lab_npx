@@ -8,7 +8,7 @@ function [pvCorrXTime] = get_pvXtime(refMap,frMap,useUnits,useMask)
 % useMask = binary of NxN positions to use, otherwise use whole corr
 %
 % Outputs:
-% pvCorrXTime = NxN Pop. Vector correlation in NxN space over L laps
+% pvCorrXTime = LxN Pop. Vector correlation in NxN space over L laps
 %
 % Created 8/6/25 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
@@ -35,8 +35,14 @@ refMap = refMap ./ max(refMap,[],2);
 pvCorrXTime = zeros(size(frMap,1),1);
 
 for i = 1:size(frMap,1)
-    normFR = squeeze(frMap(i,:,useUnits)) ./ max(squeeze(frMap(i,:,useUnits)),[],1);
-    corrTmp = corr(normFR',refMap,'rows','complete');
+    lapMap = squeeze(frMap(i,:,useUnits))';
+    normFR = lapMap ./ max(lapMap,[],2);
+    % tmpFR = normFR;
+    % tmpFR(isnan(normFR(:,1)),:) = [];
+    % plot_unitWaterfall(tmpFR,0:0.05:1.85);
+    corrTmp = corr(normFR,refMap,'rows','complete');
+    % plot_pvcorr(corrTmp.*useMask);
+    % plot_pvcorr(corrTmp);
     pvCorrXTime(i) = mean(corrTmp(useMask),'all');
 end
 

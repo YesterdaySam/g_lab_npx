@@ -8,7 +8,7 @@ arguments
 end
 
 nUnits = [size(dat1,1) size(dat2,1)];
-bardat = [mean(dat1); mean(dat2)];
+bardat = [mean(dat1,'omitnan'); mean(dat2,'omitnan')];
 semdat = [std(dat1)/sqrt(nUnits(1)); std(dat2)/sqrt(nUnits(2))];
 
 fhandle = figure; hold on;

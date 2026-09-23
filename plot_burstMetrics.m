@@ -1,4 +1,12 @@
-function [fhandle] = plot_burstMetrics(root,sess,useCC,rgdat)
+function [fhandle] = plot_burstMetrics(root,sess,useCC,rgdat,rgncols)
+
+arguments
+    root
+    sess
+    useCC
+    rgdat
+    rgncols = [0.9961 0.7305 0.4336; 0.3672 0.2969 0.3711; 0 0 0]; % Sub gold vs CA1 dull purple
+end
 
 for i = 1:length(root.good)
     cc = root.good(i);
@@ -13,12 +21,11 @@ fhandle = fixRatio(fhandle);
 for i = 1:length(nrgns)
     rgn = rgdat(root.goodind) == nrgns(i);
     if nrgns(i) == 1    % CA1
-        % linespec = [0.2891 0.1367 0.4648]; % Dark purple
-        linespec = [0.7852 0.6055 0.2188]; % Med brown
+        linespec = rgncols(1,:);
     elseif nrgns(i) == 2    % Sub
-        linespec = [0.0508 0.4883 0.5273]; % Dark teal
+        linespec = rgncols(2,:);
     else
-        linespec = [0 0 0];
+        linespec = rgncols(3,:);
     end
 
     plot(burstIndex(useCC & rgn),burstISI(useCC & rgn),'o','MarkerEdgeColor',linespec)

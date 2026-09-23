@@ -1,67 +1,104 @@
-function [decodeInfo] = decodePosBayes(root,sess,useUnits,tau)
-%%% Use
+function [decodeI] = decodePosBayes(root,sess,expectSpk,useUnits,tau)
+%% Use Bayes' rule to decode position over time from useUnits
+% Subsamples behavior to 50Hz and estimates position from spikes within tau
+% using the prior probability estimate from expectSpk (mean FR mat)
+%
+% Inputs:
+%   root = root object. Must have root.tssync and root.tsb fields
+%   sess = session struct from importBhvr
+%   expectSpk = NxM matrix of firing rates of N units by M positions
+%   useUnits    % Inds of units e.g. root.good
+%   tau = 0.5   % Time Window within which to count spikes, seconds
+%
+% Outputs:
+%   decodeI = struct of decoded information
+%       rPos = real absolute track position (m)
+%       dPos = estiamted absolute track position (m)
+%       dMat = NxT matrix of N posterior estimates at T time points
+%       dErr = Circularly corrected error between rPos and dPos (m)
+%       newT = 50Hz subsampled time stamps 
+%
+% Created 9/8/26 LKW; Grienberger Lab; Brandeis University
+%--------------------------------------------------------------------------
 
 arguments
     root
     sess
-    useUnits = root.goodind     % Binary vector 1xN where N = all units
+    expectSpk   % NxM = Firing rate of N units by M positions
+    useUnits    % Inds of units e.g. root.good
     tau = 0.5   % Time Window, seconds
 end
 
-decodeInfo = [];
 newts = sess.ts(sess.runInds & sess.lapInclude);    % Use only run periods
 newpos = sess.pos(sess.runInds & sess.lapInclude);
 dbnsz = 0.05;
-if islogical(useUnits)
-    ccs = root.info.cluster_id(useUnits);
-else
-    ccs = useUnits;
-end
 
-for i = 1:length(ccs)
-    cc = ccs(i);
-    [~,~,~,~,~,~,posfr(i,:),binedges] = get_SI(root,cc,sess,dbnsz);
-end
-binpos = binedges(1:end-1)+dbnsz/2;
+binpos = dbnsz/2:dbnsz:sess.maxPos;
 
-expectSpk = posfr' + (eps.^8); % pos x cell
-expectSpk = expectSpk * tau;
-ct = 1;
+expectSpk = (expectSpk' + (eps.^8)) * tau; % M pos x N units
+
+sumExpectSpk = sum(expectSpk, 2); % Sum of expected spikes across ALL included units for each position: M pos x 1
+logExpectSpk = log(expectSpk);  % Pre calculate log expectation of M pos x N units
 
 subsamp = sess.samprate / 50;
-for i = 1:subsamp:length(newts)/10
-    if newts(i) - tau/2 <= 0 || newts(i) + tau/2 >= sess.ts(end)  % Ignore times before/after the minimum window
+useInds = 1:subsamp:length(newts);
+nTs = length(useInds);
+
+dPos = zeros(nTs,1);
+dMat = zeros(length(sumExpectSpk),nTs);
+
+ct = 1;
+
+for i = useInds
+    t_cur = newts(i);
+    t_stt = t_cur - tau/2;
+    t_end = t_cur + tau/2;
+
+    if t_stt <= 0 || t_end >= sess.ts(end)  % Ignore times before/after the minimum window
         continue
     end
-    firstInd = find(sess.ts > newts(i)-tau/2,1);
-    lastInd = find(sess.ts < newts(i)+tau/2,1,'last');
-    realpos = mean(sess.pos(firstInd:lastInd));
 
-    spks = root.ts > newts(i) - tau/2 & root.ts < newts(i) + tau/2;
-    spkIds = root.cl(spks);
-    nSpks = histcounts(spkIds,0:max(root.good)+1);  % Don't use groupcounts - about 2x slower!
-    curSpk = nSpks(ccs);   % Spike counts in window for good units only
-    % curSpk = curSpk(bothSIUnits);
-    useTmp = curSpk>0;     % Use all or use only those which spiked
+    spks = root.ts > t_stt & root.ts < t_end;
+    spkIds = root.cl(spks)+1;   % Account for 0-indexing
+    nSpks = histcounts(spkIds,0.5:1:max(useUnits+1)+0.5); % Over all units, accounting for 0-indexing
+    curSpk = nSpks(useUnits+1);   % only spikes from useUnits, accounting for 0-indexing
 
-    % Group counts attempt
-    % tmpSpk = groupcounts(spkIds,0:max(root.good)+1,'IncludeEmptyGroups',true);
-    % curSpk = tmpSpk(root.good)';   % Spike counts in window for good units only
-    % curSpk = curSpk(bothSIUnits);
-    % useTmp = curSpk > 0;
+    % Bayesian decoding
+    log_post = (logExpectSpk * curSpk') - sumExpectSpk;
 
-    % Bayes rule, decode current location
-    tmp = bsxfun(@power, expectSpk(:,useTmp), curSpk(useTmp)); % [nPos x nTbin x nCell]
-    tmp = prod(tmp,2);
-    expon = exp(-sum(expectSpk(:,useTmp),2));     % Sum rate map for 1:N cells
-    post = bsxfun(@times, tmp, expon);
-    post = post./sum(post); % Normalization
+    % Subtract max for numerical stability before exponentiating
+    post = exp(log_post - max(log_post));
+    post = post / sum(post); % Normalize to probability distribution
+
+    % % Bayes rule, decode current location
+    % tmp = bsxfun(@power, expectSpk(:,useTmp), curSpk(useTmp)); % [nPos x nTbin x nCell]
+    % tmp = prod(tmp,2);
+    % expon = exp(-sum(expectSpk(:,useTmp),2));     % Sum rate map for 1:N cells
+    % post = bsxfun(@times, tmp, expon);
+    % post = post./sum(post); % Normalization
+
     [~,id] = max(post); % decoded position is the one with max posterior prob
-    decodeInfo(ct,1) = binpos(id);
-    decodeInfo(ct,2) = realpos;
-    decodeInfo(ct,3) = binpos(id) - realpos;
+
+    dPos(ct)    = binpos(id);
+    dMat(:,ct)  = post;
     ct = ct+1;
 end
 
-figure; plot(decodeInfo(:,2))
-hold on; plot(decodeInfo(:,1))
+rPos = newpos(useInds);
+
+% Circularly calculate error
+wrap = sess.maxPos/2;
+rawErr = rPos - dPos;
+dErr = rawErr;
+dErr(rawErr > wrap) = dErr(rawErr > wrap) - sess.maxPos;
+dErr(rawErr < -wrap) = dErr(rawErr < -wrap) + sess.maxPos;
+
+% Remove unused preallocated rows and assign to output variable
+validFrames  = 1:(ct-1);
+decodeI.rPos = rPos(validFrames);
+decodeI.dPos = dPos(validFrames);
+decodeI.dMat = dMat(:,validFrames);
+decodeI.dErr = dErr(validFrames);
+decodeI.newT = newts(useInds(validFrames))';
+
+end

@@ -1,4 +1,6 @@
 spath = 'D:\Data\Kelton\analyses\KW109\KW109_07222026_rec_D2_RLat1';
+% spath = 'D:\Data\Kelton\analyses\KW111\KW111_08072026_rec_D2_RLat2';
+% spath = 'D:\Data\Kelton\analyses\KW112\KW112_08182026_rec_D2_RMed1';
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -8,14 +10,8 @@ load(sessfile.name)
 epochfile = dir("*_dat.mat");
 try load(epochfile.name); catch; disp('No existing epoched data file'); end
 
-try
-    rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
-    if isfield(sess,'valTrials')
-        rwdShift = sess.valTrials(rwdShift);
-    end
-catch
-end
-
+rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
+rwdShift = sess.rwdTrials(rwdShift);
 nUnits = length(root.good);
 saveFlag = 1;
 
@@ -121,6 +117,7 @@ useUnits = root.info.lyrID(root.goodind) == 1 & root.info.uType(root.goodind) & 
 
 bstRateF = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.14 0.4])
+bstRateF = fixRatio(bstRateF);
 bar(mean(bstRate(useUnits,:),"omitmissing"));
 plot(bstRate(useUnits,:)','k-o')
 xticks([1 2]); xlim([.5 2.5]);
@@ -130,6 +127,7 @@ text2bar(bstRateF,'Burst Rate',ps.bstRate)
 
 bstLenF = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.14 0.4])
+bstLenF = fixRatio(bstLenF);
 bar(mean(bstLen(useUnits,:),"omitmissing"));
 plot(bstLen(useUnits,:)','k-o')
 xticks([1 2]); xlim([.5 2.5]); ylim([3 5])
@@ -139,6 +137,7 @@ text2bar(bstLenF,'Burst Length',ps.bstLen)
 
 spkRateF = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.14 0.4])
+spkRateF = fixRatio(spkRateF);
 bar(mean(spkRate(useUnits,:),"omitmissing"));
 plot(spkRate(useUnits,:)','k-o')
 xticks([1 2]); xlim([.5 2.5]);
@@ -148,6 +147,7 @@ text2bar(spkRateF,'Spike Rate',ps.spkRate)
 %%
 spkNormBstRateF = figure; hold on
 set(gcf,'units','normalized','position',[0.4 0.35 0.14 0.4])
+spkNormBstRateF = fixRatio(spkNormBstRateF);
 bar(mean(bstRate(useUnits,:)./spkRate(useUnits,:),"omitmissing"));
 plot((bstRate(useUnits,:)./spkRate(useUnits,:))','k-o')
 xticks([1 2]); xlim([.5 2.5]);
@@ -161,15 +161,101 @@ if saveFlag
     fsave(spkRateF,[root.name '_spikeRateComp'],1,0)
 end
 
-%% PV On stim vs off, pre and post
-frstHalf.sigSI = sum(frstHalf.shufSI >= frstHalf.trueSI,2) / nShufs;
-lastHalf.sigSI = sum(lastHalf.shufSI >= lastHalf.trueSI,2) / nShufs;
+%% Reward Shift waterfall analyses - whole session
 
-nBins = length(binpos);
 lyrUnits = root.info.lyrID(root.goodind) == 1;
 hiFRUnits = root.info.fr(root.goodind) > 0.1;
 useUnits = lyrUnits & hiFRUnits & root.info.uType(root.goodind);
+frstHalf.useUnits = useUnits; lastHalf.useUnits = useUnits;
+siUnits = useUnits & (frstHalf.sigSI <= 0.05 | lastHalf.sigSI <= 0.05);
+frstSIUnits = useUnits & (frstHalf.sigSI <= 0.05);
+lastSIUnits = useUnits & (lastHalf.sigSI <= 0.05);
 bothSIUnits = useUnits & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
+
+preRZBin = find(frstHalf.binedges > 0.4,1);
+pstRZBin = find(frstHalf.binedges > 1.3,1);
+
+famWflF = plot_unitWaterfall(frstHalf.posfr(frstSIUnits,:),frstHalf.binedges,0,1,0);
+plot([preRZBin preRZBin],[0 sum(frstSIUnits)],'k--')
+
+novWflF = plot_unitWaterfall(lastHalf.posfr(lastSIUnits,:),frstHalf.binedges,0,1,0);
+plot([pstRZBin pstRZBin],[0 sum(lastSIUnits)],'r--')
+
+% Both SI units
+[famWflBothF,~, famSort] = plot_unitWaterfall(frstHalf.posfr(bothSIUnits,:),frstHalf.binedges,0,1,0);
+plot([preRZBin preRZBin],[0 sum(bothSIUnits)],'k--')
+
+novWflBothF = plot_unitWaterfall(lastHalf.posfr(bothSIUnits,:),frstHalf.binedges,famSort,1,0);
+plot([pstRZBin pstRZBin],[0 sum(bothSIUnits)],'r--')
+
+if saveFlag
+    fsave(famWflF,[root.name '_lc_wfl_frstSI_fam'],1,0);
+    fsave(novWflF,[root.name '_lc_wfl_lastSI_nov'],1,0);
+    fsave(famWflBothF,[root.name '_lc_wfl_bothSI_fam'],1,0);
+    fsave(novWflBothF,[root.name '_lc_wfl_bothSI_nov'],1,0);
+end
+
+%% Reward Shift waterfall analyses - opto laps vs non session
+
+frstHalf.optoLaps = sess.optolap(1:rwdShift-1); % Accounts for 1st trial non valid
+lastHalf.optoLaps = sess.optolap(rwdShift:end);
+uPosFrBaseFam = squeeze(mean(frstHalf.frMap(~frstHalf.optoLaps,:,:)))';
+uPosFrOptoFam = squeeze(mean(frstHalf.frMap(frstHalf.optoLaps,:,:)))';
+uPosFrBaseNov = squeeze(mean(lastHalf.frMap(~lastHalf.optoLaps,:,:)))';
+uPosFrOptoNov = squeeze(mean(lastHalf.frMap(lastHalf.optoLaps,:,:)))';
+
+famWflF_base = plot_unitWaterfall(uPosFrBaseFam(bothSIUnits,:),frstHalf.binedges,0,1,0);
+plot([preRZBin preRZBin],[0 sum(frstSIUnits)],'k--')
+title('Fam. Baseline')
+famWflF_opto = plot_unitWaterfall(uPosFrOptoFam(bothSIUnits,:),frstHalf.binedges,0,1,0);
+plot([preRZBin preRZBin],[0 sum(frstSIUnits)],'k--')
+title('Fam. Opto')
+
+novWflF_base = plot_unitWaterfall(uPosFrBaseNov(bothSIUnits,:),frstHalf.binedges,0,1,0);
+plot([pstRZBin pstRZBin],[0 sum(frstSIUnits)],'r--')
+title('Nov. Baseline')
+novWflF_opto = plot_unitWaterfall(uPosFrOptoNov(bothSIUnits,:),frstHalf.binedges,0,1,0);
+plot([pstRZBin pstRZBin],[0 sum(frstSIUnits)],'r--')
+title('Nov. Opto')
+
+if saveFlag
+    fsave(famWflF_opto,[root.name '_lc_wfl_bothSI_F_Opto'],1,0);
+    fsave(famWflF_base,[root.name '_lc_wfl_bothSI_F_Base'],1,0);
+    fsave(novWflF_base,[root.name '_lc_wfl_bothSI_N_Opto'],1,0);
+    fsave(novWflF_opto,[root.name '_lc_wfl_bothSI_N_Base'],1,0);
+end
+
+%% PVCs 
+posNormFamOff = (uPosFrBaseFam(bothSIUnits,:)' ./ max(uPosFrBaseFam(bothSIUnits,:)'))';
+posNormFamStm = (uPosFrOptoFam(bothSIUnits,:)' ./ max(uPosFrOptoFam(bothSIUnits,:)'))';
+posNormNovOff = (uPosFrBaseNov(bothSIUnits,:)' ./ max(uPosFrBaseNov(bothSIUnits,:)'))';
+posNormNovStm = (uPosFrOptoNov(bothSIUnits,:)' ./ max(uPosFrOptoNov(bothSIUnits,:)'))';
+
+pvFamOffStm = corr(posNormFamOff,posNormFamStm);   % units x sp. bins
+pvFamOffStmF = plot_pvcorr(pvFamOffStm);
+plot([preRZBin preRZBin],[0 sum(bothSIUnits)],'w--')
+title('Fam. Baseline vs Opto')
+pvNovOffStm = corr(posNormNovOff,posNormNovStm);   % units x sp. bins
+pvNovOffStmF = plot_pvcorr(pvNovOffStm);
+plot([pstRZBin pstRZBin],[0 sum(bothSIUnits)],'r--')
+title('Nov. Baseline vs Opto')
+
+pvFamNovOff = corr(posNormFamOff,posNormNovOff);   % units x sp. bins
+pvFamNovOffF = plot_pvcorr(pvFamNovOff);
+plot([preRZBin preRZBin],[0 sum(bothSIUnits)],'w--')
+title('Baseline Fam v Nov')
+pvFamNovStm = corr(posNormFamStm,posNormNovStm);   % units x sp. bins
+pvFamNovStmF = plot_pvcorr(pvFamNovStm);
+plot([preRZBin preRZBin],[0 sum(bothSIUnits)],'w--')
+title('Opto Fam v Nov')
+
+if saveFlag
+    fsave(pvFamOffStmF,[root.name '_lc_pvc_bothSI_F_BaseVOpto'],1,0);
+    fsave(pvNovOffStmF,[root.name '_lc_pvc_bothSI_N_BaseVOpto'],1,0);
+    fsave(pvFamNovOffF,[root.name '_lc_pvc_bothSI_Base_FamVNov'],1,0);
+    fsave(pvFamNovStmF,[root.name '_lc_pvc_bothSI_Opto_FamVNov'],1,0);
+end
+
 %%
 % Make off-diagonal matrix
 idMat = logical(eye(nBins));
