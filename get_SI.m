@@ -1,10 +1,11 @@
-function [si,uFR,peakFR,peakLoc,spksmooth,occsmooth,binfr,binedges] = get_SI(root,unit,sess,dbnsz,dend)
+function [si,uFR,peakFR,peakLoc,spksmooth,occsmooth,binfr,binedges] = get_SI(root,unit,sess,useInds,dbnsz,dend)
 %% Returns the Spatial Information of a Unit
 %
 % Inputs:
 %   root = root object. Must have root.tssync and root.tsb fields
 %   unit = cluster ID
 %   sess = session struct from importBhvr
+%   useInds = binary of which inds to use, default sess.runInds
 %   dbnsz = size of position bins, default 0.05m = 5cm
 %   dend = double in length meters of track length
 %
@@ -25,6 +26,7 @@ arguments
     root            %struct containing neural info
     unit {double}   %Cluster ID
     sess            %session struct
+    useInds = sess.runInds & sess.lapInclude
     dbnsz = 0.05    %m
     dend = 1.85     %m
 end
@@ -34,15 +36,18 @@ nbins = length(binedges)-1;
 
 spkinds = root.tsb(root.cl == unit);
 
-try 
-    spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
-catch
-    disp('uh oh, failed to threshold spikes based on runInds')
-    return
-end
-
-valspks = spkinds(sess.lapInclude(spkinds));
-valoccs = sess.lapInclude & sess.runInds;
+% spkinds = spkinds(useInds);
+% try 
+%     spkinds = spkinds(sess.runInds(spkinds));   % Use only spikes in run periods
+% catch
+%     disp('uh oh, failed to threshold spikes based on runInds')
+%     return
+% end
+% 
+% valspks = spkinds(sess.lapInclude(spkinds));
+% valoccs = sess.lapInclude & sess.runInds;
+valspks = spkinds(useInds(spkinds));
+valoccs = useInds;
 
 bnspks  = histcounts(sess.pos(valspks), binedges);
 bnoccs  = histcounts(sess.pos(valoccs),binedges) / sess.samprate;

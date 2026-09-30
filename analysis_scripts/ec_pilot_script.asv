@@ -1,10 +1,10 @@
 % EC
 % spath = 'D:\Data\Kelton\analyses\KW043\KW043_05062025_rec_D1_RMed1';
-% spath = 'D:\Data\Kelton\analyses\KW043\KW043_05072025_rec_D2_RLat1';
+spath = 'D:\Data\Kelton\analyses\KW043\KW043_05072025_rec_D2_RLat1';
 % spath = 'D:\Data\Kelton\analyses\KW043\KW043_05082025_rec_D3_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW043\KW043_05092025_rec_D4_RMed2';
 % spath = 'D:\Data\Kelton\analyses\KW054\KW054_07292025_rec_D1_RMed1';
-spath = 'D:\Data\Kelton\analyses\KW054\KW054_07302025_rec_D2_RLat1';
+% spath = 'D:\Data\Kelton\analyses\KW054\KW054_07302025_rec_D2_RLat1';
 % spath = 'D:\Data\Kelton\analyses\KW054\KW054_07312025_rec_D3_RMed2';
 % spath = 'D:\Data\Kelton\analyses\KW084\KW084_12172025_rec_D1_RMed1';
 % spath = 'D:\Data\Kelton\analyses\KW084\KW084_12182025_rec_D2_RMed1';
@@ -127,9 +127,8 @@ hiZbins = find(mean(zrangeMat) > 1);
 % hiZbins(abs(hiZbins - length(binedges)) < 5) = []; % Ignore things on edges
 
 for i = 1:length(hiZbins)
-    lappad(i) = sum(sess.ts(sess.lapstt) > binedges(hiZbins(i)));
+    find(sess.ts hiZbins(i) 
 end
-hiZbins(lappad < 10) = [];
 
 % Fine grain
 for i = 1:length(root.good)
@@ -152,9 +151,9 @@ end
 
 frShift(ps(1,:) < 0.01) = true;
 frViol = sum(frShift) / length(root.good);
-
+%%
 figure; hold on;
-title(['P(FR shift) at ' num2str(0.01) ' = ' num2str(frViol)])
+% title(['P(FR shift) at ' num2str(0.01) ' = ' num2str(frViol)])
 imagesc(binedges,1:length(root.good),zrangeMat)
 set(gca, 'YDir', 'normal')
 colormap('hot')

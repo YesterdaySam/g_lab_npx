@@ -1,7 +1,7 @@
 function [fhandle] = plot_postProbXTime(decodeI,twin)
 
 indStt = find(decodeI.newT > twin(1),1);
-indEnd = find(decodeI.newT > twin(2),1);
+indEnd = find(decodeI.newT >= twin(2),1);
 
 fhandle = figure; hold on;
 set(gcf,'Units','normalized','Position',[0 0.65 1 0.15])

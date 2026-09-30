@@ -64,18 +64,18 @@ for i = 1:height(datT)
 
         % [~,bvDat(ct).preLckDI] = get_lickDiscrim(sessFrst,bvDat(ct).rzPos*100);
         % [~,bvDat(ct).pstLckDI] = get_lickDiscrim(sessLast,bvDat(ct).rzPos*100);
-        [~,tmpLDI] = get_lickDiscrim(sess,bvDat(ct).rzPos*100);
-        bvDat(ct).preLckDI = tmpLDI(1:length(sessFrst.valTrials));
-        bvDat(ct).pstLckDI = tmpLDI(length(sessFrst.valTrials)+1:end);
-        [~,bvDat(ct).preLckSI] = get_lickDiscrim(sessFrst, [datT.rzloc1(i) mod(datT.rzloc1(i)-0.3,sess.maxPos)]*100);
-        [~,bvDat(ct).pstLckSI] = get_lickDiscrim(sessLast, [datT.rzloc2(i) mod(datT.rzloc2(i)-0.3,sess.maxPos)]*100);
+        % [~,tmpLDI] = get_lickDiscrim(sess,bvDat(ct).rzPos*100);
+        % bvDat(ct).preLckDI = tmpLDI(1:length(sessFrst.valTrials));
+        % bvDat(ct).pstLckDI = tmpLDI(length(sessFrst.valTrials)+1:end);
+        % [~,bvDat(ct).preLckSI] = get_lickDiscrim(sessFrst, [datT.rzloc1(i) mod(datT.rzloc1(i)-0.3,sess.maxPos)]*100);
+        % [~,bvDat(ct).pstLckSI] = get_lickDiscrim(sessLast, [datT.rzloc2(i) mod(datT.rzloc2(i)-0.3,sess.maxPos)]*100);
         [~,bvDat(ct).preLckPsv] = get_lickDiscrim(sessFrst, [datT.rzloc1(i) datT.rzloc2(i)+0.3]*100); % Lick perseveration in actual non rewarded zone
         [~,bvDat(ct).pstLckPsv] = get_lickDiscrim(sessLast, [datT.rzloc1(i)+0.3 datT.rzloc2(i)]*100);
 
-        bvDat(ct).uPreLckDI = mean(bvDat(ct).preLckDI,'omitnan');
-        bvDat(ct).uPstLckDI = mean(bvDat(ct).pstLckDI,'omitnan');
-        bvDat(ct).uPreLckSI = mean(bvDat(ct).preLckSI,'omitnan');
-        bvDat(ct).uPstLckSI = mean(bvDat(ct).pstLckSI,'omitnan');
+        % bvDat(ct).uPreLckDI = mean(bvDat(ct).preLckDI,'omitnan');
+        % bvDat(ct).uPstLckDI = mean(bvDat(ct).pstLckDI,'omitnan');
+        % bvDat(ct).uPreLckSI = mean(bvDat(ct).preLckSI,'omitnan');
+        % bvDat(ct).uPstLckSI = mean(bvDat(ct).pstLckSI,'omitnan');
         bvDat(ct).uPreLckPsv = mean(bvDat(ct).preLckPsv,'omitnan');
         bvDat(ct).uPstLckPsv = mean(bvDat(ct).pstLckPsv,'omitnan');
 

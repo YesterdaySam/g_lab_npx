@@ -256,25 +256,25 @@ for i = ct:height(datT)
     snameCA1 = [rootFrst.name '_CA1decoders'];
     snameSub = [rootFrst.name '_Subdecoders'];
     % snameSubHi = [rootFrst.name '_Subdecoders_velHi'];
-    snameSubLo = [rootFrst.name '_Subdecoders_velLo'];
+    % snameSubLo = [rootFrst.name '_Subdecoders_velLo'];
 
     splitSlopeSub = prctile(abs(velStats(useSub,2)),50);
 
     % useSubHi = useSub & abs(velStats(:,2)) >= splitSlopeSub;
-    useSubLo = useSub & abs(velStats(:,2)) < splitSlopeSub;
+    % useSubLo = useSub & abs(velStats(:,2)) < splitSlopeSub;
 
     dcDat(ct).nCA1 = sum(useCA1);
     dcDat(ct).nSub = sum(useSub);
     % dcDat(ct).nSubHi = sum(useSubHi);
-    dcDat(ct).nSubLo = sum(useSubLo);
+    % dcDat(ct).nSubLo = sum(useSubLo);
 
     try
-        decodefile = dir("*_Subdecoders_velLo.mat");
+        decodefile = dir("*_Subdecoders.mat");
         load(decodefile.name)
         [errLocsSub, errMeansSub] = plot_bayesErrHisto(0:0.05:0.95,fxfDecode,nxnDecode,nxfDecode);
     catch
         try
-            [errLocsSub, errMeansSub] = decodeRZPlot(useSubLo,snameSubLo,rootFrst,rootLast,sessFrst,sessLast,frstHalf,lastHalf);
+            [errLocsSub, errMeansSub] = decodeRZPlot(useSub,snameSub,rootFrst,rootLast,sessFrst,sessLast,frstHalf,lastHalf);
         catch
             errLocsSub = nan(1,3); errMeansSub = nan(1,3);
         end
@@ -295,9 +295,9 @@ for i = ct:height(datT)
     try
         decodefile = dir("*_CA1decoders.mat");
         load(decodefile.name)
-        [dcDat(ct).ca1_fxf_lapAbsErr,dcDat(ct).ca1_fxf_lapRawErr,dcDat(ct).ca1_fxf_lapErrLoc] = get_decodeErrXlaps(fxfDecode,sessFrst);
-        [dcDat(ct).ca1_nxn_lapAbsErr,dcDat(ct).ca1_nxn_lapRawErr,dcDat(ct).ca1_nxn_lapErrLoc] = get_decodeErrXlaps(nxnDecode,sessLast);
-        [dcDat(ct).ca1_nxf_lapAbsErr,dcDat(ct).ca1_nxf_lapRawErr,dcDat(ct).ca1_nxf_lapErrLoc] = get_decodeErrXlaps(nxfDecode,sessLast);
+        [dcDat(ct).ca1_fxf_lapAbsErr,dcDat(ct).ca1_fxf_lapPPost,dcDat(ct).ca1_fxf_lapErrLoc] = get_decodeErrXlaps(fxfDecode,sessFrst);
+        [dcDat(ct).ca1_nxn_lapAbsErr,dcDat(ct).ca1_nxn_lapPPost,dcDat(ct).ca1_nxn_lapErrLoc] = get_decodeErrXlaps(nxnDecode,sessLast);
+        [dcDat(ct).ca1_nxf_lapAbsErr,dcDat(ct).ca1_nxf_lapPPost,dcDat(ct).ca1_nxf_lapErrLoc] = get_decodeErrXlaps(nxfDecode,sessLast);
 
         errXlapF = figure; hold on;
         plot(1:sessFrst.nlaps, dcDat(ct).ca1_fxf_lapAbsErr,'k')
@@ -308,22 +308,22 @@ for i = ct:height(datT)
         fsave(errXlapF,[root.name '_ca1decodeErrXLap'],1,0);
     catch
         dcDat(ct).ca1_fxf_lapAbsErr = nan(sessFrst.nlaps,1);
-        dcDat(ct).ca1_fxf_lapRawErr = nan(sessFrst.nlaps,1);
+        dcDat(ct).ca1_fxf_lapPPost  = nan(sessFrst.nlaps,1);
         dcDat(ct).ca1_fxf_lapErrLoc = nan(sessFrst.nlaps,1);
         dcDat(ct).ca1_nxn_lapAbsErr = nan(sessLast.nlaps,1);
-        dcDat(ct).ca1_nxn_lapRawErr = nan(sessLast.nlaps,1);
+        dcDat(ct).ca1_nxn_lapPPost = nan(sessLast.nlaps,1);
         dcDat(ct).ca1_nxn_lapErrLoc = nan(sessLast.nlaps,1);
         dcDat(ct).ca1_nxf_lapAbsErr = nan(sessLast.nlaps,1);
-        dcDat(ct).ca1_nxf_lapRawErr = nan(sessLast.nlaps,1);
+        dcDat(ct).ca1_nxf_lapPPost  = nan(sessLast.nlaps,1);
         dcDat(ct).ca1_nxf_lapErrLoc = nan(sessLast.nlaps,1);
     end
 
     try
-        decodefile = dir("*_Subdecoders_velLo.mat");
+        decodefile = dir("*_Subdecoders.mat");
         load(decodefile.name)
-        [dcDat(ct).sub_fxf_lapAbsErr,dcDat(ct).sub_fxf_lapRawErr,dcDat(ct).sub_fxf_lapErrLoc] = get_decodeErrXlaps(fxfDecode,sessFrst);
-        [dcDat(ct).sub_nxn_lapAbsErr,dcDat(ct).sub_nxn_lapRawErr,dcDat(ct).sub_nxn_lapErrLoc] = get_decodeErrXlaps(nxnDecode,sessLast);
-        [dcDat(ct).sub_nxf_lapAbsErr,dcDat(ct).sub_nxf_lapRawErr,dcDat(ct).sub_nxf_lapErrLoc] = get_decodeErrXlaps(nxfDecode,sessLast);
+        [dcDat(ct).sub_fxf_lapAbsErr,dcDat(ct).sub_fxf_lapPPost,dcDat(ct).sub_fxf_lapErrLoc] = get_decodeErrXlaps(fxfDecode,sessFrst);
+        [dcDat(ct).sub_nxn_lapAbsErr,dcDat(ct).sub_nxn_lapPPost,dcDat(ct).sub_nxn_lapErrLoc] = get_decodeErrXlaps(nxnDecode,sessLast);
+        [dcDat(ct).sub_nxf_lapAbsErr,dcDat(ct).sub_nxf_lapPPost,dcDat(ct).sub_nxf_lapErrLoc] = get_decodeErrXlaps(nxfDecode,sessLast);
 
         errXlapF = figure; hold on;
         plot(1:sessFrst.nlaps, dcDat(ct).sub_fxf_lapAbsErr,'k')
@@ -331,16 +331,16 @@ for i = ct:height(datT)
         plot((1:sessLast.nlaps) + sessFrst.nlaps, dcDat(ct).sub_nxf_lapAbsErr,'c')
         ylabel('Abs Error (m)'); xlabel('Lap #');
         set(gca,'FontSize',12,'FontName','Arial')
-        fsave(errXlapF,[root.name '_subdecodeVelLoErrXLap'],1,0);
+        fsave(errXlapF,[root.name '_subdecodeErrXLap'],1,0);
     catch
         dcDat(ct).sub_fxf_lapAbsErr = nan(sessFrst.nlaps,1);
-        dcDat(ct).sub_fxf_lapRawErr = nan(sessFrst.nlaps,1);
+        dcDat(ct).sub_fxf_lapPPost  = nan(sessFrst.nlaps,1);
         dcDat(ct).sub_fxf_lapErrLoc = nan(sessFrst.nlaps,1);
         dcDat(ct).sub_nxn_lapAbsErr = nan(sessLast.nlaps,1);
-        dcDat(ct).sub_nxn_lapRawErr = nan(sessLast.nlaps,1);
+        dcDat(ct).sub_nxn_lapPPost  = nan(sessLast.nlaps,1);
         dcDat(ct).sub_nxn_lapErrLoc = nan(sessLast.nlaps,1);
         dcDat(ct).sub_nxf_lapAbsErr = nan(sessLast.nlaps,1);
-        dcDat(ct).sub_nxf_lapRawErr = nan(sessLast.nlaps,1);
+        dcDat(ct).sub_nxf_lapPPost  = nan(sessLast.nlaps,1);
         dcDat(ct).sub_nxf_lapErrLoc = nan(sessLast.nlaps,1);
     end
 

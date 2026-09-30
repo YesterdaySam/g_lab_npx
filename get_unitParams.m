@@ -39,6 +39,7 @@ arguments
     histoBnsz= 5
 end
 
+useInds = sess.runInds & sess.lapInclude;
 datStruc.name   = root.name;
 
 if root.ripRef < 1
@@ -64,7 +65,7 @@ for i = 1:length(ccs)
     cc = ccs(i);
 
     if doSpace
-        [datStruc.trueSI(i),~,datStruc.truePk(i),datStruc.trueLc(i),~,~,datStruc.posfr(i,:),datStruc.binedges] = get_SI(root,cc,sess,dbnsz);
+        [datStruc.trueSI(i),~,datStruc.truePk(i),datStruc.trueLc(i),~,~,datStruc.posfr(i,:),datStruc.binedges] = get_SI(root,cc,sess,useInds,dbnsz);
         [~,datStruc.frMap(:,:,i),datStruc.spkMap(:,:,i)] = get_frXpos(root,cc,sess,0.05,sess.maxPos,1);
     end
 

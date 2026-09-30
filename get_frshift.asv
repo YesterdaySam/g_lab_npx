@@ -1,0 +1,69 @@
+function [frShift,ps,frViol,fhandle] = get_frshift(root,sess,coarseBin,fineBin,nTestBins,pThresh,plotflag)
+
+arguments
+    root
+    sess
+    coarseBin = 60  % time bin size (sec) over which to detect population-level z-score shifts
+    fineBin = 1     % time bin size( sec) over which to calculate avg lap FR
+    nTestBins = 10  % number of bins on either side of a z-shift to use in a t-test
+    pThresh = 0.01  % t-test threshold
+    plotflag = 1;
+end
+
+nCC = length(root.good);
+nlap = length(sess.lapstt);
+lapFRs = nan(nCC,nlap);
+zrangeMat = [];
+
+% Coarse for large Z-scored FR shifts across units
+for i = 1:nCC
+    [~,binedges,ccZ] = get_presence(root,root.good(i),sess,coarseBin);
+    zrangeMat(i,:) = abs(diff(ccZ));
+    binedges = binedges(1:end-2);
+end
+
+% Ignore high Z-score bins at edges of recording
+hiZbins = find(mean(zrangeMat) > 1);
+for i = 1:length(hiZbins)
+    lappad(i) = sum(sess.ts(sess.lapstt) > binedges(hiZbins(i)));
+end
+hiZbins(lappad < nTestBins) = [];
+nZcross = length(hiZbins);
+ps =  nan(nCC,nZcross);
+
+% Fine grain FR per lap (could do this cleaner)
+for i = 1:nCC
+    [ccFR,tmpedges] = get_presence(root,root.good(i),sess,fineBin);
+    tmpedges = tmpedges(1:end-1);
+    for j = 1:nlap
+        lapFR = ccFR(tmpedges > sess.ts(sess.lapstt(j)) & tmpedges < sess.ts(sess.lapend(j)));
+        lapFRs(i,j) = mean(lapFR,'omitnan');
+    end
+end
+
+frShift = false(length(root.good),nZcross);
+
+for i = 1:nZcross
+    crossLap = find(sess.ts(sess.lapstt) > binedges(hiZbins(i)),1);
+    for j = 1:nCC
+        [~,ps(j,i)] = ttest(lapFRs(j,crossLap-nTestBins:crossLap-1),lapFRs(j,crossLap:crossLap+nTestBins-1));
+    end
+    frShift(ps(:,i) < pThresh,i) = true;
+    frViol(i) = sum(frShift(:,i)) / length(root.good);
+end
+
+if plotflag
+    uZxlap = mean(zrangeMat,'omitnan');
+    normUZ = uZxlap ./ max(uZxlap) * nCC;
+    fhandle = figure; hold on;
+    imagesc(binedges,1:length(root.good),zrangeMat)
+    set(gca, 'YDir', 'normal')
+    colormap('hot')
+    clim([0 5])
+    ylabel("Unit #"); ylim([0 length(root.good)])
+    xlabel('Time (s)'); xlim([0 binedges(end)])
+    plot(binedges, normUZ,'w');
+    plot(binedges(hiZbins),normUZ(hiZbins),'w*')
+end
+
+end

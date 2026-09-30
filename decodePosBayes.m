@@ -1,14 +1,15 @@
-function [decodeI] = decodePosBayes(root,sess,expectSpk,useUnits,tau)
+function [decodeI] = decodePosBayes(root,sess,expectSpk,useUnits,useTS,tau)
 %% Use Bayes' rule to decode position over time from useUnits
 % Subsamples behavior to 50Hz and estimates position from spikes within tau
 % using the prior probability estimate from expectSpk (mean FR mat)
 %
 % Inputs:
-%   root = root object. Must have root.tssync and root.tsb fields
-%   sess = session struct from importBhvr
+%   root      = root object. Must have root.tssync and root.tsb fields
+%   sess      = session struct from importBhvr
 %   expectSpk = NxM matrix of firing rates of N units by M positions
-%   useUnits    % Inds of units e.g. root.good
-%   tau = 0.5   % Time Window within which to count spikes, seconds
+%   useUnits  = Inds of units e.g. root.good
+%   useTS     = binary of which time points to decode, for X-validation
+%   tau       = 0.5   % Time Window within which to count spikes, seconds
 %
 % Outputs:
 %   decodeI = struct of decoded information
@@ -24,12 +25,13 @@ function [decodeI] = decodePosBayes(root,sess,expectSpk,useUnits,tau)
 arguments
     root
     sess
-    expectSpk   % NxM = Firing rate of N units by M positions
-    useUnits    % Inds of units e.g. root.good
-    tau = 0.5   % Time Window, seconds
+    expectSpk       % NxM = Firing rate of N units by M positions
+    useUnits        % Inds of units e.g. root.good
+    useTS     = sess.runInds & sess.lapInclude % Binary, length of sess.ts
+    tau       = 0.5 % Time Window, seconds
 end
 
-newts = sess.ts(sess.runInds & sess.lapInclude);    % Use only run periods
+newts = sess.ts(useTS);
 newpos = sess.pos(sess.runInds & sess.lapInclude);
 dbnsz = 0.05;
 

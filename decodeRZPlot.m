@@ -2,12 +2,29 @@ function [errLocs, errMeans] = decodeRZPlot(useUnits,sname,rootFrst,rootLast,ses
 % Wrapper to automate decoding FxF, NxN and NxF
 
 tau = 0.5; 
-
 usePyrs = rootFrst.good(useUnits);
 
-[fxfDecode] = decodePosBayes(rootFrst,sessFrst,datF.posfr(useUnits,:),usePyrs,tau);
-[nxnDecode] = decodePosBayes(rootLast,sessLast,datN.posfr(useUnits,:),usePyrs,tau);
-[nxfDecode] = decodePosBayes(rootLast,sessLast,datF.posfr(useUnits,:),usePyrs,tau);
+for i = 1:sessFrst.nlaps % Leave 1 out X-val
+    useIndF = sessFrst.lapInclude & sessFrst.runInds;
+    useIndF(sessFrst.lapstt(i):sessFrst.lapend(i)) = false;
+    tmpFmap = get_rmap(rootFrst,sessFrst,useUnits,useIndF);
+
+    dcIndF = false(size(useIndF));
+    dcIndF(sessFrst.lapstt(i):sessFrst.lapend(i)) = true;
+    dcIndF = dcIndF & sessFrst.runInds;
+
+    [tmpfxfDecode(i)] = decodePosBayes(rootFrst,sessFrst,tmpFmap,usePyrs,dcIndF,tau);
+end
+
+fxfDecode.rPos = vertcat(tmpfxfDecode.rPos);
+fxfDecode.dPos = vertcat(tmpfxfDecode.dPos);
+fxfDecode.dMat = horzcat(tmpfxfDecode.dMat);
+fxfDecode.dErr = vertcat(tmpfxfDecode.dErr);
+fxfDecode.newT = vertcat(tmpfxfDecode.newT);
+
+% [fxfDecode] = decodePosBayes(rootFrst,sessFrst,datF.posfr(useUnits,:),usePyrs,tau);
+% [nxnDecode] = decodePosBayes(rootLast,sessLast,datN.posfr(useUnits,:),usePyrs,tau);
+% [nxfDecode] = decodePosBayes(rootLast,sessLast,datF.posfr(useUnits,:),usePyrs,tau);
 
 [errLocs, errMeans, fhandle1] = plot_bayesErrHisto(0:0.05:0.95,fxfDecode,nxnDecode,nxfDecode);
 fhandle2 = plot_postProbXTime(fxfDecode,[sessFrst.ts(sessFrst.lapstt(10)) sessFrst.ts(sessFrst.lapend(15))]);

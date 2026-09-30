@@ -6,14 +6,11 @@
 % ========================================================================%
 
 datT = import_xldat("D:\Data\Kelton\analyses\group_analyses","dat_include.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort_070926';
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort_092426';
 cd(groupSDir) 
 
 mInclude = {'KW101','KW097','KW099','KW077','KW073','ZM032','ZM006','ZM035',...
     'KW100','KW082','KW079','ZM012','ZM020','ZM029','KW091','KW087','KW080'}; %By row: Learners, Non-learners
-% mInclude = {'KW101','KW097','KW077','KW073','ZM032','ZM006',...
-%     'KW100','KW099','HE002','KW082','KW079','KW074','ZM012','ZM029',...
-%     'KW094','KW091','KW087','KW080','ZM020'}; % Original split with partials
 
 sessType = 2;
 % useInds = datT.include == 1;
@@ -139,32 +136,11 @@ bvgrp(2).n = length(bvgrp(2).bvInd);
 % Learners: P(Nov Rwd) > 0.55
 
 for i = 1:nMice
-    uLapRwd50(i,:) = [mean(bvDat(i).preLapRwd(1:50)) mean(bvDat(i).pstLapRwd(1:50))];
+    uLapRwd50(i,:) = [mean(bvDat(i).preLapRwd(end-49:end)) mean(bvDat(i).pstLapRwd(1:50))];
 end
-% uLDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
 uPsv = [vertcat(bvDat.uPreLckPsv), vertcat(bvDat.uPstLckPsv)];
 uLapRwd = [vertcat(bvDat.uPreLapRwd), vertcat(bvDat.uPstLapRwd)];
 nLaps = [vertcat(bvDat.preNLap), vertcat(bvDat.pstNLap)];
-
-% rwdWtlckSplitF = plot_2d_bhvr(uLDI .* uLapRwd,bvgrp(1).bvInd,[],bvgrp(2).bvInd);
-% plot([-1 1],[-0.2 -0.2],'k--')
-% plot([0.2 0.2],[-1 1],'k--')
-% xlabel('uFam P(Rwd)*LSI'); xlim([-1 1])
-% ylabel('uNov P(Rwd)*LSI'); ylim([-1 1])
-% legend('Learner','Non-learner')
-%
-% ldiSplitF = plot_2d_bhvr(uLDI,bvgrp(1).bvInd,[],bvgrp(2).bvInd);
-% plot([-1 1],[-0.4 -0.4],'k--')
-% xlabel('mean Fam LSI'); xlim([-1 1])
-% ylabel('mean Nov LSI'); ylim([-1 1])
-% legend('Learner','Non-learner')
-% 
-% combiSplitF = figure;
-% plot3(uLDI(bvgrp(1).bvInd,2),nLaps(bvgrp(1).bvInd,2),uLapRwd(bvgrp(1).bvInd,2),'bo',...
-%     uLDI(bvgrp(2).bvInd,2),nLaps(bvgrp(2).bvInd,2),uLapRwd(bvgrp(2).bvInd,2),'ro');
-% xlabel('LSI Nov');
-% ylabel('N Laps Nov');
-% zlabel('P(Nov Lap Rewarded');
 
 psvSplitF = plot_2d_bhvr(uPsv,bvgrp(1).bvInd,bvgrp(2).bvInd,lnlcols);
 % plot([-1 1],[-0.15 -0.15],'k--')
@@ -182,9 +158,6 @@ xlabel('# Laps F'); xlim([0 140])
 ylabel('# Laps N'); ylim([0 140])
 
 if saveFlag
-    % fsave(rwdWtlckSplitF,[sbase 'bhv_wtlckPrePst'],1,0);
-    % fsave(ldiSplitF,[sbase 'bhv_lckPrePst'],1,0);
-    % fsave(combiSplitF,[sbase 'bhv_combiPst'],1,0);
     fsave(psvSplitF,[sbase 'bhv_psvPrePst'],1,1);
     fsave(rwdSplitF,[sbase 'bhv_rwdPrePst'],1,1);
     fsave(lapSplitF,[sbase 'bhv_lapPrePst'],1,1);
@@ -230,65 +203,49 @@ if saveFlag
     fsave(lapScatF,[sbase 'bhv_lap_errbar'],1,1)
 end
 
-%% Behavior comparisons first L1-10 vs L41-50 in F vs N
+%% Behavior across laps, using laps -50 to +50 of switch
 xsF = 1:50;
-xsN = 51:100;
 
-for i = 1:length(lnInd)
-    % trialLDIF(i,1:nLaps(lnInd(i),1)) = bvDat(lnInd(i)).preLckDI;
-    % trialLDIN(i,1:nLaps(lnInd(i),2)) = bvDat(lnInd(i)).pstLckDI;
-    trialPsvF_ln(i,1:nLaps(lnInd(i),1)) = bvDat(lnInd(i)).preLckPsv;
-    trialPsvN_ln(i,1:nLaps(lnInd(i),2)) = bvDat(lnInd(i)).pstLckPsv;
-end
-for i = 1:length(nlInd)
-    trialPsvF_nl(i,1:nLaps(nlInd(i),1)) = bvDat(nlInd(i)).preLckPsv;
-    trialPsvN_nl(i,1:nLaps(nlInd(i),2)) = bvDat(nlInd(i)).pstLckPsv;
+psvFMat = nan(nMice,max(nLaps(:,1)));
+psvNMat = nan(nMice,max(nLaps(:,2)));
+
+for i = 1:nMice
+    psvFMat(i,end-nLaps(i,1)+1:end) = bvDat(i).preLckPsv;
+    psvNMat(i,1:nLaps(i,2)) = bvDat(i).pstLckPsv;
 end
 
-mdlFPsv_ln = get_linfit(xsF,mean(trialPsvF_ln(:,xsF)));
-mdlNPsv_ln = get_linfit(xsF,mean(trialPsvN_ln(:,xsF)));
-mdlFPsv_nl = get_linfit(xsF,mean(trialPsvF_nl(:,xsF)));
-mdlNPsv_nl = get_linfit(xsF,mean(trialPsvN_nl(:,xsF)));
+mdlFPsv_ln = get_linfit(xsF,mean(psvFMat(bvgrp(1).bvInd,end-49:end)));
+mdlNPsv_ln = get_linfit(xsF,mean(psvNMat(bvgrp(1).bvInd,xsF)));
+mdlFPsv_nl = get_linfit(xsF,mean(psvFMat(bvgrp(2).bvInd,end-49:end)));
+mdlNPsv_nl = get_linfit(xsF,mean(psvNMat(bvgrp(2).bvInd,xsF)));
 
-[ciup_F_ln, cidn_F_ln] = get_CI(trialPsvF_ln(:,xsF));
-[ciup_N_ln, cidn_N_ln] = get_CI(trialPsvN_ln(:,xsF));
-[ciup_F_nl, cidn_F_nl] = get_CI(trialPsvF_nl(:,xsF));
-[ciup_N_nl, cidn_N_nl] = get_CI(trialPsvN_nl(:,xsF));
-
-% mdlF = get_linfit(1:50,mean(trialLDIF(:,1:50)));
-% mdlN = get_linfit(1:50,mean(trialLDIN(:,1:50)));
-% 
-% corLapLDIFNF = figure; hold on
-% plot(1:50, mean(trialLDIF(:,1:50)),'k', 51:100, mean(trialLDIN(:,1:50)),'r')
-% plot(1:50,mdlF.ypred, 'k', 'LineWidth',2)
-% plot(51:100,mdlN.ypred,'k','LineWidth',2)
-% xlabel("Lap #")
-% text2bar(corLapLDIFNF,"Mean LDI",mdlF.p,0.8,0.4);
-% text2bar(corLapLDIFNF,"Mean LDI",mdlN.p,0.3,0.5);
-% set(gca,'FontSize',12,'FontName','Arial')
+[ciup_F_ln, cidn_F_ln] = get_CI(psvFMat(bvgrp(1).bvInd,end-49:end));
+[ciup_N_ln, cidn_N_ln] = get_CI(psvNMat(bvgrp(1).bvInd,xsF));
+[ciup_F_nl, cidn_F_nl] = get_CI(psvFMat(bvgrp(2).bvInd,end-49:end));
+[ciup_N_nl, cidn_N_nl] = get_CI(psvNMat(bvgrp(2).bvInd,xsF));
 
 corLapPsvLnF = figure; hold on
 set(gcf,'Units','normalized','Position',[1.2 0.4 0.6315 0.1703])
-plot_CIs(xsF, ciup_F_ln, cidn_F_ln, lnlcols(1,:)/2);
-plot_CIs(xsN, ciup_N_ln, cidn_N_ln, lnlcols(1,:));
-plot(xsF, mean(trialPsvF_ln(:,1:50)), 'color', lnlcols(1,:)/2)
-plot(xsN, mean(trialPsvN_ln(:,1:50)), 'color', lnlcols(1,:))
-plot(xsF,mdlFPsv_ln.ypred, 'color', lnlcols(1,:)/2, 'LineWidth',2)
-plot(xsN,mdlNPsv_ln.ypred, 'color', lnlcols(1,:),   'LineWidth',2)
-xlabel("Lap #"); ylim([-1.1 1.1])
+plot_CIs(xsF-50, ciup_F_ln, cidn_F_ln, lnlcols(1,:)/2);
+plot_CIs(xsF, ciup_N_ln, cidn_N_ln, lnlcols(1,:));
+plot(xsF-50, mean(psvFMat(bvgrp(1).bvInd,end-49:end)), 'color', lnlcols(1,:)/2)
+plot(xsF, mean(psvNMat(bvgrp(1).bvInd,1:50)), 'color', lnlcols(1,:))
+plot(xsF-50,mdlFPsv_ln.ypred, 'color', lnlcols(1,:)/2, 'LineWidth',2)
+plot(xsF,mdlNPsv_ln.ypred, 'color', lnlcols(1,:),   'LineWidth',2)
+xlabel("Lap to shift"); ylim([-1.1 1.1])
 text2bar(corLapPsvLnF,"",    mdlFPsv_ln.p, 0.8, 0.3, lnlcols(1,:)/2);
 text2bar(corLapPsvLnF,"LDI", mdlNPsv_ln.p, 0.3, 0.8, lnlcols(1,:));
 set(gca,'FontSize',16,'FontName','Arial')
 
 corLapPsvNlF = figure; hold on
 set(gcf,'Units','normalized','Position',[1.2 0.4 0.6315 0.1703])
-plot_CIs(xsF, ciup_F_nl, cidn_F_nl, lnlcols(2,:)/2);
-plot_CIs(xsN, ciup_N_nl, cidn_N_nl, lnlcols(2,:));
-plot(xsF, mean(trialPsvF_nl(:,1:50)), 'color', lnlcols(2,:)/2)
-plot(xsN, mean(trialPsvN_nl(:,1:50)), 'color', lnlcols(2,:))
-plot(xsF,mdlFPsv_nl.ypred, 'color', lnlcols(2,:)/2, 'LineWidth',2)
-plot(xsN,mdlNPsv_nl.ypred, 'color', lnlcols(2,:),   'LineWidth',2)
-xlabel("Lap #"); ylim([-1.1 1.1])
+plot_CIs(xsF-50, ciup_F_nl, cidn_F_nl, lnlcols(2,:)/2);
+plot_CIs(xsF, ciup_N_nl, cidn_N_nl, lnlcols(2,:));
+plot(xsF-50, mean(psvFMat(bvgrp(2).bvInd,end-49:end)), 'color', lnlcols(2,:)/2)
+plot(xsF, mean(psvNMat(bvgrp(2).bvInd,1:50)), 'color', lnlcols(2,:))
+plot(xsF-50,mdlFPsv_nl.ypred, 'color', lnlcols(2,:)/2, 'LineWidth',2)
+plot(xsF,mdlNPsv_nl.ypred, 'color', lnlcols(2,:),   'LineWidth',2)
+xlabel("Lap to shift"); ylim([-1.1 1.1])
 text2bar(corLapPsvNlF,"",    mdlFPsv_nl.p, 0.8, 0.5, lnlcols(2,:)/2);
 text2bar(corLapPsvNlF,"LDI", mdlNPsv_nl.p, 0.3, 0.2, lnlcols(2,:));
 set(gca,'FontSize',16,'FontName','Arial')
@@ -1472,6 +1429,8 @@ end
 
 preErr = [];
 pstErr = [];
+prePrb = [];
+pstPrb = [];
 preLDI = [];
 pstLDI = [];
 mdlStats = [];
@@ -1493,6 +1452,8 @@ for i = 1:nMice
     pstLDI = [pstLDI; bvDat(i).pstLckDI];
     preErr = [preErr; dcDat(i).sub_fxf_lapAbsErr(sessFrst.valTrials)];
     pstErr = [pstErr; dcDat(i).sub_nxn_lapAbsErr(sessLast.valTrials) dcDat(i).sub_nxf_lapAbsErr(sessLast.valTrials)];
+    prePrb = [prePrb; dcDat(i).sub_fxf_lapPPost(sessFrst.valTrials)];
+    pstPrb = [pstPrb; dcDat(i).sub_nxn_lapPPost(sessLast.valTrials) dcDat(i).sub_nxf_lapPPost(sessLast.valTrials)];
 
     mdlStats(i).fxfRwdErr = mean(dcDat(i).sub_fxf_lapAbsErr(bvDat(i).preLapRwd),'omitnan');
     mdlStats(i).fxfNonErr = mean(dcDat(i).sub_fxf_lapAbsErr(~bvDat(i).preLapRwd),'omitnan');
@@ -1527,7 +1488,7 @@ for i = 1:nMice
         xlabel('Lap LDI'); ylabel('Lap Decoding Error (m)'); ylim([0 1]); xlim([-1 1]);
         set(gca,'FontName','Arial','FontSize',16)
 
-        fsave(ldiXerrF, [rootFrst.name '_ldiXdecodeErr_velLo'], 1, 0);
+        fsave(ldiXerrF, [rootFrst.name '_ldiXdecodeErr'], 1, 0);
     end
     close all
 end
@@ -1600,9 +1561,11 @@ xsF = 1:50;
 xsN = 51:100;
 
 for i = 1:nMice
-    lap_dcsub_fxf(i,xsF) = dcDat(i).sub_fxf_lapAbsErr(xsF+1); % Account for non-valid first lap per session
+    lap_dcsub_fxf(i,xsF) = dcDat(i).sub_fxf_lapPPost(xsF+1); % Account for non-valid first lap per session
     % lap_dcsub_nxn(i,xsF) = dcDat(i).sub_nxn_lapAbsErr(xsF);
-    lap_dcsub_nxf(i,xsF) = dcDat(i).sub_nxf_lapAbsErr(xsF);
+    lap_dcsub_nxf(i,xsF) = dcDat(i).sub_nxf_lapPPost(xsF);
+    % lap_dcsub_fxf_pr(i,xsF) = dcDat(i).sub_fxf_lapPPost(xsF+1); % Account for non-valid first lap per session
+    % lap_dcsub_nxn_pr(i,xsF) = dcDat(i).sub_fxf_lapPPost(xsF+1); % Account for non-valid first lap per session
 end
 
 mdl_dcsub_fxf_ln = get_linfit(xsF,mean(lap_dcsub_fxf(bvgrp(1).bvInd,xsF),'omitnan'));
@@ -1633,7 +1596,7 @@ plot(xsN,mdl_dcsub_nxf_ln.ypred, 'color', lnlcols(1,:)*1.5,   'LineWidth',2)
 xlabel("Lap #"); ylim([0 1])
 text2bar(lapErrLnF,"", mdl_dcsub_fxf_ln.p, 0.8, 0.3, lnlcols(1,:)/2);
 % text2bar(lapErrLnF,"", mdl_dcsub_nxn_ln.p, 0.3, 0.9, lnlcols(1,:));
-text2bar(lapErrLnF,"Error (m)", mdl_dcsub_nxf_ln.p, 0.3, 0.1, lnlcols(1,:)*1.5);
+text2bar(lapErrLnF,"P(Post)", mdl_dcsub_nxf_ln.p, 0.3, 0.1, lnlcols(1,:)*1.5);
 set(gca,'FontSize',16,'FontName','Arial')
 
 lapErrNlF = figure; hold on
@@ -1650,15 +1613,15 @@ plot(xsN,mdl_dcsub_nxf_nl.ypred, 'color', lnlcols(2,:)*1.25,   'LineWidth',2)
 xlabel("Lap #"); ylim([0 1])
 text2bar(lapErrNlF,"", mdl_dcsub_fxf_nl.p, 0.8, 0.3, lnlcols(2,:)/2);
 % text2bar(lapErrNlF,"", mdl_dcsub_nxn_nl.p, 0.3, 0.7, lnlcols(2,:));
-text2bar(lapErrNlF,"Error (m)", mdl_dcsub_nxf_nl.p, 0.3, 0.2, lnlcols(2,:)*1.25);
+text2bar(lapErrNlF,"P(Post)", mdl_dcsub_nxf_nl.p, 0.3, 0.2, lnlcols(2,:)*1.25);
 set(gca,'FontSize',16,'FontName','Arial')
 
 % [~,ps.bdc_tt_nxn_ln_5v5,~,stats.bdc_tt_nxn_ln_5v5] = ttest2(mean(lap_dcsub_nxf(bvgrp(1).bvInd,1:5),2,'omitnan'),mean(lap_dcsub_nxf(bvgrp(1).bvInd,26:30),2,'omitnan'));
 % plotBar2(mean(lap_dcsub_nxf(bvgrp(1).bvInd,1:5),2,'omitnan'),mean(lap_dcsub_nxf(bvgrp(1).bvInd,26:30),2,'omitnan'),lnlcols);
 
 if saveFlag
-    fsave(lapErrLnF,[sbase 'decode_errXlap_ln'],1,0);
-    fsave(lapErrNlF,[sbase 'decode_errXlap_nl'],1,0);
+    fsave(lapErrLnF,[sbase 'decode_ppostXlap_ln'],1,0);
+    fsave(lapErrNlF,[sbase 'decode_ppostXlap_nl'],1,0);
 end
 
 %% Decoding error successful trials vs non-successful

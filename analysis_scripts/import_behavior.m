@@ -1,6 +1,6 @@
 % Batched Import behavior script
 
-mousedir = 'D:\Data\Kelton\analyses\KW112';
+mousedir = 'D:\Data\Kelton\analyses\KW054';
 
 overwriteFlag = 1;
 

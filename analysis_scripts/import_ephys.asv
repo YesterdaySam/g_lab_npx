@@ -2,11 +2,11 @@
 
 spaths       = {'D:\Data\Kelton\analyses\KW054\KW054_07302025_rec_D2_RLat1',...
     'D:\Data\Kelton\analyses\KW054\KW054_07312025_rec_D3_RMed2'};
-datpaths     = {'D:\Data\Kelton\probe_data\KW054\KW054_07302025_rec_D2_RLat1_g0',
-    'D:\Data\Kelton\probe_data\KW054\KW054_07312025_rec_D3_RMed2_g0'};
+datpaths     = {'D:\Data\Kelton\probe_data\KW054\KW054_07302025_rec_D2_RLat1_g',
+    'D:\Data\Kelton\probe_data\KW054\KW054_07292025_rec_D1_RMed1_g0'};
 
 region       = [2]; % 1 = CA1 or Sub; 2 = EC
-ovrwrtRoot   = 1;
+ovrwrtRoot   = 0;
 ovrwrtDatS   = 1;
 splitLap     = [0];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
 % ripRef       = [];
