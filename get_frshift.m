@@ -1,4 +1,4 @@
-function [frShift,ps,frViol,fhandle] = get_frshift(root,sess,coarseBin,fineBin,nTestBins,pThresh,plotflag)
+function [frShift,ps,frViol,crossLap,fhandle] = get_frshift(root,sess,coarseBin,fineBin,nTestBins,pThresh,plotflag)
 
 arguments
     root
@@ -45,9 +45,9 @@ frShift = false(length(root.good),nZcross);
 
 % For each big delta in Z at pop level, t-test FR in nearby laps to find units in violation
 for i = 1:nZcross
-    crossLap = find(sess.ts(sess.lapstt) > binedges(hiZbins(i)),1);
+    crossLap(i) = find(sess.ts(sess.lapstt) > binedges(hiZbins(i)),1);
     for j = 1:nCC
-        [~,ps(j,i)] = ttest(lapFRs(j,crossLap-nTestBins:crossLap-1),lapFRs(j,crossLap:crossLap+nTestBins-1));
+        [~,ps(j,i)] = ttest(lapFRs(j,crossLap(i)-nTestBins:crossLap(i)-1),lapFRs(j,crossLap(i):crossLap(i)+nTestBins-1));
     end
     frShift(ps(:,i) < pThresh,i) = true;
     frViol(i) = sum(frShift(:,i)) / length(root.good);
