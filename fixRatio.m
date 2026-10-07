@@ -7,7 +7,7 @@ function [fhandle] = fixRatio(fhandle, xratio, yratio)
 %   yratio = 1.7778; divisor for y dimension of fhandle
 %
 % Outputs:
-%   fhandle = updated figure (or original, if screen is still portrait)
+%   fhandle = updated figure (or original, if screen is still landscape)
 %
 % Created 8/3/2026 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
@@ -18,12 +18,16 @@ arguments
     yratio = 1.7778  % Convert 1080 to 1920
 end
 
+figure(fhandle);    % Bring to front
+
 aspectRatio = get(0,'ScreenSize');
 
 if aspectRatio(3) < aspectRatio(4)  % No change unless screen is in portrait mode
     newX = fhandle.Position(3) / xratio;
     newY = fhandle.Position(4) / yratio;
-% else
+else
+    newX = fhandle.Position(3);
+    newY = fhandle.Position(4);
     % newX = fhandle.Position(3) * xratio;
     % newY = fhandle.Position(4) * yratio;
 end

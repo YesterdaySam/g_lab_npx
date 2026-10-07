@@ -7,7 +7,7 @@
 
 datT = import_xldat("D:\Data\Kelton\analyses\group_analyses","dat_include.xlsx");
 groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort_092426';
-cd(groupSDir) 
+cd(groupSDir)
 
 mInclude = {'KW101','KW097','KW099','KW077','KW073','ZM032','ZM006','ZM035',...
     'KW100','KW082','KW079','ZM012','ZM020','ZM029','KW091','KW087','KW080'}; %By row: Learners, Non-learners
@@ -21,8 +21,8 @@ datT(~useInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
 sbase = 'subRwdShift_';
-fname = [sbase 'groupDat_phys2'];
-bvName = [sbase 'groupDat_bhvr2'];
+fname = [sbase 'groupDat_phys_shiftRM'];
+bvName = [sbase 'groupDat_bhvr'];
 
 dbnsz = 0.05;
 histoBnsz = 5;
@@ -63,6 +63,8 @@ sbase = 'subRwdShift_';
 % thBothID = thFrstID & thLastID;
 siFrstID = useCC & lcDat(:,1) <= 0.05;
 siLastID = useCC & lcDat(:,5) <= 0.05;
+siFOnlID = siFrstID & ~siLastID;
+siNOnlID = siLastID & ~siFrstID;
 siBothID = siFrstID & siLastID;
 siEithID = siFrstID | siLastID;
 swrFrstID = useCC & rpDat(:,2) > 1;
@@ -72,8 +74,8 @@ bstFrstID = useCC & bsDat(:,1) > 0;
 bstLastID = useCC & bsDat(:,4) > 0;
 bstBothID = bstFrstID & bstLastID;
 
-mLern = [101 99 97 77 73 32 6 35];
-mNonl = [100 82 79 12 20 29 91 87 80];
+mLern = [101 99 97 79 77 73 32 6 35];
+mNonl = [100 82 12 20 29 91 87 80];
 lnInd = [];
 nlInd = [];
 
@@ -143,7 +145,6 @@ uLapRwd = [vertcat(bvDat.uPreLapRwd), vertcat(bvDat.uPstLapRwd)];
 nLaps = [vertcat(bvDat.preNLap), vertcat(bvDat.pstNLap)];
 
 psvSplitF = plot_2d_bhvr(uPsv,bvgrp(1).bvInd,bvgrp(2).bvInd,lnlcols);
-% plot([-1 1],[-0.15 -0.15],'k--')
 xlabel('LDI F'); xlim([-1 1])
 ylabel('LDI N'); ylim([-1 1])
 
@@ -163,27 +164,45 @@ if saveFlag
     fsave(lapSplitF,[sbase 'bhv_lapPrePst'],1,1);
 end
 
-%% Statistical Quantification - Learn Vs Non Learn
+%% Statistical Quantification - Learn Vs Non Learn (LMEs)
 
-[~,ps.ttest_psv_fam,~,stats.ttest_psv_fam] = ttest2(uPsv(bvgrp(1).bvInd,1),uPsv(bvgrp(2).bvInd,1));
-[~,ps.ttest_psv_nov,~,stats.ttest_psv_nov] = ttest2(uPsv(bvgrp(1).bvInd,2),uPsv(bvgrp(2).bvInd,2));
-[~,ps.ttest_lap_fam,~,stats.ttest_lap_fam] = ttest2(nLaps(bvgrp(1).bvInd,1),nLaps(bvgrp(2).bvInd,1));
-[~,ps.ttest_lap_nov,~,stats.ttest_lap_nov] = ttest2(nLaps(bvgrp(1).bvInd,2),nLaps(bvgrp(2).bvInd,2));
-[~,ps.ttest_rwd_fam,~,stats.ttest_rwd_fam] = ttest2(uLapRwd(bvgrp(1).bvInd,1),uLapRwd(bvgrp(2).bvInd,1));
-[~,ps.ttest_rwd_nov,~,stats.ttest_rwd_nov] = ttest2(uLapRwd(bvgrp(1).bvInd,2),uLapRwd(bvgrp(2).bvInd,2));
+ldiVarNames = {'ldi','epoch','grp','mouse'};
+[ldi_lme_table] = get_lmetable([uPsv(:,1); uPsv(:,2)],bvgrp,mID,ldiVarNames);
+ldi_lme = fitlme(ldi_lme_table,'ldi ~ epoch * grp + (1|mouse)');
+ldi_lmeF = plot_2wayLME(uPsv(:,1)',uPsv(:,2)',bvgrp,lnlcols); ylim([-1 1])
+xticklabels({'F','N','F','N'}); ylabel('LDI')
 
-psvScatF = plot_grpBhv(uPsv,bvgrp,lnlcols);
-xticklabels({'F','N'}); ylim([-1 1]); 
-text2bar(psvScatF,'',ps.ttest_psv_fam,0.85, 0.5); text2bar(psvScatF,'LDI',ps.ttest_psv_nov,0.25);
+rwdVarNames = {'rwd','epoch','grp','mouse'};
+[rwd_lme_table] = get_lmetable([uLapRwd(:,1); uLapRwd(:,2)],bvgrp,mID,rwdVarNames);
+rwd_lme = fitlme(rwd_lme_table,'rwd ~ epoch * grp + (1|mouse)');
+rwd_lmeF = plot_2wayLME(uLapRwd(:,1)',uLapRwd(:,2)',bvgrp,lnlcols); ylim([0 1])
+xticklabels({'F','N','F','N'}); ylabel('P(Rewarded)')
 
-rwdScatF = plot_grpBhv(uLapRwd,bvgrp,lnlcols);
-xticklabels({'F','N'}); ylim([0 1.1]); 
-text2bar(rwdScatF,'',ps.ttest_rwd_fam,0.85,0.5); text2bar(rwdScatF,'P(Rwd)',ps.ttest_rwd_nov,0.25);
+lapVarNames = {'lap','epoch','grp','mouse'};
+[lap_lme_table] = get_lmetable([nLaps(:,1); nLaps(:,2)],bvgrp,mID,lapVarNames);
+lap_lme = fitlme(lap_lme_table,'lap ~ epoch * grp + (1|mouse)');
+lap_lmeF = plot_2wayLME(nLaps(:,1)',nLaps(:,2)',bvgrp,lnlcols); ylim([0 150])
+xticklabels({'F','N','F','N'}); ylabel('Laps')
 
-lapScatF = plot_grpBhv(nLaps,bvgrp,lnlcols);
-xticklabels({'F','N'}); ylim([0 140]); 
-text2bar(lapScatF,'',ps.ttest_lap_fam,0.85); text2bar(lapScatF,'# Laps',ps.ttest_lap_nov,0.25);
-
+% [~,ps.ttest_psv_fam,~,stats.ttest_psv_fam] = ttest2(uPsv(bvgrp(1).bvInd,1),uPsv(bvgrp(2).bvInd,1));
+% [~,ps.ttest_psv_nov,~,stats.ttest_psv_nov] = ttest2(uPsv(bvgrp(1).bvInd,2),uPsv(bvgrp(2).bvInd,2));
+% [~,ps.ttest_lap_fam,~,stats.ttest_lap_fam] = ttest2(nLaps(bvgrp(1).bvInd,1),nLaps(bvgrp(2).bvInd,1));
+% [~,ps.ttest_lap_nov,~,stats.ttest_lap_nov] = ttest2(nLaps(bvgrp(1).bvInd,2),nLaps(bvgrp(2).bvInd,2));
+% [~,ps.ttest_rwd_fam,~,stats.ttest_rwd_fam] = ttest2(uLapRwd(bvgrp(1).bvInd,1),uLapRwd(bvgrp(2).bvInd,1));
+% [~,ps.ttest_rwd_nov,~,stats.ttest_rwd_nov] = ttest2(uLapRwd(bvgrp(1).bvInd,2),uLapRwd(bvgrp(2).bvInd,2));
+% 
+% psvScatF = plot_grpBhv(uPsv,bvgrp,lnlcols);
+% xticklabels({'F','N'}); ylim([-1 1]); 
+% text2bar(psvScatF,'',ps.ttest_psv_fam,0.85, 0.5); text2bar(psvScatF,'LDI',ps.ttest_psv_nov,0.25);
+% 
+% rwdScatF = plot_grpBhv(uLapRwd,bvgrp,lnlcols);
+% xticklabels({'F','N'}); ylim([0 1.1]); 
+% text2bar(rwdScatF,'',ps.ttest_rwd_fam,0.85,0.5); text2bar(rwdScatF,'P(Rwd)',ps.ttest_rwd_nov,0.25);
+% 
+% lapScatF = plot_grpBhv(nLaps,bvgrp,lnlcols);
+% xticklabels({'F','N'}); ylim([0 140]); 
+% text2bar(lapScatF,'',ps.ttest_lap_fam,0.85); text2bar(lapScatF,'# Laps',ps.ttest_lap_nov,0.25);
+% 
 % lapBarF = plotMiniBar(nLaps(bvgrp(1).bvInd,1),nLaps(bvgrp(2).bvInd,1),vColors);
 % xticklabels({'Learn','Non-Lrn'}); text2bar(lapBarF,'mean Fam Laps',ps.ttest_lap_fam); ylim([0 170])
 % lapBarN = plotMiniBar(nLaps(bvgrp(1).bvInd,2),nLaps(bvgrp(2).bvInd,2),vColors);
@@ -198,9 +217,12 @@ text2bar(lapScatF,'',ps.ttest_lap_fam,0.85); text2bar(lapScatF,'# Laps',ps.ttest
 % xticklabels({'Learn','Non-Lrn'}); text2bar(psvBarN,'mean Nov Perseveration',ps.ttest_psv_nov); ylim([-1 1])
 
 if saveFlag
-    fsave(psvScatF,[sbase 'bhv_psv_errbar'],1,1)
-    fsave(rwdScatF,[sbase 'bhv_rwd_errbar'],1,1)
-    fsave(lapScatF,[sbase 'bhv_lap_errbar'],1,1)
+    % fsave(psvScatF,[sbase 'bhv_psv_errbar'],1,1)
+    % fsave(rwdScatF,[sbase 'bhv_rwd_errbar'],1,1)
+    % fsave(lapScatF,[sbase 'bhv_lap_errbar'],1,1)
+    fsave(ldi_lmeF,[sbase 'bhv_ldi_lme'],1,1)
+    fsave(rwd_lmeF,[sbase 'bhv_rwd_lme'],1,1)
+    fsave(lap_lmeF,[sbase 'bhv_lap_lme'],1,1)
 end
 
 %% Behavior across laps, using laps -50 to +50 of switch
@@ -209,6 +231,7 @@ xsF = 1:50;
 psvFMat = nan(nMice,max(nLaps(:,1)));
 psvNMat = nan(nMice,max(nLaps(:,2)));
 
+% Align F behavior to right half of matrix
 for i = 1:nMice
     psvFMat(i,end-nLaps(i,1)+1:end) = bvDat(i).preLckPsv;
     psvNMat(i,1:nLaps(i,2)) = bvDat(i).pstLckPsv;
@@ -275,29 +298,25 @@ for i = 1:nMice
     uPstLck(i,:) = circshift(uPstLck(i,:), mBin - pstRZBin);
 end
 
-% Average group types pre and post separately
-vColorsLN = [0 0 1; 0.7656 0.6406 0.5156];
-vColorsFN = [0 0 0; 1 0 0];
-
-groupLckPreF = plot_3bhvrTraceCI(uPreLck,bvgrp,vColorsLN);
-ylim([0 15]); ylabel('Licks (Hz)'); legend('Learner','Non-learner')
-groupLckPstF = plot_3bhvrTraceCI(uPstLck,bvgrp,vColorsLN);
+groupLckPreF = plot_3bhvrTraceCI(uPreLck,bvgrp,lnlcols);
+ylim([0 15]); ylabel('Licks (Hz)'); legend('Strong','Weak')
+groupLckPstF = plot_3bhvrTraceCI(uPstLck,bvgrp,lnlcols);
 ylim([0 15]); ylabel('Licks (Hz)')
 
-groupVelPreF = plot_3bhvrTraceCI(uPreVel,bvgrp,vColorsLN);
+groupVelPreF = plot_3bhvrTraceCI(uPreVel,bvgrp,lnlcols);
 xlim([-100 100]); ylim([0 45]); ylabel('Velocity (cm/s)')
-groupVelPstF = plot_3bhvrTraceCI(uPstVel,bvgrp,vColorsLN);
+groupVelPstF = plot_3bhvrTraceCI(uPstVel,bvgrp,lnlcols);
 xlim([-100 100]); ylim([0 45]); ylabel('Velocity (cm/s)')
 
 % Plot pre/post by group
-uLckLernF = plot_bhvrTraceCI(uPreLck(lnInd,:),uPstLck(lnInd,:),vColorsFN);
+uLckLernF = plot_bhvrTraceCI(uPreLck(lnInd,:),uPstLck(lnInd,:),fvncols);
 ylim([0 15]); ylabel('Licks (Hz)'); legend('Familiar','Novel')
-uLckNonLF = plot_bhvrTraceCI(uPreLck(nlInd,:),uPstLck(nlInd,:),vColorsFN);
+uLckNonLF = plot_bhvrTraceCI(uPreLck(nlInd,:),uPstLck(nlInd,:),fvncols);
 ylim([0 15]); ylabel('Licks (Hz)')
 
-uVelLernF = plot_bhvrTraceCI(uPreVel(lnInd,:),uPstVel(lnInd,:),vColorsFN);
+uVelLernF = plot_bhvrTraceCI(uPreVel(lnInd,:),uPstVel(lnInd,:),fvncols);
 ylim([0 45]); ylabel('Velocity (cm/s)')
-uVelNonLF = plot_bhvrTraceCI(uPreVel(nlInd,:),uPstVel(nlInd,:),vColorsFN);
+uVelNonLF = plot_bhvrTraceCI(uPreVel(nlInd,:),uPstVel(nlInd,:),fvncols);
 ylim([0 45]); ylabel('Velocity (cm/s)')
 
 if saveFlag
@@ -311,29 +330,29 @@ if saveFlag
     fsave(uVelNonLF,[sbase 'bhv_meanVel_prepst_nonlearn'],1,1)
 end
 
-%% Statistical comparison behavior pre vs post shift
-
-for i = 1:2
-    [~,ps(i).ttest_psv_prepst,~,stats(i).ttest_psv_prepst] = ttest(uPsv(bvgrp(i).bvInd,1), uPsv(bvgrp(i).bvInd,2));
-    [~,ps(i).ttest_rwd_prepst,~,stats(i).ttest_rwd_prepst] = ttest(uLapRwd(bvgrp(i).bvInd,1), uLapRwd(bvgrp(i).bvInd,2));
-    [~,ps(i).ttest_lap_prepst,~,stats(i).ttest_lap_prepst] = ttest(nLaps(bvgrp(i).bvInd,1), nLaps(bvgrp(i).bvInd,2));
-
-    psvPrePstF = plot_barXmouse(uPsv(bvgrp(i).bvInd,:),fvncols);
-    text2bar(psvPrePstF,'LDI',ps(i).ttest_psv_prepst); legend('off')
-
-    rwdPrePstF = plot_barXmouse(uLapRwd(bvgrp(i).bvInd,:),fvncols);
-    text2bar(rwdPrePstF,'P(Operant Reward)',ps(i).ttest_rwd_prepst); legend('off')
-
-    lapPrePstF = plot_barXmouse(nLaps(bvgrp(i).bvInd,:),fvncols);
-    text2bar(lapPrePstF,'# Laps',ps(i).ttest_lap_prepst);
-
-    if saveFlag
-        fsave(psvPrePstF,[sbase 'bhv_meanPsv_prepst_' bvgrp(i).grpname],1,1)
-        fsave(rwdPrePstF,[sbase 'bhv_meanRwd_prepst_' bvgrp(i).grpname],1,1)
-        fsave(lapPrePstF,[sbase 'bhv_meanLap_prepst_' bvgrp(i).grpname],1,1)
-        close all
-    end
-end
+%% Statistical comparison behavior pre vs post shift by group separately
+% 
+% for i = 1:2
+%     [~,ps(i).ttest_psv_prepst,~,stats(i).ttest_psv_prepst] = ttest(uPsv(bvgrp(i).bvInd,1), uPsv(bvgrp(i).bvInd,2));
+%     [~,ps(i).ttest_rwd_prepst,~,stats(i).ttest_rwd_prepst] = ttest(uLapRwd(bvgrp(i).bvInd,1), uLapRwd(bvgrp(i).bvInd,2));
+%     [~,ps(i).ttest_lap_prepst,~,stats(i).ttest_lap_prepst] = ttest(nLaps(bvgrp(i).bvInd,1), nLaps(bvgrp(i).bvInd,2));
+% 
+%     psvPrePstF = plot_barXmouse(uPsv(bvgrp(i).bvInd,:),fvncols);
+%     text2bar(psvPrePstF,'LDI',ps(i).ttest_psv_prepst); legend('off')
+% 
+%     rwdPrePstF = plot_barXmouse(uLapRwd(bvgrp(i).bvInd,:),fvncols);
+%     text2bar(rwdPrePstF,'P(Operant Reward)',ps(i).ttest_rwd_prepst); legend('off')
+% 
+%     lapPrePstF = plot_barXmouse(nLaps(bvgrp(i).bvInd,:),fvncols);
+%     text2bar(lapPrePstF,'# Laps',ps(i).ttest_lap_prepst);
+% 
+%     if saveFlag
+%         fsave(psvPrePstF,[sbase 'bhv_meanPsv_prepst_' bvgrp(i).grpname],1,1)
+%         fsave(rwdPrePstF,[sbase 'bhv_meanRwd_prepst_' bvgrp(i).grpname],1,1)
+%         fsave(lapPrePstF,[sbase 'bhv_meanLap_prepst_' bvgrp(i).grpname],1,1)
+%         close all
+%     end
+% end
 
 %% Start Ephys comparisons
 % =========================================================================
@@ -424,25 +443,25 @@ frVarNames = {'fr','epoch','grp','mouse'};
 [fr_subFNstd_lme_table] = get_lmetable([frMat(:,1); frMat(:,3)],bvgrp,mID,frVarNames);
 fr_subFNstd_lme = fitlme(fr_subFNstd_lme_table,'fr ~ epoch * grp + (1|mouse)');
 fr_subFNstd_lmeF = plot_2wayLME(frMat(:,1)',frMat(:,3)',bvgrp,lnlcols); ylim([0 20])
-xticklabels({'F','N','F','N'})
+xticklabels({'F','N','F','N'}); ylabel('Standing FR (Hz)')
 
 [fr_subFNrun_lme_table] = get_lmetable([frMat(:,2); frMat(:,4)],bvgrp,mID,frVarNames);
 fr_subFNrun_lme = fitlme(fr_subFNrun_lme_table,'fr ~ epoch * grp + (1|mouse)');
 fr_subFNrun_lmeF = plot_2wayLME(frMat(:,2)',frMat(:,4)',bvgrp,lnlcols); ylim([0 20])
-xticklabels({'F','N','F','N'})
+xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
 
 [fr_ca1FNstd_lme_table] = get_lmetable([frMat(:,5); frMat(:,7)],bvgrp,mID,frVarNames);
 fr_ca1FNstd_lme = fitlme(fr_ca1FNstd_lme_table,'fr ~ epoch * grp + (1|mouse)');
 fr_ca1FNstd_lmeF = plot_2wayLME(frMat(:,5)',frMat(:,7)',bvgrp,lnlcols); ylim([0 20])
-xticklabels({'F','N','F','N'})
+xticklabels({'F','N','F','N'}); ylabel('Standing FR (Hz)')
 
 [fr_ca1FNrun_lme_table] = get_lmetable([frMat(:,6); frMat(:,8)],bvgrp,mID,frVarNames);
 fr_ca1FNrun_lme = fitlme(fr_ca1FNrun_lme_table,'fr ~ epoch * grp + (1|mouse)');
 fr_ca1FNrun_lmeF = plot_2wayLME(frMat(:,6)',frMat(:,8)',bvgrp,lnlcols); ylim([0 20])
-xticklabels({'F','N','F','N'})
+xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
 
 % Test avg FR subiculum vs CA1 over all mice
-[~,ps.fr_rgn,~,stats.fr_rgn] = ttest2(mean(frMat(:,5:8),2),mean(frMat(:,1:4),2));
+[~,ps(1).fr_rgn,~,stats(1).fr_rgn] = ttest2(mean(frMat(:,5:8),2)',mean(frMat(:,1:4),2)');
 fr_rgn_F = plotBar2(mean(frMat(:,5:8),2),mean(frMat(:,1:4),2),rgncols); ylim([0 20])
 text2bar(fr_rgn_F,'Global FR (Hz)',ps.fr_rgn); xticklabels({'CA1','Sub'})
 
@@ -456,32 +475,65 @@ end
 
 %% Compare FR, SI and Peak rate across each behavior group
 
-lnlcols = [0 0 1; 0.7656 0.6406 0.5156];
-
-[~,ps(1).lc_LnNlSI_F_both,~,stats(1).lc_LnNlSI_F_both] = ttest2(lcDat(siBothID & grp(1).logi,2), lcDat(siBothID & grp(2).logi,2));
-[~,ps(1).lc_LnNlSI_N_both,~,stats(1).lc_LnNlSI_N_both] = ttest2(lcDat(siBothID & grp(1).logi,6), lcDat(siBothID & grp(2).logi,6));
-[~,ps(1).lc_LnNlSI_F_frst,~,stats(1).lc_LnNlSI_F_frst] = ttest2(lcDat(siFrstID & grp(1).logi,2), lcDat(siFrstID & grp(2).logi,2));
-[~,ps(1).lc_LnNlSI_N_last,~,stats(1).lc_LnNlSI_N_last] = ttest2(lcDat(siLastID & grp(1).logi,6), lcDat(siLastID & grp(2).logi,6));
-[~,ps(1).fr_LnNl_stnd_F,~,stats(1).fr_LnNl_stnd_F] = ttest2(frDat(useCC & grp(1).logi,1), frDat(useCC & grp(2).logi,1));
-[~,ps(1).fr_LnNl_runn_F,~,stats(1).fr_LnNl_runn_F] = ttest2(frDat(useCC & grp(1).logi,3), frDat(useCC & grp(2).logi,3));
-[~,ps(1).fr_LnNl_stnd_N,~,stats(1).fr_LnNl_stnd_N] = ttest2(frDat(useCC & grp(1).logi,2), frDat(useCC & grp(2).logi,2));
-[~,ps(1).fr_LnNl_runn_N,~,stats(1).fr_LnNl_runn_N] = ttest2(frDat(useCC & grp(1).logi,4), frDat(useCC & grp(2).logi,4));
-
-lcBothSI_LnNl_F = plotBar2(lcDat(siBothID & grp(1).logi,2), lcDat(siBothID & grp(2).logi,2),lnlcols); ylim([0 4])
-xticklabels({'Strong','Weak'}); text2bar(lcBothSI_LnNl_F,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_F_both);
-lcBothSI_LnNl_N = plotBar2(lcDat(siBothID & grp(1).logi,6), lcDat(siBothID & grp(2).logi,6),lnlcols); ylim([0 4])
-xticklabels({'Strong','Weak'}); text2bar(lcBothSI_LnNl_N,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_N_both);
-lcFrstSI_LnNl_F = plotBar2(lcDat(siFrstID & grp(1).logi,2), lcDat(siFrstID & grp(2).logi,2),lnlcols); ylim([0 4])
-xticklabels({'Strong','Weak'}); text2bar(lcFrstSI_LnNl_F,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_F_frst);
-lcLastSI_LnNl_N = plotBar2(lcDat(siLastID & grp(1).logi,6), lcDat(siLastID & grp(2).logi,6),lnlcols); ylim([0 4])
-xticklabels({'Strong','Weak'}); text2bar(lcLastSI_LnNl_N,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_N_last);
-
-if saveFlag
-    fsave(lcBothSI_LnNl_F,[sbase 'si_bothF_bar_LnNl'])
-    fsave(lcBothSI_LnNl_N,[sbase 'si_bothN_bar_LnNl'])
-    fsave(lcFrstSI_LnNl_F,[sbase 'si_frstF_bar_LnNl'])
-    fsave(lcLastSI_LnNl_N,[sbase 'si_lastN_bar_LnNl'])
+frMat = nan(nMice,8);  % Sub F stand, F Run, N Stand, N Run, CA1 F stand, F Run, N Stand, N Run
+for i = 1:nMice
+    useSub = recID(:,1) == mID(i) & rgDat == 2 & useCC;
+    useCA1 = recID(:,1) == mID(i) & rgDat == 1 & useCC;
+    frMat(i,:) = [mean(frDat(useSub,:)) mean(frDat(useCA1,:))];
 end
+
+frVarNames = {'fr','epoch','grp','mouse'};
+[fr_subFNstd_lme_table] = get_lmetable([frMat(:,1); frMat(:,3)],bvgrp,mID,frVarNames);
+fr_subFNstd_lme = fitlme(fr_subFNstd_lme_table,'fr ~ epoch * grp + (1|mouse)');
+fr_subFNstd_lmeF = plot_2wayLME(frMat(:,1)',frMat(:,3)',bvgrp,lnlcols); ylim([0 20])
+xticklabels({'F','N','F','N'}); ylabel('Standing FR (Hz)')
+
+[fr_subFNrun_lme_table] = get_lmetable([frMat(:,2); frMat(:,4)],bvgrp,mID,frVarNames);
+fr_subFNrun_lme = fitlme(fr_subFNrun_lme_table,'fr ~ epoch * grp + (1|mouse)');
+fr_subFNrun_lmeF = plot_2wayLME(frMat(:,2)',frMat(:,4)',bvgrp,lnlcols); ylim([0 20])
+xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
+
+[fr_ca1FNstd_lme_table] = get_lmetable([frMat(:,5); frMat(:,7)],bvgrp,mID,frVarNames);
+fr_ca1FNstd_lme = fitlme(fr_ca1FNstd_lme_table,'fr ~ epoch * grp + (1|mouse)');
+fr_ca1FNstd_lmeF = plot_2wayLME(frMat(:,5)',frMat(:,7)',bvgrp,lnlcols); ylim([0 20])
+xticklabels({'F','N','F','N'}); ylabel('Standing FR (Hz)')
+
+[fr_ca1FNrun_lme_table] = get_lmetable([frMat(:,6); frMat(:,8)],bvgrp,mID,frVarNames);
+fr_ca1FNrun_lme = fitlme(fr_ca1FNrun_lme_table,'fr ~ epoch * grp + (1|mouse)');
+fr_ca1FNrun_lmeF = plot_2wayLME(frMat(:,6)',frMat(:,8)',bvgrp,lnlcols); ylim([0 20])
+xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
+
+% Test avg FR subiculum vs CA1 over all mice
+[~,ps(1).fr_rgn,~,stats(1).fr_rgn] = ttest2(mean(frMat(:,5:8),2)',mean(frMat(:,1:4),2)');
+fr_rgn_F = plotBar2(mean(frMat(:,5:8),2),mean(frMat(:,1:4),2),rgncols); ylim([0 20])
+text2bar(fr_rgn_F,'Global FR (Hz)',ps.fr_rgn); xticklabels({'CA1','Sub'})
+
+% lnlcols = [0 0 1; 0.7656 0.6406 0.5156];
+% 
+% [~,ps(1).lc_LnNlSI_F_both,~,stats(1).lc_LnNlSI_F_both] = ttest2(lcDat(siBothID & grp(1).logi,2), lcDat(siBothID & grp(2).logi,2));
+% [~,ps(1).lc_LnNlSI_N_both,~,stats(1).lc_LnNlSI_N_both] = ttest2(lcDat(siBothID & grp(1).logi,6), lcDat(siBothID & grp(2).logi,6));
+% [~,ps(1).lc_LnNlSI_F_frst,~,stats(1).lc_LnNlSI_F_frst] = ttest2(lcDat(siFrstID & grp(1).logi,2), lcDat(siFrstID & grp(2).logi,2));
+% [~,ps(1).lc_LnNlSI_N_last,~,stats(1).lc_LnNlSI_N_last] = ttest2(lcDat(siLastID & grp(1).logi,6), lcDat(siLastID & grp(2).logi,6));
+% [~,ps(1).fr_LnNl_stnd_F,~,stats(1).fr_LnNl_stnd_F] = ttest2(frDat(useCC & grp(1).logi,1), frDat(useCC & grp(2).logi,1));
+% [~,ps(1).fr_LnNl_runn_F,~,stats(1).fr_LnNl_runn_F] = ttest2(frDat(useCC & grp(1).logi,3), frDat(useCC & grp(2).logi,3));
+% [~,ps(1).fr_LnNl_stnd_N,~,stats(1).fr_LnNl_stnd_N] = ttest2(frDat(useCC & grp(1).logi,2), frDat(useCC & grp(2).logi,2));
+% [~,ps(1).fr_LnNl_runn_N,~,stats(1).fr_LnNl_runn_N] = ttest2(frDat(useCC & grp(1).logi,4), frDat(useCC & grp(2).logi,4));
+% 
+% lcBothSI_LnNl_F = plotBar2(lcDat(siBothID & grp(1).logi,2), lcDat(siBothID & grp(2).logi,2),lnlcols); ylim([0 4])
+% xticklabels({'Strong','Weak'}); text2bar(lcBothSI_LnNl_F,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_F_both);
+% lcBothSI_LnNl_N = plotBar2(lcDat(siBothID & grp(1).logi,6), lcDat(siBothID & grp(2).logi,6),lnlcols); ylim([0 4])
+% xticklabels({'Strong','Weak'}); text2bar(lcBothSI_LnNl_N,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_N_both);
+% lcFrstSI_LnNl_F = plotBar2(lcDat(siFrstID & grp(1).logi,2), lcDat(siFrstID & grp(2).logi,2),lnlcols); ylim([0 4])
+% xticklabels({'Strong','Weak'}); text2bar(lcFrstSI_LnNl_F,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_F_frst);
+% lcLastSI_LnNl_N = plotBar2(lcDat(siLastID & grp(1).logi,6), lcDat(siLastID & grp(2).logi,6),lnlcols); ylim([0 4])
+% xticklabels({'Strong','Weak'}); text2bar(lcLastSI_LnNl_N,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_N_last);
+% 
+% if saveFlag
+%     fsave(lcBothSI_LnNl_F,[sbase 'si_bothF_bar_LnNl'])
+%     fsave(lcBothSI_LnNl_N,[sbase 'si_bothN_bar_LnNl'])
+%     fsave(lcFrstSI_LnNl_F,[sbase 'si_frstF_bar_LnNl'])
+%     fsave(lcLastSI_LnNl_N,[sbase 'si_lastN_bar_LnNl'])
+% end
 
 %% Burst Metrics pre/post and Sub vs CA1
 % bsDat: 1:3 Fam burstIndex, burstISI, burstLen, 4:6 Novel
@@ -508,7 +560,7 @@ xticklabels({'F','N','F','N'}); ylabel('Burst Index')
 [bst_subFNisi_lme_table] = get_lmetable([bsMat(:,2); bsMat(:,5)],bvgrp,mID,bsVarNames);
 bst_subFNisi_lme = fitlme(bst_subFNisi_lme_table,'burstMetric ~ epoch * grp + (1|mouse)');
 bst_subFNisi_lmeF = plot_2wayLME(bsMat(:,2)', bsMat(:,5)',bvgrp,lnlcols); ylim([0 7])
-xticklabels({'F','N','F','N'}); ylabel('Burst ISI (ms)')
+xticklabels({'F','N','F','N'}); ylabel('Burst ISI (ms)')open
 
 [bst_subFNLen_lme_table] = get_lmetable([bsMat(:,3); bsMat(:,6)],bvgrp,mID,bsVarNames);
 bst_subFNLen_lme = fitlme(bst_subFNLen_lme_table,'burstMetric ~ epoch * grp + (1|mouse)');
@@ -524,19 +576,23 @@ end
 
 %% Waterfall by group RZ at 0
 
-unitgrp = siBothID; % Inclusion mask based on SI
+unitgrp = siNOnlID; % Inclusion mask based on SI
 
 if unitgrp == siBothID
     grptag = 'both';
 elseif unitgrp == siEithID
     grptag = 'eith';
+elseif unitgrp == siFOnlID
+    grptag = 'fonly';
+elseif unitgrp == siNOnlID
+    grptag = 'nonly';
 end
 
 mBin = round(length(binpos)/2);
 subGrp = [];
 binedges = -0.90:0.05:0.95;
 nvals = 3;  % 3xbinsize for peak distribution
-binedges2 = binedges(1:nvals :end); % For peak distribution plots
+binedges2 = binedges(1:nvals:end); % For peak distribution plots
 nBins = length(binedges) - 1;
 xcoords = (binedges2(1:end-1) + 0.5*diff(binedges2(1:2)))*100;
 rShiftUnit = zeros(length(useCC),1);
@@ -2206,7 +2262,7 @@ function [fhandle] = plot_3bhvrTraceCI(dat,grpInds,vcolors)
 nGrps = length(grpInds);
 
 for i = 1:nGrps
-    [cis(i).up, cis(i).dn] = get_CI(dat(grpInds(i).inds,:));
+    [cis(i).up, cis(i).dn] = get_CI(dat(grpInds(i).bvInd,:));
 end
 
 bnpos = linspace(-92.5,92.5,size(dat,2));
@@ -2216,7 +2272,7 @@ set(gcf,'units','normalized','position',[0.4 0.5 0.45 0.14])
 
 for i = 1:nGrps
     plot_CIs(bnpos,cis(i).up,cis(i).dn,vcolors(i,:))
-    plot(bnpos, mean(dat(grpInds(i).inds,:)),'Color',vcolors(i,:),'LineWidth',2)
+    plot(bnpos, mean(dat(grpInds(i).bvInd,:)),'Color',vcolors(i,:),'LineWidth',2)
 end
 xlabel('Distance to RZ (cm)')
 set(gca,'FontSize',16,'FontName','Arial')
@@ -2311,30 +2367,6 @@ fhandle = figure; hold on; axis square
 set(gcf,'Units','normalized','Position',[0.1 0.4 0.3333 0.1786])
 plot(dat(learn,1),dat(learn,2),'o','Color',cols(1,:))
 plot(dat(nonlearn,1),dat(nonlearn,2),'o','Color',cols(2,:))
-set(gca,'FontSize',16,'FontName','Arial')
-end
-
-function [lmetbl] = get_lmetable(dat,bvgrp,mID,varnames)
-% Assumes dat = [condition1; condition2] where length(condition1) = bvgrp(1).n
-
-splitvar = [zeros(length(dat)/2,1); ones(length(dat)/2,1)];
-expgrp = zeros(length(dat)/2,1);
-expgrp(bvgrp(1).bvInd) = 1;
-expgrp = repmat(expgrp,[2,1]);
-lmetbl = table(dat,splitvar,expgrp,[mID; mID],'VariableNames',varnames);
-end
-
-function [fhandle] = plot_2wayLME(dat1,dat2,bvgrp,cols)
-fhandle = figure; hold on
-set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.2])
-fhandle = fixRatio(fhandle);
-for i = 1:2
-    nMice = bvgrp(i).n;
-    plot([0.85*ones(nMice,1) 1.15*ones(nMice,1)]'+(i-1), [dat1(bvgrp(i).bvInd)' dat2(bvgrp(i).bvInd)']','-o','Color',cols(i,:))
-    errorbar([0.85 1.15]+(i-1),mean([dat1(bvgrp(i).bvInd)' dat2(bvgrp(i).bvInd)'],1,'omitnan'),std([dat1(bvgrp(i).bvInd)' dat2(bvgrp(i).bvInd)'],1,'omitnan')./sqrt(nMice),'k.','LineWidth',2,'CapSize',20)
-end
-xlim([0.5 2.5]); xticks([0.85 1.15 1.85 2.15]);
-ylim([-0.57 1]);
 set(gca,'FontSize',16,'FontName','Arial')
 end
 

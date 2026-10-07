@@ -34,7 +34,7 @@
 % spath = 'D:\Data\Kelton\analyses\KW074\KW074_10212025_rec_D2_RLat2'; % 20m rest Not a great session behaviorally
 % spath = 'D:\Data\Kelton\analyses\KW077\KW077_11262025_rec_D2_RLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\ZM032\ZM032_05282026_rec_D1_RLat1'; % 20m rest
-spath = 'D:\Data\Kelton\analyses\KW099\KW099_05062026_rec_D2_RLat2'; % 15m rest
+% spath = 'D:\Data\Kelton\analyses\KW099\KW099_05062026_rec_D2_RLat2'; % 15m rest
 % spath = 'D:\Data\Kelton\analyses\KW101\KW101_05262026_rec_D1_RLat1'; % 15m rest
 % spath = 'D:\Data\Kelton\analyses\KW109\KW109_07222026_rec_D2_RLat1'; % 15m rest, EC3 archT inhib
 % spath = 'D:\Data\Kelton\analyses\ZM035\ZM035_06112026_rec_D1_LLat1';
@@ -56,6 +56,7 @@ spath = 'D:\Data\Kelton\analyses\KW099\KW099_05062026_rec_D2_RLat2'; % 15m rest
 % spath = 'D:\Data\Kelton\analyses\ZM020\ZM020_02232026_rec_D1_RLat1'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW087\KW087_02082026_rec_D2_RLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW080\KW080_11252025_rec_D1_RLat1'; % 20m rest
+spath = 'D:\Data\Kelton\analyses\KW091\KW091_03192026_rec_D4_LLat2';
 % spath = 'D:\Data\Kelton\analyses\KW102\KW102_05222026_rec_D4_RLat2';
 
 % Operant EC RZ Shift
@@ -102,12 +103,12 @@ plot([rwdShift rwdShift], [-1 1], 'k--','HandleVisibility','off')
 
 bhvrFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,1,6);
 [preVelMapF,pstVelMapF,ppVelFig] = plot_prepost_vel(sessFrst,sessLast);
-figure(preVelMapF); colorbar off; figure(pstVelMapF); colorbar off;
+figure(preVelMapF); colorbar off; fixRatio(preVelMapF); figure(pstVelMapF); colorbar off; fixRatio(pstVelMapF); fixRatio(ppVelFig);
 [preLckMapF,pstLckMapF,ppLckFig] = plot_prepost_lck(sessFrst,sessLast);
-figure(preLckMapF); colorbar off; figure(pstLckMapF); colorbar off;
+fixRatio(ppLckFig);
 
-vCmapF = plotColorbar([0 45],'hot');
-lCmapF = plotColorbar([0 12],'turbo');
+% vCmapF = plotColorbar([0 45],'hot');
+% lCmapF = plotColorbar([0 12],'turbo');
 
 if saveFlag
     fsave(lickDIFig,[root.name '_lickDI'])
@@ -193,7 +194,7 @@ ylabel('Velocity Correlation'); xlabel('Lap');
 set(gca,'FontSize',16,'FontName','Arial')
 
 %% Plot example pre/post unit
-cc = 211;
+cc = 332;
 close all
 rzPosFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,1);
 % rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
@@ -253,10 +254,10 @@ if saveFlag
 end
 
 %% Plot 1 unit's heatmap, burst raster and combined average traces
-cc = 711;
-sess.valTrials = sess.rwdTrials;
-sessFrst.valTrials = sessFrst.rwdTrials;
-sessLast.valTrials = sessLast.rwdTrials;
+cc = 495;
+% sess.valTrials = sess.rwdTrials;
+% sessFrst.valTrials = sessFrst.rwdTrials;
+% sessLast.valTrials = sessLast.rwdTrials;
 
 % hmFig = plot_trialHeatmap(root,cc,sess,dbnsz,0,1,1,3); hold on;
 hmFig = plot_trialHeatmap(root,cc,sess,dbnsz); hold on;

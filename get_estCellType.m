@@ -66,7 +66,12 @@ for i = 1:height(root.info)
     lasthalf  = tmpwf(tmplocs(maxind):end);
     lowind(1) = find(firsthalf <= tmppks(maxind) - tmpprom(maxind),1,'last');
     % lowind(2) = find(lasthalf <= tmppks(maxind) - tmpprom(maxind),1,'first');
+    try
     [lowpks, lowlocs] = findpeaks(-lasthalf);
+    catch
+        break
+    end
+    
     [~,lowmax] = max(lowpks);
     try
         lowind(2) = lowlocs(lowmax);

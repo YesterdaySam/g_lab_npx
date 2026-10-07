@@ -106,7 +106,7 @@ for i = 1:size(bhvrFile,1)
     sess.nlaps      = size(sess.lapend,1);
     sess.maxPos     = 1.85; % Hard coded to keep consistency
     % sess.maxPos     = round(median(sess.pos(sess.lapend)),2); % Track length based on lap ends
-    sess            = getErrorTrials(sess);     % Identify trials of the right length and rewarded trials
+    sess            = get_errorTrials(sess);     % Identify trials of the right length and rewarded trials
     sess            = get_RunInds(sess,0.025,2); % Add runInds variable with binary of running (1) or standing (0)
 
     if sess.nlaps == 1      % In case of reset error

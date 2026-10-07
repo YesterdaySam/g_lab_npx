@@ -1,4 +1,4 @@
-function [sess2,root2] = epochStruc(sess, root, indrange)
+function [sess2,root2] = epochStruc(sess, root, indrange, rmNonOpLaps)
 %% Truncate a sess and root struc based on the input session index range
 % Inputs
 %   sess = session struct
@@ -10,6 +10,13 @@ function [sess2,root2] = epochStruc(sess, root, indrange)
 %
 % Created 5/31/25 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
+
+arguments
+    sess
+    root
+    indrange
+    rmNonOpLaps = false;
+end
 
 %% Session
 sess2 = sess;
@@ -43,7 +50,13 @@ sess2.rst       = sess.rst(indrange);
 sess2.lapstt    = sess.lapstt(sess.lapstt >= indrange(1) & sess.lapstt <= indrange(end)) - rstInd;
 sess2.lapend    = sess.lapend(sess.lapstt >= indrange(1) & sess.lapstt <= indrange(end)) - rstInd;
 sess2.nlaps     = size(sess2.lapend,1);
-sess2           = getErrorTrials(sess2);
+
+sess2           = get_errorTrials(sess2);
+if rmNonOpLaps
+    nonops      = get_nonOpLaps(sess2);
+    sess2       = get_errorTrials(sess2,nonops);
+end
+sess2           = get_lapInclude(sess2);
 
 %% Root
 root2 = root;

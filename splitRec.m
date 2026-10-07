@@ -21,13 +21,16 @@ arguments
 end
 
 if splitLap == 0
+    doRMNonOps = 0;
     splitLap = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
     splitLap = sess.rwdTrials(splitLap);
+else
+    doRMNonOps = 1;
 end
 
 frstHalfInds       = [sess.ind(1) sess.lapend(splitLap)];
 lastHalfInds       = [sess.lapstt(splitLap+1) sess.ind(end)];
-[sessPre, rootPre] = epochStruc(sess,root,frstHalfInds);
-[sessPst, rootPst] = epochStruc(sess,root,lastHalfInds);
+[sessPre, rootPre] = epochStruc(sess,root,frstHalfInds,doRMNonOps);
+[sessPst, rootPst] = epochStruc(sess,root,lastHalfInds,doRMNonOps);
 
 end

@@ -1,4 +1,4 @@
-function [sess] = getErrorTrials(sess,manualtrials)
+function [sess] = get_errorTrials(sess,manualtrials)
 % Get error, valid, and rewarded trials and assign them to sess variable
 %
 % Inputs

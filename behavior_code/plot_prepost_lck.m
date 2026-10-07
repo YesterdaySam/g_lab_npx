@@ -15,8 +15,13 @@ end
 
 [binedges1,~,pslck1] = plot_lickpos(sess1,dbnsz,0);
 [binedges2,~,pslck2] = plot_lickpos(sess2,dbnsz,0);
-normlck1 = pslck1 ./ sum(pslck1,2);
-normlck2 = pslck2 ./ sum(pslck2,2);
+pslck1mask = pslck1 > 0;
+pslck2mask = pslck2 > 0;
+normlck1 = sum(pslck1mask) ./ size(pslck1,1); % Normalizing by P(lck) over laps and spatial bins
+normlck2 = sum(pslck2mask) ./ size(pslck2,1); 
+% normlck1 = pslck1 ./ sum(pslck1,2); % Normalizing by space
+% normlck2 = pslck2 ./ sum(pslck2,2);
+
 try
     r1pos = 100*round(mean(sess1.pos(sess1.rwdind(1:30))),1);
 catch
@@ -31,27 +36,11 @@ catch
 end
 
 if plotflag
-    preHeatmapF = figure;
-    set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.45])
-    imagesc(pslck1,[prctile(pslck1,1,'all'), prctile(pslck1,99,'all')]);
-    colormap("turbo")
-    cbar = colorbar; clim([0 prctile(pslck1,99,'all')]);
-    xlabel('Position'); % xlim([0 200])
-    xticks(1:30:length(binedges1)); xticklabels(binedges1(1:30:length(binedges1))*100);
-    yticks(30:30:size(pslck1,1));
-    ylabel('Trial #'); ylabel(cbar,'Licks/s','FontSize',12,'Rotation',90)
-    set(gca,'FontSize',12,'FontName','Arial')
+    preHeatmapF = plot_lckheatmap(sess1);
+    colorbar off
 
-    pstHeatmapF = figure;
-    set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.45])
-    imagesc(pslck2,[prctile(pslck2,1,'all'), prctile(pslck2,99,'all')]);
-    colormap("turbo")
-    cbar = colorbar; clim([0 prctile(pslck1,99,'all')]);
-    xlabel('Position'); % xlim([0 200])
-    ylabel('Trial #'); ylabel(cbar,'Licks/s','FontSize',12,'Rotation',90)
-    yticks(30:30:size(pslck2,1));
-    xticks(1:30:length(binedges2)); xticklabels(binedges2(1:30:length(binedges2))*100);
-    set(gca,'FontSize',12,'FontName','Arial')
+    pstHeatmapF = plot_lckheatmap(sess2);
+    colorbar off
 
     sem1 = std(normlck1,'omitnan')/sqrt(sess1.nlaps);
     ciup1 = rmmissing(mean(normlck1,1,'omitnan') + sem1*1.96);
@@ -61,8 +50,9 @@ if plotflag
     cidn2 = rmmissing(mean(normlck2,1,'omitnan') - sem2*1.96);
 
     averageSumF = figure; hold on
-    ylim([0 0.2])
+    ylim([0 1])
     set(gcf,'units','normalized','position',[0.4 0.35 0.22 0.35])
+    fixRatio(averageSumF);
     patch(100*[binedges1(1:length(cidn1)),fliplr(binedges1(1:length(cidn1)))],[cidn1,fliplr(ciup1)],...
         'k','FaceAlpha',0.5,'EdgeColor','none','HandleVisibility','off')
     plot(binedges1(1:end-1)*100,mean(normlck1,1,'omitnan'),'Color','k','LineWidth',2)
@@ -74,7 +64,7 @@ if plotflag
     plot([r2pos, r2pos], ylim,'r--','HandleVisibility','off');
     
     xlabel('Position'); xlim([0 100*max(binedges1)])
-    ylabel('Lick probability')
+    ylabel('P(Lick x spatial bin) across laps')
     legend('Familiar RZ','Novel RZ')
     set(gca,'FontSize',12,'FontName','Arial','YDir','normal')
 end

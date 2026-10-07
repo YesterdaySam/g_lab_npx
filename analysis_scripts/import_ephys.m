@@ -1,17 +1,38 @@
 %% Wrapper for importing ephys and performing processing steps
 
-spaths       = {'D:\Data\Kelton\analyses\KW054\KW054_07302025_rec_D2_RLat1',...
-    'D:\Data\Kelton\analyses\KW054\KW054_07312025_rec_D3_RMed2'};
-datpaths     = {'D:\Data\Kelton\probe_data\KW054\KW054_07302025_rec_D2_RLat1_g0',
-    'D:\Data\Kelton\probe_data\KW054\KW054_07312025_rec_D3_RMed2_g0'};
+spaths       = {'D:\Data\Kelton\analyses\KW116\KW116_09282026_rec_D1_RLat1',...
+    'D:\Data\Kelton\analyses\KW116\KW116_09292026_rec_D2_RMed1'};
+datpaths     = {'D:\Data\Kelton\probe_data\KW116\KW116_09282026_rec_D1_RLat1_g0',...
+    'D:\Data\Kelton\probe_data\KW116\KW116_09292026_rec_D2_RMed1_g0'};
 
-region       = [2]; % 1 = CA1 or Sub; 2 = EC
-ovrwrtRoot   = 1;
-ovrwrtDatS   = 1;
-splitLap     = [0];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
+% spaths       = {'D:\Data\Kelton\analyses\ZM020\ZM020_02232026_rec_D1_RLat1',...
+%     'D:\Data\Kelton\analyses\KW087\KW087_02082026_rec_D2_RLat2',...
+%     'D:\Data\Kelton\analyses\KW091\KW091_03192026_rec_D4_LLat2',...
+%     'D:\Data\Kelton\analyses\ZM035\ZM035_06112026_rec_D1_LLat1',...
+%     'D:\Data\Kelton\analyses\ZM032\ZM032_05282026_rec_D1_RLat1',...
+%     'D:\Data\Kelton\analyses\ZM012\ZM012_12192025_rec_D2_RMed1',...
+%     'D:\Data\Kelton\analyses\ZM006\ZM006_10172025_rec_D4_LLat2',...
+%     'D:\Data\Kelton\analyses\KW101\KW101_05262026_rec_D1_RLat1',...
+%     'D:\Data\Kelton\analyses\KW100\KW100_05202026_rec_D4_LLat2',...
+%     'D:\Data\Kelton\analyses\KW099\KW099_05062026_rec_D2_RLat2',...
+%     'D:\Data\Kelton\analyses\KW097\KW097_05052026_rec_D4_LLat1',...
+%     'D:\Data\Kelton\analyses\KW082\KW082_12092025_rec_D3_LLat1',...
+%     'D:\Data\Kelton\analyses\KW079\KW079_11112025_rec_D2_RLat2',...
+%     'D:\Data\Kelton\analyses\KW077\KW077_11262025_rec_D2_RLat2',...
+%     'D:\Data\Kelton\analyses\KW073\KW073_10132025_rec_D1_RLat1',...
+%     'D:\Data\Kelton\analyses\KW080\KW080_11252025_rec_D1_RLat1',...
+%     'D:\Data\Kelton\analyses\ZM029\ZM029_05112026_rec_D3_LLat1'};
+
+region       = [2 1]; % 1 = CA1 or Sub; 2 = EC
+ovrwrtSess   = 0;
+ovrwrtRoot   = 0;
+ovrwrtDatS   = 0;
+splitType    = [0 1];       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
+splitLap     = [];
 % ripRef       = [];
 saveFlag     = true;
-doMakeRoot   = false;
+doMakeSess   = true;
+doMakeRoot   = true;
 doDepthPlots = true;
 doSpikeXSess = true;
 doLFPxDepth  = true;
@@ -25,7 +46,7 @@ doSplitLFP   = true;
 doPhysSum    = true;
 doUnitParams = true;
 doShuffles   = true;
-nShuf        = 50;
+nShuf        = 250;
 
 %% Start loop
 
@@ -41,8 +62,15 @@ for j = 1:length(spaths)
     clear root sess
     cd(spath)
 
-    sessfile = dir("*_session.mat");
-    load(sessfile.name)
+    try
+        sessfile = dir("*_session.mat");
+        load(sessfile.name)
+        sessMade = true;
+    catch
+        sessMade = false;
+        disp('Failed to import session')
+    end
+
     try
         rootfile = dir("*_root.mat");
         load(rootfile.name)
@@ -52,8 +80,29 @@ for j = 1:length(spaths)
         disp('Failed to import root')
     end
 
+    if sessMade & ~ovrwrtSess
+        disp(['Loaded session for ' strs{end}])
+    else
+        %% Create Sess and remove non operant laps
+        try
+            if doMakeSess
+                sess = importBhvr(spath);
+                nonops = get_nonOpLaps(sess);
+                sess = get_errorTrials(sess,nonops);
+                sess = get_lapInclude(sess);
+                [~,sess.velXpos] = plot_trialvel(sess,0.01,0);
+                [~,sess.velXrwd] = get_velXrwd(sess,0.25,5,0);
+
+                save([sess.name(1:14), '_session'], 'sess','-v7.3')
+                disp(['Session made and saved'])
+            end
+        catch
+            warning('Failed to create sess')
+        end
+    end
+
     if rootMade & ~ovrwrtRoot
-        disp(['Loaded root and session for ' strs{end}])
+        disp(['Loaded root for ' strs{end}])
 
     else
         %% Create root
@@ -240,19 +289,19 @@ for j = 1:length(spaths)
         catch
             warning('Failed to save updated root')
         end
+    end
 
-        %% Plot phys compact
-        close all
+    %% Plot phys compact
+    close all
 
-        try
-            if doPhysSum
-                plotPhysCompact(root,sess,spath,1)
+    try
+        if doPhysSum
+            plotPhysCompact(root,sess,spath,1)
 
-                disp(['Finished phys summary for ' root.name])
-            end
-        catch
-            warning('Failed to make individual unit plots')
+            disp(['Finished phys summary for ' root.name])
         end
+    catch
+        warning('Failed to make individual unit plots')
     end
 
     %% Proceed to making a data struct
@@ -270,14 +319,19 @@ for j = 1:length(spaths)
 
     else
         %% Get Real Unit parameters
+
+        if isempty(splitLap) % Split Rec at default location in splitRec
+            splitLap = zeros(length(region),1);
+        end
+
         try
             if doUnitParams
-                if splitLap(j) == 0
+                if splitType(j) == 0
                     datStruc = get_unitParams(root,root.good,sess,[],true,true,true,doRipples,false,0,false);
                 end
 
-                if splitLap(j) > 0
-                    [sessFrst, sessLast, rootFrst, rootLast] = splitRec(sess,root);
+                if splitType(j) > 0
+                    [sessFrst, sessLast, rootFrst, rootLast] = splitRec(sess,root,splitLap(j));
                     % rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
                     % rwdShift = sess.rwdTrials(rwdShift);
                     % 
@@ -287,10 +341,10 @@ for j = 1:length(spaths)
                     % [sessLast, rootLast] = epochStruc(sess,root,lastHalfInds);
                 end 
 
-                if splitLap(j) == 1
+                if splitType(j) == 1
                     frstHalf = get_unitParams(rootFrst,root.good,sessFrst,[],true,true,true,doRipples,false,0,false);
                     lastHalf = get_unitParams(rootLast,root.good,sessLast,[],true,true,true,doRipples,false,0,false);
-                elseif splitLap(j) == 2
+                elseif splitType(j) == 2
                     sessFrst = get_QTwin(sessFrst,sessFrst.rwdind);
                     sessLast = get_QTwin(sessLast,sessLast.rwdind);
 
@@ -316,14 +370,14 @@ for j = 1:length(spaths)
         %% Get shuffle unit parameters
         try
             if doShuffles
-                if splitLap(j) == 0
+                if splitType(j) == 0
                     datStruc = get_shufParams(root,root.good,sess,datStruc,nShuf);
                 end
 
-                if splitLap(j) == 1
+                if splitType(j) == 1
                     frstHalf = get_shufParams(rootFrst,root.good,sessFrst,frstHalf,nShuf,true,true);
                     lastHalf = get_shufParams(rootLast,root.good,sessLast,lastHalf,nShuf,true,true);
-                elseif splitLap(j) == 2
+                elseif splitType(j) == 2
                     frstHalf = get_shufParams(rootFrst,root.good,sessFrst,frstHalf,nShuf,true,false,true,qfrst);
                     lastHalf = get_shufParams(rootLast,root.good,sessLast,lastHalf,nShuf,true,false,true,qlast);
                 end
@@ -336,7 +390,7 @@ for j = 1:length(spaths)
 
         %% Save dat strucs
         try
-            if splitLap(j) == 0
+            if splitType(j) == 0
                 save([root.name '_dat'],'datStruc')
             else
                 save([root.name '_dat'],'frstHalf','lastHalf','rootFrst','rootLast','sessFrst','sessLast')

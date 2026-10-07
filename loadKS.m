@@ -122,14 +122,21 @@ fileClust = dir("spike_clusters.npy");
 fileTime  = dir("spike_times.npy");
 fileLabel = dir("cluster_group.tsv");   % Contains post-manual curation labels
 fileInfo  = dir("cluster_info.tsv");    % Contains pre-manual curation labels and metadata like depth
-fileTempl = dir("templates.npy");
+% Plotting for comparing mean waveform outputs, assign to root.testWF
+% for i = 1:height(root.info)
+%     figure; hold on;
+%     plot(root.templateWF(i,:) ./ max(root.templateWF(i,:)),'k');
+%     plot(root.testWF(i,:) ./ max(root.testWF(i,:)),'r')
+%     set(gcf,"Position",[1622 828 560 420])
+%     close
+% end
 
+%%
 try
     spkClusts   = readNPY(fileClust.name);
     spkTimes    = readNPY(fileTime.name);
     spkLabels   = readtable(fileLabel.name, "FileType", "text", 'Delimiter', '\t');
     spkInfo     = readtable(fileInfo.name, "FileType", "text", 'Delimiter', '\t');
-    tplAmp      = readNPY(fileTempl.name);
 catch
     disp("Missing critical file 'spike_clusters.npy', 'spike_times.npy', 'cluster_group.tsv', 'cluster_info.tsv', or 'templates.npy'. Aborting.")
     return
@@ -144,7 +151,17 @@ root.ts         = double(spkTimes)/root.fs;
 root.cl         = spkClusts;
 % root.lb         = spkLabels;
 root.info       = spkInfo(:,[1:3,5:8,10]);
-root.templateWF = assignTemplateWFs(tplAmp,root);
+
+try 
+    fileTempl = dir("all_clusters_master_waveforms.csv");
+    tplAmp    = readtable(fileTempl.name);
+    tplAmp    = tplAmp{:,2:end};
+    root.templateWF = assignMeanWFs(tplAmp,root);
+catch
+    fileTempl = dir("templates.npy");
+    tplAmp    = readNPY(fileTempl.name);
+    root.templateWF = assignTemplateWFs(tplAmp,root);
+end
 
 if length(root.info.cluster_id) == length(spkLabels.cluster_id)
     root.info.group = spkLabels.group;
@@ -251,7 +268,7 @@ for i = 1:height(root.info)
         templateWFs(i,:) = tmp(:,templateCh); % Assign the template on the max amplitude channel
         templateUsed = [templateUsed; root.info.cluster_id(i)+1];
     catch
-        break  % For only 
+        disp(['No mean waveform found for ' num2str(templateCh)])
     end
 
     % Optional plotting for validation
@@ -296,4 +313,41 @@ else
         ct = ct + 1;
     end
 end
+end
+
+function [templateWFs] = assignMeanWFs(templates,root)
+
+templateWFs = nan(height(root.info),60);
+templates2  = templates;
+templateUsed = [];
+unmatchInds = [];
+
+for i = 1:height(root.info)
+    rootcl = root.info.cluster_id(i);
+
+    templateInd = templates(1,:) == rootcl;
+
+    try
+        templateWFs(i,:) = templates(3:end-1,templateInd);  % Cut off last time point since sometimes weird
+        templateUsed = [templateUsed; root.info.cluster_id(i)+1];
+    catch
+        disp(['No mean waveform found for ' num2str(rootcl)])
+        unmatchInds = [unmatchInds; find(root.info.cluster_id == rootcl)];
+    end
+end
+
+templates2(:,templateUsed) = [];  %Get only unused templates
+
+for i = 1:length(unmatchInds)
+    unmatchCh = root.info.ch(unmatchInds(i));
+    [~,templateMatch] = min(abs(templates2(2,:) - unmatchCh));
+    try
+        templateWFs(unmatchInds(i),:) = templates2(3:end-1,templateMatch);
+        disp(['Nearest match found for ' num2str(root.info.cluster_id(unmatchInds(i))),...
+            ' chan ' num2str(root.info.ch(unmatchInds(i))) ' is chan ' num2str(templates2(2,templateMatch))])
+    catch
+        disp(['No nearest match found for ' num2str(root.info.cluster_id(unmatchInds(i)))])
+    end
+end
+
 end

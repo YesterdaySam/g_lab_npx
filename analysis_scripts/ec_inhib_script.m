@@ -1,6 +1,7 @@
-spath = 'D:\Data\Kelton\analyses\KW109\KW109_07222026_rec_D2_RLat1';
+% spath = 'D:\Data\Kelton\analyses\KW109\KW109_07222026_rec_D2_RLat1';
 % spath = 'D:\Data\Kelton\analyses\KW111\KW111_08072026_rec_D2_RLat2';
 % spath = 'D:\Data\Kelton\analyses\KW112\KW112_08182026_rec_D2_RMed1';
+spath = 'D:\Data\Kelton\analyses\KW116\KW116_09292026_rec_D2_RMed1';
 
 cd(spath)
 rootfile = dir("*_root.mat");
@@ -57,6 +58,21 @@ cd(spath)
 [~,sess.optoind]= findpeaks(double(sess.opto > 2));
 sess.opto = sess.opto > 2;
 sess.optoUpInd = sess.ind(sess.opto);
+
+%% Find opto units
+wlen = 0.25; % Seconds
+binstts = sess.optoind - sess.samprate * wlen;
+binends = sess.optoind + sess.samprate * wlen;
+
+for i = 1:length(root.good)
+    spkinds = root.tsb(root.cl == root.good(i));
+    for j = 1:length(sess.optoind)
+        count(j,:) = histcounts(spkinds,binstts(j):sess.samprate * wlen:binends(j));
+
+    end
+    [~,ps(i)] = ttest2(count(:,1),count(:,2));
+    sig(i) = ps(i) < 0.05;
+end
 
 %% Find opto laps
 sess.optolapinds = zeros(size(sess.ts))';

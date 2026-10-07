@@ -27,13 +27,16 @@ nPlots = sum([velheatmapFlag,lickFlag,rwdlickFlag,velXlickFlag,trialVelXcorrFlag
 if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
 
     if trialVelXcorrFlag
-        [fig_XcorrLap, fig_XcorrTrial] = plot_lap_velCCorr(sess);
+        [~,fig_XcorrLap, fig_XcorrTrial] = plot_lap_velCCorr(sess);
+        figure(fig_XcorrLap); title("Velocity XCorr by Position")
+        figure(fig_XcorrTrial); title("Velocity XCorr by Trial")
     end
 
     if rwdlickFlag
         try
-            [tmpedges2, ~, ~, fig_lickpos, fig_licktrialavg] = plot_lickpos(sess);
-            close(fig_licktrialavg)
+            % [tmpedges2, ~, ~, fig_lickpos, fig_licktrialavg] = plot_lickpos(sess);
+            % close(fig_licktrialavg)
+            fig_lickpos = plot_lckheatmap(sess);
             title("Licks by Trial")
         catch
             disp('Reward-aligned lick raster failed')
@@ -75,6 +78,9 @@ if isempty(dir([sess.name(1:14) '_behavior_summary.png'])) | overwrite == 1
         ax.Layout.Tile = j;
         if ax.Title.String == "Velocity by Trial"
             colormap(ax,'sky')
+        end
+        if ax.Title.String == "Licks by Trial"
+            colormap(ax,'turbo')
         end
     end
     title(tcl,replace(sess.name(1:end-8),'_',' '))

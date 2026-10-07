@@ -2,11 +2,11 @@ function [root] = do_lfp2shank(root,sh,depth)
 %% Adds back extraneous LFP channels from lfp to root
 %
 % Inputs:
-%   root = root object with uPSDMax and lfpinfo fields
-%   sh   = 1-indexed shank ID (e.g. shank 4 = 4)
+%   root  = root object with uPSDMax and lfpinfo fields
+%   sh    = 1-indexed shank ID (e.g. shank 4 = 4)
 %   depth = 
 % Outputs:
-%   root = root object with 
+%   root  = root object with 
 %
 % Created 6/3/26 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
