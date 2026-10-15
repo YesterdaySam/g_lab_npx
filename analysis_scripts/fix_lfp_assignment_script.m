@@ -1,21 +1,36 @@
 %% Fix LFP Channel assignment and layer boundaries
 
-spath = 'D:\Data\Kelton\analyses\KW116\KW116_09292026_rec_D2_RMed1';
+clear
+close all
+
+spath = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort\ZM035_06112026_rec_D1_LLat1';
+
+% For copying hand editing from old root files
+% oldpath = 'D:\Data\Kelton\analyses\ZM035\ZM035_06112026_rec_D1_LLat1';
+% cd(oldpath)
+% rootfile = dir('*_root.mat');
+% load(rootfile.name)
+
+% ripRef = root.ripRef
+% shanks = [ripRef];
+% depths = [root.lfpinfo.lfpDepth(ripRef)];
+% lyrShs = [1,2,3,4];
+% lyrBds = root.lyrbounds;
+
+% For fresh hand editing
+ripRef = 4;
+shanks = []; % Only use these for hand editing ref LFP depth per shank
+depths = []; % Depth for hand editing of shank X
+lyrShs = [1,2,3,4];
+lyrBds = [0    60   120   270; ...
+          180   360   600   690];
+
 cd(spath)
 rootfile = dir('*_root.mat');
 load(rootfile.name)
 sessfile = dir('*_session.mat');
 load(sessfile.name)
 
-ripRef = 4;
-shanks = [4];
-depths = [480];
-lyrShs = [1,2,3,4];
-lyrBds = [0  90  90 300; ...
-          210 390 510 480];
-% lyrShs = [1];
-% lyrBds = [60; ...
-%           240];
 
 %% Add LFP channesl back to root and assign preferred LFP channels
 

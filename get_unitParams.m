@@ -35,7 +35,7 @@ arguments
     qStruc   = 0
     doOpto   = false
     dbnsz    = 0.05
-    wlen     = 150
+    wlen     = 125
     histoBnsz= 5
 end
 

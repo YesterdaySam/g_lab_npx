@@ -1,4 +1,4 @@
-function [fhandle] = plot_trialHeatmap(root,unit,sess,dbnsz,vthresh,plotflag,normflag,smFactor)
+function [fhandle] = plot_trialHeatmap(root,unit,sess,dbnsz,plotflag,normflag,smFactor)
 %% Plots the spatially linearized spike raster for each trial of one unit
 %
 % Inputs:
@@ -23,7 +23,6 @@ arguments
     unit {double}   %Cluster ID
     sess            %session struct
     dbnsz = 0.05    %meters
-    vthresh = 0.04  %meters/sec
     plotflag = 1    %binary
     normflag = 0    %binary
     smFactor = 5    %smoothing kernel size of rate map
@@ -48,7 +47,7 @@ end
 %     spkmap  = [spkmap; spkct ./ bnoccs];    % Normalize by time spent per bin for FR
 % end
 
-[binedges,spkmap] = get_frXpos(root,unit,sess,dbnsz,1.85,1,smFactor);
+[binedges,frmap] = get_frXpos(root,unit,sess,dbnsz,1.85,1,smFactor);
 
 if plotflag
     fhandle = figure;
@@ -56,18 +55,18 @@ if plotflag
     fhandle = fixRatio(fhandle);
     colormap("parula")
     if normflag
-        spkmap = normalize(spkmap,'range');
-        imagesc(spkmap,[prctile(spkmap,1,'all'), prctile(spkmap,99,'all')]);
+        frmap = normalize(frmap,'range');
+        imagesc(frmap,[prctile(frmap,1,'all'), prctile(frmap,99,'all')]);
         xticks([1,length(binedges)-1]); xticklabels(binedges([1 end])*100);
-        yticks(0:30:size(spkmap,1));
+        yticks(0:30:size(frmap,1));
     else
-        imagesc(spkmap,[prctile(spkmap,1,'all'), prctile(spkmap,99,'all')]);
+        imagesc(frmap,[prctile(frmap,1,'all'), prctile(frmap,99,'all')]);
         cbar = colorbar;
         ylabel(cbar,'FR (Hz)','FontSize',12,'Rotation',90)
         xticks(1:10:length(binedges)+1)
         xticklabels(binedges(1:10:end)*100)
     end
-    clim([prctile(spkmap,1,'all'), prctile(spkmap,99,'all')]);
+    clim([prctile(frmap,1,'all'), prctile(frmap,99,'all')]);
     xlabel('Position (cm)');
     ylabel('Trial #');
     set(gca,'FontSize',12,'FontName','Arial','YDir','normal')

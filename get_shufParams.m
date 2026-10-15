@@ -31,7 +31,7 @@ arguments
     doCueFR = false
     qStruc  = 0
     histoBnsz = 5;
-    wlen = 150;
+    wlen = 125;
 end
 
 tic

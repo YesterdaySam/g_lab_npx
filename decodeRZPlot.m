@@ -13,14 +13,34 @@ for i = 1:sessFrst.nlaps % Leave 1 out X-val
     dcIndF(sessFrst.lapstt(i):sessFrst.lapend(i)) = true;
     dcIndF = dcIndF & sessFrst.runInds;
 
-    [tmpfxfDecode(i)] = decodePosBayes(rootFrst,sessFrst,tmpFmap,usePyrs,dcIndF,tau);
+    [tmpfxfDecode(i)] = decodePosBayes(rootFrst,sessFrst,tmpFmap,usePyrs,tau,dcIndF);
 end
+
+for i = 1:sessLast.nlaps % Leave 1 out X-val
+    useIndN = sessLast.lapInclude & sessLast.runInds;
+    useIndN(sessLast.lapstt(i):sessLast.lapend(i)) = false;
+    tmpNmap = get_rmap(rootLast,sessLast,useUnits,useIndN);
+
+    dcIndN = false(size(useIndN));
+    dcIndN(sessLast.lapstt(i):sessLast.lapend(i)) = true;
+    dcIndN = dcIndN & sessLast.runInds;
+
+    [tmpnxnDecode(i)] = decodePosBayes(rootLast,sessLast,tmpNmap,usePyrs,tau,dcIndN);
+end
+
+[nxfDecode] = decodePosBayes(rootLast,sessLast,datF.posfr(useUnits,:),usePyrs,tau);
 
 fxfDecode.rPos = vertcat(tmpfxfDecode.rPos);
 fxfDecode.dPos = vertcat(tmpfxfDecode.dPos);
 fxfDecode.dMat = horzcat(tmpfxfDecode.dMat);
 fxfDecode.dErr = vertcat(tmpfxfDecode.dErr);
 fxfDecode.newT = vertcat(tmpfxfDecode.newT);
+
+nxnDecode.rPos = vertcat(tmpnxnDecode.rPos);
+nxnDecode.dPos = vertcat(tmpnxnDecode.dPos);
+nxnDecode.dMat = horzcat(tmpnxnDecode.dMat);
+nxnDecode.dErr = vertcat(tmpnxnDecode.dErr);
+nxnDecode.newT = vertcat(tmpnxnDecode.newT);
 
 % [fxfDecode] = decodePosBayes(rootFrst,sessFrst,datF.posfr(useUnits,:),usePyrs,tau);
 % [nxnDecode] = decodePosBayes(rootLast,sessLast,datN.posfr(useUnits,:),usePyrs,tau);

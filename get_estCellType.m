@@ -37,7 +37,7 @@ unituACG = []; % average acg time
 
 for i = 1:height(root.info)
     % unit = root.info.cluster_id == i;
-
+    
     unitFRs  = [unitFRs; root.info.fr(i)];
     unitAmps = [unitAmps; root.info.Amplitude(i)];
     unitcls  = [unitcls; root.info.cluster_id(i)];
@@ -67,7 +67,7 @@ for i = 1:height(root.info)
     lowind(1) = find(firsthalf <= tmppks(maxind) - tmpprom(maxind),1,'last');
     % lowind(2) = find(lasthalf <= tmppks(maxind) - tmpprom(maxind),1,'first');
     try
-    [lowpks, lowlocs] = findpeaks(-lasthalf);
+        [lowpks, lowlocs] = findpeaks(-lasthalf);
     catch
         break
     end
@@ -101,10 +101,12 @@ end
 unitFWHM = unitFWHM / root.fs * 1000;
 unitFW   = unitFW   / root.fs * 1000;
 unitPkVy = unitPkVy / root.fs * 1000;
-
 %% WF Width cutoff
 
 % INWFs = unitPkVy <= pkvyThresh & unitFW <= fwThresh & unitFRs <= frThresh;
+% pkvyfwRatio = unitFW ./ unitPkVy;   % High values look more pyramidal even with low template amplitude
+% extraPyrs = pkvyfwRatio >= 3;
+
 INWFs = unitPkVy <= pkvyThresh;
 root.info.uType = ~INWFs;
 
@@ -136,6 +138,7 @@ if plotflag
     plot3(unitFRs(INWFs),unitFW(INWFs),unitPkVy(INWFs),'ro')
     hold on
     plot3(unitFRs(~INWFs),unitFW(~INWFs),unitPkVy(~INWFs),'bo')
+    % plot3(unitFRs(extraPyrs),unitFW(extraPyrs),unitPkVy(extraPyrs),'go')
     xlabel('Global FR (Hz)')
     ylabel('FullWidth (ms)')
     zlabel('Trough-to-Peak (ms)')

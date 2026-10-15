@@ -5,8 +5,9 @@
 % ========================================================================%
 % ========================================================================%
 
-datT = import_xldat("D:\Data\Kelton\analyses\group_analyses","dat_include.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort_092426';
+datT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","dat_include_clean_RZShift.xlsx");
+hndT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","data_curation.xlsx");
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\finalcohort_100826';
 cd(groupSDir)
 
 mInclude = {'KW101','KW097','KW099','KW077','KW073','ZM032','ZM006','ZM035',...
@@ -21,7 +22,7 @@ datT(~useInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
 sbase = 'subRwdShift_';
-fname = [sbase 'groupDat_phys_shiftRM'];
+fname = [sbase 'groupDat_phys'];
 bvName = [sbase 'groupDat_bhvr'];
 
 dbnsz = 0.05;
@@ -29,10 +30,7 @@ histoBnsz = 5;
 binedges = 0:5:185;
 binpos = 0.025:dbnsz:1.825;
 wlen = 150;
-r1pos = 0.1;    % 10 cm
-r2pos = 1;      % 100cm
 fvncols = [.35 .35 .35; 1 .25 .25]; % Gray vs red
-% lnlcols = [0 0 1; 0.7656 0.6406 0.5156]; % Blue vs brown
 lnlcols = [0.0508 0.4883 0.5273; 0.7852 0.6055 0.2188]; % learn teal vs Nonlearn brown
 rgncols = [0.9961 0.7305 0.4336; 0.3672 0.2969 0.3711]; % Sub gold vs CA1 dull purple
 
@@ -42,7 +40,7 @@ clear ps stats
 combine_bhvrDat(datT,bvName,groupSDir,2);
 
 %% Combine ephys data
-combine_rzShiftDat(datT,fname,groupSDir,2,1); % sessType = 2
+combine_rzShiftDat(datT,fname,groupSDir,2,hndT,1); % sessType = 2
 
 %% Load previously saved ephys data
 cd(groupSDir)
@@ -51,9 +49,6 @@ load(fname)
 nMice = length(unique(recID(:,1)));
 mID = unique(recID(:,1),'stable');
 nTotal = size(recID,1);
-r1posInd = find(binpos > r1pos,1);
-r2posInd = find(binpos > r2pos,1);
-sbase = 'subRwdShift_';
 
 % vlFrstID = useCC & vlDat(:,1) <= 0.05;
 % vlLastID = useCC & vlDat(:,4) <= 0.05;
@@ -111,8 +106,13 @@ load(bvName)
 nMice = length(unique(bhvID(:,1)));
 mID = unique(bhvID(:,1),'stable');
 
-mLern = [101 99 97 79 77 73 35 32 6];
-mNonl = [100 91 87 82 80 29 20 12];
+lapScore = [vertcat(bvDat.preLapScore), vertcat(bvDat.pstLapScore)];
+learnCutoff = prctile(lapScore(:,2),50);   % Median split
+
+mLern = mID(lapScore(:,2) > learnCutoff);
+mNonl = mID(lapScore(:,2) <= learnCutoff);
+% mLern = [101 99 97 79 77 73 35 32 6];
+% mNonl = [100 91 87 82 80 29 20 12];
 
 lnInd = [];
 nlInd = [];
@@ -506,7 +506,7 @@ xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
 % Test avg FR subiculum vs CA1 over all mice
 [~,ps(1).fr_rgn,~,stats(1).fr_rgn] = ttest2(mean(frMat(:,5:8),2)',mean(frMat(:,1:4),2)');
 fr_rgn_F = plotBar2(mean(frMat(:,5:8),2),mean(frMat(:,1:4),2),rgncols); ylim([0 20])
-text2bar(fr_rgn_F,'Global FR (Hz)',ps.fr_rgn); xticklabels({'CA1','Sub'})
+text2bar(fr_rgn_F,'Global FR (Hz)',ps(1).fr_rgn); xticklabels({'CA1','Sub'})
 
 % lnlcols = [0 0 1; 0.7656 0.6406 0.5156];
 % 
@@ -560,7 +560,7 @@ xticklabels({'F','N','F','N'}); ylabel('Burst Index')
 [bst_subFNisi_lme_table] = get_lmetable([bsMat(:,2); bsMat(:,5)],bvgrp,mID,bsVarNames);
 bst_subFNisi_lme = fitlme(bst_subFNisi_lme_table,'burstMetric ~ epoch * grp + (1|mouse)');
 bst_subFNisi_lmeF = plot_2wayLME(bsMat(:,2)', bsMat(:,5)',bvgrp,lnlcols); ylim([0 7])
-xticklabels({'F','N','F','N'}); ylabel('Burst ISI (ms)')open
+xticklabels({'F','N','F','N'}); ylabel('Burst ISI (ms)')
 
 [bst_subFNLen_lme_table] = get_lmetable([bsMat(:,3); bsMat(:,6)],bvgrp,mID,bsVarNames);
 bst_subFNLen_lme = fitlme(bst_subFNLen_lme_table,'burstMetric ~ epoch * grp + (1|mouse)');
@@ -576,7 +576,7 @@ end
 
 %% Waterfall by group RZ at 0
 
-unitgrp = siNOnlID; % Inclusion mask based on SI
+unitgrp = siBothID; % Inclusion mask based on SI
 
 if unitgrp == siBothID
     grptag = 'both';

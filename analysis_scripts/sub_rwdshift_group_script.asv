@@ -5,8 +5,9 @@
 % ========================================================================%
 % ========================================================================%
 
-datT = import_xldat("D:\Data\Kelton\analyses\group_analyses","dat_include.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\bigcohort_092426';
+datT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","dat_include_clean_RZShift.xlsx");
+hndT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","data_curation.xlsx");
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\finalcohort_100826';
 cd(groupSDir)
 
 mInclude = {'KW101','KW097','KW099','KW077','KW073','ZM032','ZM006','ZM035',...
@@ -21,7 +22,7 @@ datT(~useInds,:) = [];  %Clean excluded sessions
 
 saveFlag = 1;
 sbase = 'subRwdShift_';
-fname = [sbase 'groupDat_phys_shiftRM'];
+fname = [sbase 'groupDat_phys'];
 bvName = [sbase 'groupDat_bhvr'];
 
 dbnsz = 0.05;
@@ -29,10 +30,7 @@ histoBnsz = 5;
 binedges = 0:5:185;
 binpos = 0.025:dbnsz:1.825;
 wlen = 150;
-r1pos = 0.1;    % 10 cm
-r2pos = 1;      % 100cm
 fvncols = [.35 .35 .35; 1 .25 .25]; % Gray vs red
-% lnlcols = [0 0 1; 0.7656 0.6406 0.5156]; % Blue vs brown
 lnlcols = [0.0508 0.4883 0.5273; 0.7852 0.6055 0.2188]; % learn teal vs Nonlearn brown
 rgncols = [0.9961 0.7305 0.4336; 0.3672 0.2969 0.3711]; % Sub gold vs CA1 dull purple
 
@@ -42,7 +40,7 @@ clear ps stats
 combine_bhvrDat(datT,bvName,groupSDir,2);
 
 %% Combine ephys data
-combine_rzShiftDat(datT,fname,groupSDir,2,1); % sessType = 2
+combine_rzShiftDat(datT,fname,groupSDir,2,hndT,1); % sessType = 2
 
 %% Load previously saved ephys data
 cd(groupSDir)
@@ -51,9 +49,6 @@ load(fname)
 nMice = length(unique(recID(:,1)));
 mID = unique(recID(:,1),'stable');
 nTotal = size(recID,1);
-r1posInd = find(binpos > r1pos,1);
-r2posInd = find(binpos > r2pos,1);
-sbase = 'subRwdShift_';
 
 % vlFrstID = useCC & vlDat(:,1) <= 0.05;
 % vlLastID = useCC & vlDat(:,4) <= 0.05;
@@ -63,6 +58,8 @@ sbase = 'subRwdShift_';
 % thBothID = thFrstID & thLastID;
 siFrstID = useCC & lcDat(:,1) <= 0.05;
 siLastID = useCC & lcDat(:,5) <= 0.05;
+siFOnlID = siFrstID & ~siLastID;
+siNOnlID = siLastID & ~siFrstID;
 siBothID = siFrstID & siLastID;
 siEithID = siFrstID | siLastID;
 swrFrstID = useCC & rpDat(:,2) > 1;
@@ -72,8 +69,8 @@ bstFrstID = useCC & bsDat(:,1) > 0;
 bstLastID = useCC & bsDat(:,4) > 0;
 bstBothID = bstFrstID & bstLastID;
 
-mLern = [101 99 97 77 73 32 6 35];
-mNonl = [100 82 79 12 20 29 91 87 80];
+mLern = [101 99 97 79 77 73 32 6 35];
+mNonl = [100 82 12 20 29 91 87 80];
 lnInd = [];
 nlInd = [];
 
@@ -108,6 +105,7 @@ cd(groupSDir)
 load(bvName)
 nMice = length(unique(bhvID(:,1)));
 mID = unique(bhvID(:,1),'stable');
+
 
 mLern = [101 99 97 79 77 73 35 32 6];
 mNonl = [100 91 87 82 80 29 20 12];
@@ -441,22 +439,22 @@ frVarNames = {'fr','epoch','grp','mouse'};
 [fr_subFNstd_lme_table] = get_lmetable([frMat(:,1); frMat(:,3)],bvgrp,mID,frVarNames);
 fr_subFNstd_lme = fitlme(fr_subFNstd_lme_table,'fr ~ epoch * grp + (1|mouse)');
 fr_subFNstd_lmeF = plot_2wayLME(frMat(:,1)',frMat(:,3)',bvgrp,lnlcols); ylim([0 20])
-xticklabels({'F','N','F','N'})
+xticklabels({'F','N','F','N'}); ylabel('Standing FR (Hz)')
 
 [fr_subFNrun_lme_table] = get_lmetable([frMat(:,2); frMat(:,4)],bvgrp,mID,frVarNames);
 fr_subFNrun_lme = fitlme(fr_subFNrun_lme_table,'fr ~ epoch * grp + (1|mouse)');
 fr_subFNrun_lmeF = plot_2wayLME(frMat(:,2)',frMat(:,4)',bvgrp,lnlcols); ylim([0 20])
-xticklabels({'F','N','F','N'})
+xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
 
 [fr_ca1FNstd_lme_table] = get_lmetable([frMat(:,5); frMat(:,7)],bvgrp,mID,frVarNames);
 fr_ca1FNstd_lme = fitlme(fr_ca1FNstd_lme_table,'fr ~ epoch * grp + (1|mouse)');
 fr_ca1FNstd_lmeF = plot_2wayLME(frMat(:,5)',frMat(:,7)',bvgrp,lnlcols); ylim([0 20])
-xticklabels({'F','N','F','N'})
+xticklabels({'F','N','F','N'}); ylabel('Standing FR (Hz)')
 
 [fr_ca1FNrun_lme_table] = get_lmetable([frMat(:,6); frMat(:,8)],bvgrp,mID,frVarNames);
 fr_ca1FNrun_lme = fitlme(fr_ca1FNrun_lme_table,'fr ~ epoch * grp + (1|mouse)');
 fr_ca1FNrun_lmeF = plot_2wayLME(frMat(:,6)',frMat(:,8)',bvgrp,lnlcols); ylim([0 20])
-xticklabels({'F','N','F','N'})
+xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
 
 % Test avg FR subiculum vs CA1 over all mice
 [~,ps(1).fr_rgn,~,stats(1).fr_rgn] = ttest2(mean(frMat(:,5:8),2)',mean(frMat(:,1:4),2)');
@@ -473,32 +471,65 @@ end
 
 %% Compare FR, SI and Peak rate across each behavior group
 
-lnlcols = [0 0 1; 0.7656 0.6406 0.5156];
-
-[~,ps(1).lc_LnNlSI_F_both,~,stats(1).lc_LnNlSI_F_both] = ttest2(lcDat(siBothID & grp(1).logi,2), lcDat(siBothID & grp(2).logi,2));
-[~,ps(1).lc_LnNlSI_N_both,~,stats(1).lc_LnNlSI_N_both] = ttest2(lcDat(siBothID & grp(1).logi,6), lcDat(siBothID & grp(2).logi,6));
-[~,ps(1).lc_LnNlSI_F_frst,~,stats(1).lc_LnNlSI_F_frst] = ttest2(lcDat(siFrstID & grp(1).logi,2), lcDat(siFrstID & grp(2).logi,2));
-[~,ps(1).lc_LnNlSI_N_last,~,stats(1).lc_LnNlSI_N_last] = ttest2(lcDat(siLastID & grp(1).logi,6), lcDat(siLastID & grp(2).logi,6));
-[~,ps(1).fr_LnNl_stnd_F,~,stats(1).fr_LnNl_stnd_F] = ttest2(frDat(useCC & grp(1).logi,1), frDat(useCC & grp(2).logi,1));
-[~,ps(1).fr_LnNl_runn_F,~,stats(1).fr_LnNl_runn_F] = ttest2(frDat(useCC & grp(1).logi,3), frDat(useCC & grp(2).logi,3));
-[~,ps(1).fr_LnNl_stnd_N,~,stats(1).fr_LnNl_stnd_N] = ttest2(frDat(useCC & grp(1).logi,2), frDat(useCC & grp(2).logi,2));
-[~,ps(1).fr_LnNl_runn_N,~,stats(1).fr_LnNl_runn_N] = ttest2(frDat(useCC & grp(1).logi,4), frDat(useCC & grp(2).logi,4));
-
-lcBothSI_LnNl_F = plotBar2(lcDat(siBothID & grp(1).logi,2), lcDat(siBothID & grp(2).logi,2),lnlcols); ylim([0 4])
-xticklabels({'Strong','Weak'}); text2bar(lcBothSI_LnNl_F,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_F_both);
-lcBothSI_LnNl_N = plotBar2(lcDat(siBothID & grp(1).logi,6), lcDat(siBothID & grp(2).logi,6),lnlcols); ylim([0 4])
-xticklabels({'Strong','Weak'}); text2bar(lcBothSI_LnNl_N,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_N_both);
-lcFrstSI_LnNl_F = plotBar2(lcDat(siFrstID & grp(1).logi,2), lcDat(siFrstID & grp(2).logi,2),lnlcols); ylim([0 4])
-xticklabels({'Strong','Weak'}); text2bar(lcFrstSI_LnNl_F,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_F_frst);
-lcLastSI_LnNl_N = plotBar2(lcDat(siLastID & grp(1).logi,6), lcDat(siLastID & grp(2).logi,6),lnlcols); ylim([0 4])
-xticklabels({'Strong','Weak'}); text2bar(lcLastSI_LnNl_N,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_N_last);
-
-if saveFlag
-    fsave(lcBothSI_LnNl_F,[sbase 'si_bothF_bar_LnNl'])
-    fsave(lcBothSI_LnNl_N,[sbase 'si_bothN_bar_LnNl'])
-    fsave(lcFrstSI_LnNl_F,[sbase 'si_frstF_bar_LnNl'])
-    fsave(lcLastSI_LnNl_N,[sbase 'si_lastN_bar_LnNl'])
+frMat = nan(nMice,8);  % Sub F stand, F Run, N Stand, N Run, CA1 F stand, F Run, N Stand, N Run
+for i = 1:nMice
+    useSub = recID(:,1) == mID(i) & rgDat == 2 & useCC;
+    useCA1 = recID(:,1) == mID(i) & rgDat == 1 & useCC;
+    frMat(i,:) = [mean(frDat(useSub,:)) mean(frDat(useCA1,:))];
 end
+
+frVarNames = {'fr','epoch','grp','mouse'};
+[fr_subFNstd_lme_table] = get_lmetable([frMat(:,1); frMat(:,3)],bvgrp,mID,frVarNames);
+fr_subFNstd_lme = fitlme(fr_subFNstd_lme_table,'fr ~ epoch * grp + (1|mouse)');
+fr_subFNstd_lmeF = plot_2wayLME(frMat(:,1)',frMat(:,3)',bvgrp,lnlcols); ylim([0 20])
+xticklabels({'F','N','F','N'}); ylabel('Standing FR (Hz)')
+
+[fr_subFNrun_lme_table] = get_lmetable([frMat(:,2); frMat(:,4)],bvgrp,mID,frVarNames);
+fr_subFNrun_lme = fitlme(fr_subFNrun_lme_table,'fr ~ epoch * grp + (1|mouse)');
+fr_subFNrun_lmeF = plot_2wayLME(frMat(:,2)',frMat(:,4)',bvgrp,lnlcols); ylim([0 20])
+xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
+
+[fr_ca1FNstd_lme_table] = get_lmetable([frMat(:,5); frMat(:,7)],bvgrp,mID,frVarNames);
+fr_ca1FNstd_lme = fitlme(fr_ca1FNstd_lme_table,'fr ~ epoch * grp + (1|mouse)');
+fr_ca1FNstd_lmeF = plot_2wayLME(frMat(:,5)',frMat(:,7)',bvgrp,lnlcols); ylim([0 20])
+xticklabels({'F','N','F','N'}); ylabel('Standing FR (Hz)')
+
+[fr_ca1FNrun_lme_table] = get_lmetable([frMat(:,6); frMat(:,8)],bvgrp,mID,frVarNames);
+fr_ca1FNrun_lme = fitlme(fr_ca1FNrun_lme_table,'fr ~ epoch * grp + (1|mouse)');
+fr_ca1FNrun_lmeF = plot_2wayLME(frMat(:,6)',frMat(:,8)',bvgrp,lnlcols); ylim([0 20])
+xticklabels({'F','N','F','N'}); ylabel('Running FR (Hz)')
+
+% Test avg FR subiculum vs CA1 over all mice
+[~,ps(1).fr_rgn,~,stats(1).fr_rgn] = ttest2(mean(frMat(:,5:8),2)',mean(frMat(:,1:4),2)');
+fr_rgn_F = plotBar2(mean(frMat(:,5:8),2),mean(frMat(:,1:4),2),rgncols); ylim([0 20])
+text2bar(fr_rgn_F,'Global FR (Hz)',ps(1).fr_rgn); xticklabels({'CA1','Sub'})
+
+% lnlcols = [0 0 1; 0.7656 0.6406 0.5156];
+% 
+% [~,ps(1).lc_LnNlSI_F_both,~,stats(1).lc_LnNlSI_F_both] = ttest2(lcDat(siBothID & grp(1).logi,2), lcDat(siBothID & grp(2).logi,2));
+% [~,ps(1).lc_LnNlSI_N_both,~,stats(1).lc_LnNlSI_N_both] = ttest2(lcDat(siBothID & grp(1).logi,6), lcDat(siBothID & grp(2).logi,6));
+% [~,ps(1).lc_LnNlSI_F_frst,~,stats(1).lc_LnNlSI_F_frst] = ttest2(lcDat(siFrstID & grp(1).logi,2), lcDat(siFrstID & grp(2).logi,2));
+% [~,ps(1).lc_LnNlSI_N_last,~,stats(1).lc_LnNlSI_N_last] = ttest2(lcDat(siLastID & grp(1).logi,6), lcDat(siLastID & grp(2).logi,6));
+% [~,ps(1).fr_LnNl_stnd_F,~,stats(1).fr_LnNl_stnd_F] = ttest2(frDat(useCC & grp(1).logi,1), frDat(useCC & grp(2).logi,1));
+% [~,ps(1).fr_LnNl_runn_F,~,stats(1).fr_LnNl_runn_F] = ttest2(frDat(useCC & grp(1).logi,3), frDat(useCC & grp(2).logi,3));
+% [~,ps(1).fr_LnNl_stnd_N,~,stats(1).fr_LnNl_stnd_N] = ttest2(frDat(useCC & grp(1).logi,2), frDat(useCC & grp(2).logi,2));
+% [~,ps(1).fr_LnNl_runn_N,~,stats(1).fr_LnNl_runn_N] = ttest2(frDat(useCC & grp(1).logi,4), frDat(useCC & grp(2).logi,4));
+% 
+% lcBothSI_LnNl_F = plotBar2(lcDat(siBothID & grp(1).logi,2), lcDat(siBothID & grp(2).logi,2),lnlcols); ylim([0 4])
+% xticklabels({'Strong','Weak'}); text2bar(lcBothSI_LnNl_F,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_F_both);
+% lcBothSI_LnNl_N = plotBar2(lcDat(siBothID & grp(1).logi,6), lcDat(siBothID & grp(2).logi,6),lnlcols); ylim([0 4])
+% xticklabels({'Strong','Weak'}); text2bar(lcBothSI_LnNl_N,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_N_both);
+% lcFrstSI_LnNl_F = plotBar2(lcDat(siFrstID & grp(1).logi,2), lcDat(siFrstID & grp(2).logi,2),lnlcols); ylim([0 4])
+% xticklabels({'Strong','Weak'}); text2bar(lcFrstSI_LnNl_F,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_F_frst);
+% lcLastSI_LnNl_N = plotBar2(lcDat(siLastID & grp(1).logi,6), lcDat(siLastID & grp(2).logi,6),lnlcols); ylim([0 4])
+% xticklabels({'Strong','Weak'}); text2bar(lcLastSI_LnNl_N,'Spatial Information (Bits/spike)',ps(1).lc_LnNlSI_N_last);
+% 
+% if saveFlag
+%     fsave(lcBothSI_LnNl_F,[sbase 'si_bothF_bar_LnNl'])
+%     fsave(lcBothSI_LnNl_N,[sbase 'si_bothN_bar_LnNl'])
+%     fsave(lcFrstSI_LnNl_F,[sbase 'si_frstF_bar_LnNl'])
+%     fsave(lcLastSI_LnNl_N,[sbase 'si_lastN_bar_LnNl'])
+% end
 
 %% Burst Metrics pre/post and Sub vs CA1
 % bsDat: 1:3 Fam burstIndex, burstISI, burstLen, 4:6 Novel
@@ -547,13 +578,17 @@ if unitgrp == siBothID
     grptag = 'both';
 elseif unitgrp == siEithID
     grptag = 'eith';
+elseif unitgrp == siFOnlID
+    grptag = 'fonly';
+elseif unitgrp == siNOnlID
+    grptag = 'nonly';
 end
 
 mBin = round(length(binpos)/2);
 subGrp = [];
 binedges = -0.90:0.05:0.95;
 nvals = 3;  % 3xbinsize for peak distribution
-binedges2 = binedges(1:nvals :end); % For peak distribution plots
+binedges2 = binedges(1:nvals:end); % For peak distribution plots
 nBins = length(binedges) - 1;
 xcoords = (binedges2(1:end-1) + 0.5*diff(binedges2(1:2)))*100;
 rShiftUnit = zeros(length(useCC),1);

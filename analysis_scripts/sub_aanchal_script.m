@@ -1,5 +1,5 @@
-parentDir = "D:\Data\Kelton\analyses\group_analyses"; 
-datT = import_xldat(parentDir,"dat_include.xlsx");
+% parentDir = "D:\Data\Kelton\analyses\group_analyses"; 
+datT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","dat_include_clean_RZShift.xlsx");
 aanchalDir = 'Z:\Kelton\Analyzed Data\for_Aanchal';
 
 overwriteF = 0;
@@ -7,11 +7,7 @@ overwriteF = 0;
 cleanInds = datT.aanchal ~= 1;
 datT(cleanInds,:) = [];  %Clean excluded sessions
 
-region = 'sub';
-
 saveFlag = 1;
-% sbase = 'subRwdShift_';
-% fname = [sbase 'data8'];
 
 dbnsz = 0.05;
 histoBnsz = 5;
@@ -45,11 +41,15 @@ for i = 1:height(datT)
         load(rootfile.name)
         sessfile = dir("*_session.mat");
         load(sessfile.name)
+        frshiftfile = dir("*_frshiftvars.mat");
+        load(frshiftfile.name)
+        epochfile = dir("*_dat.mat");
+        load(epochfile.name)
 
         disp(['Working on ' root.name])
         nShanks = numel(unique(root.info.shankID));
 
-        % === Assign regions for each unit ===
+        % % === Assign regions for each unit ===
         regionID = zeros(height(root.info),1);
         for j = 1:nShanks
             tmpUnits = root.info.shankID == j-1;
@@ -57,34 +57,16 @@ for i = 1:height(datT)
                 regionID(tmpUnits) = 1;
             elseif datT{i,6+j}{1} == 'sub'
                 regionID(tmpUnits) = 2;
-            else
-                regionID(tmpUnits) = 0;
             end
         end
 
-        % % === Identify units to include ===
-        % roiUnits = zeros(length(root.good),1);
-        % for j = 1:nShanks
-        %     tmpUnits = root.info.shankID == j-1;
-        %     if datT{i,6+j}{1} == 'ca1'
-        %         if region == 'ca1'
-        %             roiUnits(tmpUnits) = 1;
-        %         else
-        %             roiUnits(tmpUnits) = 0;
-        %         end
-        %     elseif datT{i,6+j}{1} == 'sub'
-        %         if region == 'sub'
-        %             roiUnits(tmpUnits) = 1;
-        %         else
-        %             roiUnits(tmpUnits) = 0;
-        %         end
-        %     elseif datT{i,6+j}{1} == 'bdr'
-        %         roiUnits(tmpUnits) = 0;
-        %     end
-        % end
-        % if sum(roiUnits) == 0
-        %     continue
-        % end
+        shiftViols = sum(frShift,2) > 0;
+
+        pkExclude = frstHalf.truePk < 1 & lastHalf.truePk < 1;
+        ca1Exclude = regionID == 1 & root.info.fr > 10;
+        disp(['CA1 units flagged for FR violation: ' num2str(root.good(ca1Exclude(root.goodind))')])
+        useUnits = root.info.lyrID(root.goodind) == 1 & root.info.fr(root.goodind) > 0.1 ...
+            & root.info.uType(root.goodind) & ~pkExclude & ~shiftViols & ~ca1Exclude(root.goodind);
 
         ca1CCs = regionID == 1 & root.info.uType == true & root.info.lyrID == 1 & root.goodind;
         subCCs = regionID == 2 & root.info.uType == true & root.info.lyrID == 1 & root.goodind;

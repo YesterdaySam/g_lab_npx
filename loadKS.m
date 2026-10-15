@@ -122,6 +122,8 @@ fileClust = dir("spike_clusters.npy");
 fileTime  = dir("spike_times.npy");
 fileLabel = dir("cluster_group.tsv");   % Contains post-manual curation labels
 fileInfo  = dir("cluster_info.tsv");    % Contains pre-manual curation labels and metadata like depth
+fileTempl = dir("templates.npy");
+
 % Plotting for comparing mean waveform outputs, assign to root.testWF
 % for i = 1:height(root.info)
 %     figure; hold on;
@@ -131,12 +133,12 @@ fileInfo  = dir("cluster_info.tsv");    % Contains pre-manual curation labels an
 %     close
 % end
 
-%%
 try
     spkClusts   = readNPY(fileClust.name);
     spkTimes    = readNPY(fileTime.name);
     spkLabels   = readtable(fileLabel.name, "FileType", "text", 'Delimiter', '\t');
     spkInfo     = readtable(fileInfo.name, "FileType", "text", 'Delimiter', '\t');
+    tplAmp      = readNPY(fileTempl.name);
 catch
     disp("Missing critical file 'spike_clusters.npy', 'spike_times.npy', 'cluster_group.tsv', 'cluster_info.tsv', or 'templates.npy'. Aborting.")
     return
@@ -151,17 +153,18 @@ root.ts         = double(spkTimes)/root.fs;
 root.cl         = spkClusts;
 % root.lb         = spkLabels;
 root.info       = spkInfo(:,[1:3,5:8,10]);
+root.templateWF = assignTemplateWFs(tplAmp,root);
 
-try 
-    fileTempl = dir("all_clusters_master_waveforms.csv");
-    tplAmp    = readtable(fileTempl.name);
-    tplAmp    = tplAmp{:,2:end};
-    root.templateWF = assignMeanWFs(tplAmp,root);
-catch
-    fileTempl = dir("templates.npy");
-    tplAmp    = readNPY(fileTempl.name);
-    root.templateWF = assignTemplateWFs(tplAmp,root);
-end
+% try % Try using averaged waveform from 100 spikes exported by ks4waveforms.ipynb
+%     fileTempl = dir("all_clusters_master_waveforms.csv");
+%     tplAmp    = readtable(fileTempl.name);
+%     tplAmp    = tplAmp{:,2:end};
+%     root.templateWF = assignMeanWFs(tplAmp,root);
+% catch
+%     fileTempl = dir("templates.npy");
+%     tplAmp    = readNPY(fileTempl.name);
+%     root.templateWF = assignTemplateWFs(tplAmp,root);
+% end
 
 if length(root.info.cluster_id) == length(spkLabels.cluster_id)
     root.info.group = spkLabels.group;

@@ -96,6 +96,10 @@ lastHalfInds         = [sess.lapstt(rwdShift+1) sess.ind(end)];
 [sessFrst, rootFrst] = epochStruc(sess,root,frstHalfInds);
 [sessLast, rootLast] = epochStruc(sess,root,lastHalfInds);
 
+lyrUnits = root.info.lyrID(root.goodind) == 1;
+hiFRUnits = root.info.fr(root.goodind) > 0.1;
+useUnits = lyrUnits & hiFRUnits & root.info.uType(root.goodind);
+
 %% Plot pre/post behavior
 
 lickDIFig = plot_lickDiscrim(sess,[r1pos r2pos]*100,15,10);
@@ -194,38 +198,38 @@ ylabel('Velocity Correlation'); xlabel('Lap');
 set(gca,'FontSize',16,'FontName','Arial')
 
 %% Plot example pre/post unit
-cc = 332;
-close all
-rzPosFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,1);
-% rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
-% rzThMFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,3);
-% rzRwdFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,4);
-rzHmpFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,5);
-% rzSWRFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,7);
-
-if saveFlag
-    tblind = find(root.info.cluster_id == cc);
-    sbase = ['unit_' num2str(cc) '_shank_' num2str(root.info.shankID(tblind)) '_rwdshift_'];
-    saveas(rzPosFig,[sbase 'spatial'], 'png')
-    % saveas(rzVelFig,[sbase 'velocity'],'png')
-    % saveas(rzThMFig,[sbase 'thetaMod'],'png')
-    % saveas(rzRwdFig,[sbase 'rewardT'], 'png')
-    saveas(rzHmpFig,[sbase 'spatial_heatmap'], 'png')
-    % saveas(rzSWRFig,[sbase 'spwrMod'], 'png')
-end
+% cc = 495;
+% close all
+% rzPosFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,1);
+% % rzVelFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,2);
+% % rzThMFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,3);
+% % rzRwdFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,4);
+% rzHmpFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,5);
+% % rzSWRFig = plot_prepost(rootFrst,sessFrst,rootLast,sessLast,cc,7);
+% 
+% if saveFlag
+%     tblind = find(root.info.cluster_id == cc);
+%     sbase = ['unit_' num2str(cc) '_shank_' num2str(root.info.shankID(tblind)) '_rwdshift_'];
+%     saveas(rzPosFig,[sbase 'spatial'], 'png')
+%     % saveas(rzVelFig,[sbase 'velocity'],'png')
+%     % saveas(rzThMFig,[sbase 'thetaMod'],'png')
+%     % saveas(rzRwdFig,[sbase 'rewardT'], 'png')
+%     saveas(rzHmpFig,[sbase 'spatial_heatmap'], 'png')
+%     % saveas(rzSWRFig,[sbase 'spwrMod'], 'png')
+% end
 
 %% Plot pre/post acg
-cc = 270;
-[acgpre,countpre,binedges] = plot_acg(rootFrst,cc,5,250);
-[acgpst,countpst] = plot_acg(rootLast,cc,5,250);
-halfInd = round(250/5)+1;
-
-fhandle = figure; hold on
-bar(1000*(binedges(halfInd:end-1)+2/1000/5),sum(countpre(:,halfInd:end)) ./ sum(countpre,'all'),'FaceColor',vColors2(1,:),'EdgeColor',vColors2(1,:),'FaceAlpha',0.5);
-bar(1000*(binedges(halfInd:end-1)+2/1000/5),sum(countpst(:,halfInd:end)) ./ sum(countpst,'all'),'FaceColor',vColors2(2,:),'EdgeColor',vColors2(2,:),'FaceAlpha',0.5);
-xlabel('Lag (ms)')
-ylabel('Spike Probability')
-set(gca,'FontSize',12,'FontName','Arial')
+% cc = 270;
+% [acgpre,countpre,binedges] = plot_acg(rootFrst,cc,5,250);
+% [acgpst,countpst] = plot_acg(rootLast,cc,5,250);
+% halfInd = round(250/5)+1;
+% 
+% fhandle = figure; hold on
+% bar(1000*(binedges(halfInd:end-1)+2/1000/5),sum(countpre(:,halfInd:end)) ./ sum(countpre,'all'),'FaceColor',vColors2(1,:),'EdgeColor',vColors2(1,:),'FaceAlpha',0.5);
+% bar(1000*(binedges(halfInd:end-1)+2/1000/5),sum(countpst(:,halfInd:end)) ./ sum(countpst,'all'),'FaceColor',vColors2(2,:),'EdgeColor',vColors2(2,:),'FaceAlpha',0.5);
+% xlabel('Lag (ms)')
+% ylabel('Spike Probability')
+% set(gca,'FontSize',12,'FontName','Arial')
 
 %% Plot example behavior traces
 
@@ -290,33 +294,33 @@ xlabel('Position (cm)'); ylabel({'Firing Rate'; '(spk/s)'})
 set(gca,'FontSize',16,'FontName','Arial')
 fixRatio(frFig);
 % legend('Familiar', 'Novel')
-%%
-[~,bsMap1] = get_burstsXpos(rootFrst,cc,sessFrst,dbnsz);
-[ciup1, cidn1] = get_CI(bsMap1);
-[~,bsMap2] = get_burstsXpos(rootLast,cc,sessLast,dbnsz);
-[ciup2, cidn2] = get_CI(bsMap2);
 
-bsFig = figure; hold on
-xcoords = 100*binpos;
-set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.20])
-plot_CIs(xcoords,ciup1,cidn1,'k')
-plot(xcoords,mean(bsMap1),'k')
-plot_CIs(xcoords,ciup2,cidn2,'r')
-plot(xcoords,mean(bsMap2),'r')
-ymax = round(max([max(mean(bsMap1),[],'all') max(mean(bsMap2),[],'all')]))+0.25;
-ylim([0 ymax]); yticks([0 round(ymax)]);
-xlim([0 max(xcoords)])
-xlabel('Position (cm)'); ylabel({'Burst Rate'; '(burst/s)'})
-set(gca,'FontSize',16,'FontName','Arial')
-legend('Familiar', 'Novel')
+% [~,bsMap1] = get_burstsXpos(rootFrst,cc,sessFrst,dbnsz);
+% [ciup1, cidn1] = get_CI(bsMap1);
+% [~,bsMap2] = get_burstsXpos(rootLast,cc,sessLast,dbnsz);
+% [ciup2, cidn2] = get_CI(bsMap2);
+% 
+% bsFig = figure; hold on
+% xcoords = 100*binpos;
+% set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.20])
+% plot_CIs(xcoords,ciup1,cidn1,'k')
+% plot(xcoords,mean(bsMap1),'k')
+% plot_CIs(xcoords,ciup2,cidn2,'r')
+% plot(xcoords,mean(bsMap2),'r')
+% ymax = round(max([max(mean(bsMap1),[],'all') max(mean(bsMap2),[],'all')]))+0.25;
+% ylim([0 ymax]); yticks([0 round(ymax)]);
+% xlim([0 max(xcoords)])
+% xlabel('Position (cm)'); ylabel({'Burst Rate'; '(burst/s)'})
+% set(gca,'FontSize',16,'FontName','Arial')
+% legend('Familiar', 'Novel')
 
 disp(['Unit ' num2str(cc) ' Peak FR: ', num2str(max([max(frMap1,[],'all') max(frMap2,[],'all')]))])
 if saveFlag
     sbase = [root.name '_cc' num2str(cc) '_rwdshift_'];
     fsave(hmFig,[sbase 'heatmap'])
     fsave(frFig,[sbase 'frXpos'])
-    fsave(rasFig,[sbase 'raster'])
-    fsave(bsFig,[sbase 'burstXpos'])
+    % fsave(rasFig,[sbase 'raster'])
+    % fsave(bsFig,[sbase 'burstXpos'])
 end
 
 sess = getErrorTrials(sess);

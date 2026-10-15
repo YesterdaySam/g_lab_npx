@@ -1,4 +1,4 @@
-function [decodeI] = decodePosBayes(root,sess,expectSpk,useUnits,useTS,tau)
+function [decodeI] = decodePosBayes(root,sess,expectSpk,useUnits,tau,useTS)
 %% Use Bayes' rule to decode position over time from useUnits
 % Subsamples behavior to 50Hz and estimates position from spikes within tau
 % using the prior probability estimate from expectSpk (mean FR mat)
@@ -27,12 +27,13 @@ arguments
     sess
     expectSpk       % NxM = Firing rate of N units by M positions
     useUnits        % Inds of units e.g. root.good
-    useTS     = sess.runInds & sess.lapInclude % Binary, length of sess.ts
     tau       = 0.5 % Time Window, seconds
+    useTS     = sess.runInds & sess.lapInclude % Binary, length of sess.ts
 end
 
 newts = sess.ts(useTS);
-newpos = sess.pos(sess.runInds & sess.lapInclude);
+% newpos = sess.pos(sess.runInds & sess.lapInclude);
+newpos = sess.pos(useTS);
 dbnsz = 0.05;
 
 binpos = dbnsz/2:dbnsz:sess.maxPos;
@@ -103,4 +104,6 @@ decodeI.dMat = dMat(:,validFrames);
 decodeI.dErr = dErr(validFrames);
 decodeI.newT = newts(useInds(validFrames))';
 
+% figure; plot(rPos)
+% hold on; plot(decodeI.dPos,'r*')
 end
