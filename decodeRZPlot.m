@@ -4,7 +4,7 @@ function [errLocs, errMeans] = decodeRZPlot(useUnits,sname,rootFrst,rootLast,ses
 tau = 0.5; 
 usePyrs = rootFrst.good(useUnits);
 
-for i = 1:sessFrst.nlaps % Leave 1 out X-val
+for i = 1:sessFrst.nlaps % Leave 1 out X-val F
     useIndF = sessFrst.lapInclude & sessFrst.runInds;
     useIndF(sessFrst.lapstt(i):sessFrst.lapend(i)) = false;
     tmpFmap = get_rmap(rootFrst,sessFrst,useUnits,useIndF);
@@ -16,7 +16,7 @@ for i = 1:sessFrst.nlaps % Leave 1 out X-val
     [tmpfxfDecode(i)] = decodePosBayes(rootFrst,sessFrst,tmpFmap,usePyrs,tau,dcIndF);
 end
 
-for i = 1:sessLast.nlaps % Leave 1 out X-val
+for i = 1:sessLast.nlaps % Leave 1 out X-val N
     useIndN = sessLast.lapInclude & sessLast.runInds;
     useIndN(sessLast.lapstt(i):sessLast.lapend(i)) = false;
     tmpNmap = get_rmap(rootLast,sessLast,useUnits,useIndN);

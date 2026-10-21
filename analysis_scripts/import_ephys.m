@@ -52,16 +52,20 @@ datpaths     = {...
     'D:\Data\Kelton\probe_data\KW101\KW101_05262026_rec_D1_RLat1_g0',...
     'D:\Data\Kelton\probe_data\ZM035\ZM035_06112026_rec_D1_LLat1_g0'};
 
+spaths = {'D:\Data\Kelton\analyses\KW117\KW117_10162026_rec_D2_RMed1'};
+datpaths = {'D:\Data\Kelton\probe_data\KW117\KW117_10162026_rec_D2_RMed1_g0'};
+
 region       = ones(size(spaths)); % 1 = CA1 or Sub; 2 = EC
 ovrwrtSess   = 0;
 ovrwrtRoot   = 0;
 ovrwrtDatS   = 1;
-splitType    = ones(size(spaths));       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
-splitLap     = datT.splitLap-1;
+splitType    = [1]; %ones(size(spaths));       % 0 = no split; 1 = RZ shift; 2 = RZ Rand
+splitLap     = []; %datT.splitLap-1;
+useLaps      = [];
 ripRef       = [];
 saveFlag     = true;
 doMakeSess   = false;
-doMakeRoot   = false;
+doMakeRoot   = true;
 doDepthPlots = true;
 doSpikeXSess = true;
 doLFPxDepth  = true;
@@ -324,7 +328,7 @@ for j = 1:length(spaths)
 
         try
             if doPhysSum
-                plotPhysCompact(root,sess,spath,1)
+                plotPhysCompact(root,sess,spath,'ephysPlots_good',1)
 
                 disp(['Finished phys summary for ' root.name])
             end
@@ -361,7 +365,7 @@ for j = 1:length(spaths)
                 end
 
                 if splitType(j) > 0
-                    [sessFrst, sessLast, rootFrst, rootLast] = splitRec(sess,root,splitLap(j));
+                    [sessFrst, sessLast, rootFrst, rootLast] = splitRec(sess,root,splitLap(j),useLaps);
                     % rwdShift = find(diff(sess.pos(sess.rwdind)) > 0.4,1);   % Find lap of reward shift
                     % rwdShift = sess.rwdTrials(rwdShift);
                     % 
@@ -423,7 +427,7 @@ for j = 1:length(spaths)
             if splitType(j) == 0
                 save([root.name '_dat'],'datStruc')
             else
-                save([root.name '_dat'],'frstHalf','lastHalf','rootFrst','rootLast','sessFrst','sessLast')
+                save([root.name '_dat50'],'frstHalf','lastHalf','rootFrst','rootLast','sessFrst','sessLast')
             end
 
             disp('Saved data structure')

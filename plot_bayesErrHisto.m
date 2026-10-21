@@ -1,5 +1,12 @@
 function [errLocs,errMean, fhandle] = plot_bayesErrHisto(binedges,decode1,decode2,decode3)
 
+arguments
+    binedges
+    decode1
+    decode2
+    decode3
+end
+
 errDist1 = histcounts(abs(decode1.dErr),binedges);
 errDist2 = histcounts(abs(decode2.dErr),binedges);
 errDist3 = histcounts(abs(decode3.dErr),binedges);

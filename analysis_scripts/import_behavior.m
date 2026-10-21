@@ -1,7 +1,7 @@
 % Batched Import behavior script
 
-% mousedir = 'D:\Data\Kelton\analyses\KW112';
-mousedir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort';
+mousedir = 'D:\Data\Kelton\analyses\KW118';
+% mousedir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort';
 overwriteFlag = 0;
 
 cd(mousedir)
@@ -70,3 +70,5 @@ for i = 1:length(dirlist)
 end
 
 disp(['Finished basic import and visualization of all files for ' mousedir(end-4:end)])
+
+cd(mousedir)

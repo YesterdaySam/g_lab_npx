@@ -3,7 +3,7 @@
 clear
 close all
 
-spath = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort\ZM035_06112026_rec_D1_LLat1';
+spath = 'D:\Data\Kelton\analyses\KW117\KW117_10162026_rec_D2_RMed1';
 
 % For copying hand editing from old root files
 % oldpath = 'D:\Data\Kelton\analyses\ZM035\ZM035_06112026_rec_D1_LLat1';
@@ -22,8 +22,8 @@ ripRef = 4;
 shanks = []; % Only use these for hand editing ref LFP depth per shank
 depths = []; % Depth for hand editing of shank X
 lyrShs = [1,2,3,4];
-lyrBds = [0    60   120   270; ...
-          180   360   600   690];
+lyrBds = [0    90   120   300; ...
+          300   300  330   450];
 
 cd(spath)
 rootfile = dir('*_root.mat');

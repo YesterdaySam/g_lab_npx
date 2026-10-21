@@ -7,7 +7,7 @@
 
 datT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","dat_include_clean_RZShift.xlsx");
 hndT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","data_curation.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\finalcohort_100826';
+groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\finalcohort_50lap';
 cd(groupSDir)
 
 mInclude = {'KW101','KW097','KW099','KW077','KW073','ZM032','ZM006','ZM035',...
@@ -154,6 +154,12 @@ xlabel('P(F Lap Rewarded)'); xlim([0 1])
 ylabel('P(N Lap Rewarded)'); ylim([0 1])
 legend({'Strong adapter','Weak adapter'}, 'Location','sw')
 
+lapScoreF = plot_2d_bhvr(lapScore,bvgrp(1).bvInd,bvgrp(2).bvInd,lnlcols);
+plot([-0.5 1],[learnCutoff learnCutoff],'k--')
+xlabel('P(F Rwd > chance)'); xlim([-.5 1])
+ylabel('P(F Rwd > chance)'); ylim([-.5 1])
+legend({'Strong adapter','Weak adapter'}, 'Location','nw')
+
 lapSplitF = plot_2d_bhvr(nLaps,bvgrp(1).bvInd,bvgrp(2).bvInd,lnlcols);
 xlabel('# Laps F'); xlim([0 140])
 ylabel('# Laps N'); ylim([0 140])
@@ -162,6 +168,7 @@ if saveFlag
     fsave(psvSplitF,[sbase 'bhv_psvPrePst'],1,1);
     fsave(rwdSplitF,[sbase 'bhv_rwdPrePst'],1,1);
     fsave(lapSplitF,[sbase 'bhv_lapPrePst'],1,1);
+    fsave(lapScoreF,[sbase 'bhv_lapscorePrePst'],1,1);
 end
 
 %% Statistical Quantification - Learn Vs Non Learn (LMEs)
@@ -183,6 +190,12 @@ lapVarNames = {'lap','epoch','grp','mouse'};
 lap_lme = fitlme(lap_lme_table,'lap ~ epoch * grp + (1|mouse)');
 lap_lmeF = plot_2wayLME(nLaps(:,1)',nLaps(:,2)',bvgrp,lnlcols); ylim([0 150])
 xticklabels({'F','N','F','N'}); ylabel('Laps')
+
+lapScoreVarNames = {'lapscore','epoch','grp','mouse'};
+[lapScore_lme_table] = get_lmetable([lapScore(:,1); lapScore(:,2)],bvgrp,mID,lapScoreVarNames);
+lapScore_lme = fitlme(lapScore_lme_table,'lapscore ~ epoch * grp + (1|mouse)');
+lapScore_lmeF = plot_2wayLME(lapScore(:,1)',lapScore(:,2)',bvgrp,lnlcols); ylim([-.5 1])
+xticklabels({'F','N','F','N'}); ylabel('P(Rwd > chance)')
 
 % [~,ps.ttest_psv_fam,~,stats.ttest_psv_fam] = ttest2(uPsv(bvgrp(1).bvInd,1),uPsv(bvgrp(2).bvInd,1));
 % [~,ps.ttest_psv_nov,~,stats.ttest_psv_nov] = ttest2(uPsv(bvgrp(1).bvInd,2),uPsv(bvgrp(2).bvInd,2));
@@ -223,6 +236,7 @@ if saveFlag
     fsave(ldi_lmeF,[sbase 'bhv_ldi_lme'],1,1)
     fsave(rwd_lmeF,[sbase 'bhv_rwd_lme'],1,1)
     fsave(lap_lmeF,[sbase 'bhv_lap_lme'],1,1)
+    fsave(lapScore_lmeF,[sbase 'bhv_lapScore_lme'],1,1)    
 end
 
 %% Behavior across laps, using laps -50 to +50 of switch
@@ -257,7 +271,9 @@ plot(xsF-50,mdlFPsv_ln.ypred, 'color', lnlcols(1,:)/2, 'LineWidth',2)
 plot(xsF,mdlNPsv_ln.ypred, 'color', lnlcols(1,:),   'LineWidth',2)
 xlabel("Lap to shift"); ylim([-1.1 1.1])
 text2bar(corLapPsvLnF,"",    mdlFPsv_ln.p, 0.8, 0.3, lnlcols(1,:)/2);
-text2bar(corLapPsvLnF,"LDI", mdlNPsv_ln.p, 0.3, 0.8, lnlcols(1,:));
+text2bar(corLapPsvLnF,"",    mdlNPsv_ln.p, 0.3, 0.8, lnlcols(1,:));
+text2bar(corLapPsvLnF,"",    mdlFPsv_ln.r, 0.8, 0.4, lnlcols(1,:)/2);
+text2bar(corLapPsvLnF,"LDI", mdlNPsv_ln.r, 0.3, 0.9, lnlcols(1,:));
 set(gca,'FontSize',16,'FontName','Arial')
 
 corLapPsvNlF = figure; hold on
@@ -270,7 +286,9 @@ plot(xsF-50,mdlFPsv_nl.ypred, 'color', lnlcols(2,:)/2, 'LineWidth',2)
 plot(xsF,mdlNPsv_nl.ypred, 'color', lnlcols(2,:),   'LineWidth',2)
 xlabel("Lap to shift"); ylim([-1.1 1.1])
 text2bar(corLapPsvNlF,"",    mdlFPsv_nl.p, 0.8, 0.5, lnlcols(2,:)/2);
-text2bar(corLapPsvNlF,"LDI", mdlNPsv_nl.p, 0.3, 0.2, lnlcols(2,:));
+text2bar(corLapPsvNlF,"",    mdlNPsv_nl.p, 0.3, 0.2, lnlcols(2,:));
+text2bar(corLapPsvNlF,"",    mdlFPsv_nl.r, 0.8, 0.6, lnlcols(2,:)/2);
+text2bar(corLapPsvNlF,"LDI", mdlNPsv_nl.r, 0.3, 0.3, lnlcols(2,:));
 set(gca,'FontSize',16,'FontName','Arial')
 
 if saveFlag
@@ -677,7 +695,7 @@ for i = 1:2
     spPk2 = binpos(lcDat(:,8));
 
     dth = 0.3;  % Distance from peak threshold (m)
-    drz = r2pos - r1pos;
+    drz = datT.rzloc2(1) - datT.rzloc1(1);
     cells(i).tr = (spPk2 - spPk1 < dth & spPk2 - spPk1 > -dth)' & siBothID & grp(i).logi; % threshold 30cm
     cells(i).rr = ((spPk2 - spPk1 > drz-dth & spPk2 - spPk1 < drz+dth)' & siBothID  & grp(i).logi) | ((spPk2 - spPk1 < -drz+dth & spPk2 - spPk1 > -drz-dth)' & siBothID  & grp(i).logi);
     cells(i).ir = (siBothID & grp(i).logi) & ~cells(i).tr & ~cells(i).rr;
@@ -729,7 +747,7 @@ for i = 1:2
     alnPkPst = mod(lcDat(activeCells,8) + rShiftUnit(activeCells), length(binedges)-1)+1;
     alnDistro = histcounts(binedges(alnPkPst),binedges);
     clear deltaField_DistroJit
-    for j = 1:250
+    for j = 1:1000
         rShift = 1 + randi(length(binedges) - 2,sum(activeCells),1);
         jitPks = binedges(mod(alnPkPst + rShift, length(binedges)-1)+1);
         jitPkDistro(:,j) = histcounts(jitPks,binedges);
@@ -751,8 +769,8 @@ for i = 1:2
     [~,fieldShiftRZJitFig] = get_confband(jitPkDistro',alnDistro,1,binpos*100-92.5,5);
     xlabel('\Delta RZ-aligned Novel - Familiar (cm)');
 end
-[~,fieldShiftRZJitFig] = get_confband(deltaField_DistroJit',deltaField_Distro,1,shiftbins(1:end-1)*100,dbnsz*100);
-xlabel('\Delta RZ-aligned Novel - Familiar (cm)');
+% [~,fieldShiftRZJitFig] = get_confband(deltaField_DistroJit',deltaField_Distro,1,shiftbins(1:end-1)*100,dbnsz*100);
+% xlabel('\Delta RZ-aligned Novel - Familiar (cm)');
 
 % [~,fieldShiftAbsJitFig] = get_confband(uFieldDistroJit',uFieldAlignDistro,1,shiftbins(1:end-1)*100,dbnsz*100);
 
@@ -940,15 +958,29 @@ for i = 1:2
     activeUnits = siBothID & grp(i).logi;     % siBothID (allSICells); trCells; rrCells;
     nBins = length(binpos);
 
-    % posNormPre = lcMap(activeUnits,1:nBins) ./ max(lcMap(activeUnits,1:nBins),[],2);  % Using TR rate map
-    % posNormPst = lcMap(activeUnits,nBins+1:end) ./ max(lcMap(activeUnits,nBins+1:end),[],2);  % Using TR rate map
+    % Pre post PVC
     posNormPre = alnSpMap(i).pre ./ max(alnSpMap(i).pre,[],2);  % RR rate maps, make sure to build them with siBothID in the block above
     posNormPst = alnSpMap(i).pst ./ max(alnSpMap(i).pst,[],2);  % RR rate maps
 
     pvPrePst = corr(posNormPst,posNormPre);
     fnames(i).pvPrePstF = plot_pvcorr(pvPrePst,[-90 0 90]); ylabel(''); xlabel('');
+
+    % Odd / Even PVC (rate maps already normalized during combine_rzShiftDat
+    preOdd = vertcat(pvStr(bvgrp(i).bvInd).preOddsub);
+    preEvn = vertcat(pvStr(bvgrp(i).bvInd).preEvnsub);
+    pvPreOddEvn = corr(preEvn,preOdd);
+    pstOdd = vertcat(pvStr(bvgrp(i).bvInd).pstOddsub);
+    pstEvn = vertcat(pvStr(bvgrp(i).bvInd).pstEvnsub);
+    pvPstOddEvn = corr(pstEvn,pstOdd);
+
+    fnames(i).pvPreOddEvnF = plot_pvcorr(pvPreOddEvn,[0 185]); ylabel(''); xlabel('');
+    fnames(i).pvPstOddEvnF = plot_pvcorr(pvPstOddEvn,[0 185]); ylabel(''); xlabel('');
+
     if saveFlag
         fsave(fnames(i).pvPrePstF,[sbase 'lc_pv_corr_allSICells_prepost_align' grp(i).sname])
+        fsave(fnames(i).pvPreOddEvnF,[sbase 'lc_pv_corr_allSICells_preOddEvn' grp(i).sname])
+        fsave(fnames(i).pvPstOddEvnF,[sbase 'lc_pv_corr_allSICells_pstOddEvn' grp(i).sname])
+        close all
     end
 end
 
@@ -1473,12 +1505,12 @@ nxf_locF = plotBar2(dcMat(bvgrp(1).bvInd,3),dcMat(bvgrp(2).bvInd,3),lnlcols);
 xticklabels({'Strong', 'Weak'}); ylim([0 1]); text2bar(nxf_locF, 'Error peak location (m)', ps.bdc_tt_NxF_lnnl_loc);
 
 if saveFlag
-    fsave(fxf_barF,[sbase 'decode_fxf_lnnl'],1,0);
-    fsave(nxn_barF,[sbase 'decode_nxn_lnnl'],1,0);
-    fsave(nxf_barF,[sbase 'decode_nxf_lnnl'],1,0);
-    fsave(fxf_locF,[sbase 'decode_fxf_lnnl_loc'],1,0);
-    fsave(nxn_locF,[sbase 'decode_nxn_lnnl_loc'],1,0);
-    fsave(nxf_locF,[sbase 'decode_nxf_lnnl_loc'],1,0);
+    fsave(fxf_barF,[sbase 'decode_fxf_lnnl'],1,1);
+    fsave(nxn_barF,[sbase 'decode_nxn_lnnl'],1,1);
+    fsave(nxf_barF,[sbase 'decode_nxf_lnnl'],1,1);
+    fsave(fxf_locF,[sbase 'decode_fxf_lnnl_loc'],1,1);
+    fsave(nxn_locF,[sbase 'decode_nxn_lnnl_loc'],1,1);
+    fsave(nxf_locF,[sbase 'decode_nxf_lnnl_loc'],1,1);
 end
 
 %% Correlating Decoding against LDI in each condition
