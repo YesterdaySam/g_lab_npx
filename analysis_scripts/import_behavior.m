@@ -1,7 +1,8 @@
 % Batched Import behavior script
 
-mousedir = 'D:\Data\Kelton\analyses\KW118';
-% mousedir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort';
+mousedir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_silencing\ZM052';
+% mousedir = 'D:\Data\Kelton\analyses\KW122';
+% mousedir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort_rzrand';
 overwriteFlag = 0;
 
 cd(mousedir)

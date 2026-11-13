@@ -22,7 +22,7 @@ arguments
     overwrite = 0;
 end
 
-medVSplit = -1; % 0 = No split, -1 = low vel, 1 = hi vel
+medVSplit = 0; % 0 = No split, -1 = low vel, 1 = hi vel
 
 recID = [];     % [mouseID, recDay, recUnit ID, dist2center, dist2border]
 useCC = [];     % Outcome of useUnits (in-layer, >0.1Hz, putative Pyr)
@@ -106,6 +106,8 @@ for i = ct:height(datT)
 
     % Pick units to use
     pkExclude = frstHalf.truePk < 1 & lastHalf.truePk < 1;
+    [~,pkExclInd] = ismember(root.good(pkExclude),root.info.cluster_id);
+    rmInds(pkExclInd) = true;
     ca1Exclude = roiUnits == 1 & root.info.fr > 10;
     % disp(['CA1 units flagged for FR violation: ' num2str(root.good(ca1Exclude(root.goodind))')])
     useUnits = root.info.lyrID(root.goodind) == 1 & root.info.fr(root.goodind) > 0.1 ...
@@ -115,16 +117,16 @@ for i = ct:height(datT)
     useCA1 = useUnits & roiUnits(root.goodind) == 1;
     useSub = useUnits & roiUnits(root.goodind) == 2;
 
-    % % === Send units to Aanchal === 
-    % ca1CCs = roiUnits(root.goodind) == 1 & useUnits;
-    % subCCs = roiUnits(root.goodind) == 2 & useUnits;
+    % === Send units to Aanchal === 
+    % vaca1CCs = roiUnits == 1 & root.info.uType == true & root.info.lyrID == 1 & root.info.fr > 0.1 & root.goodind & ~rmInds & ~ca1Exclude;
+    % subCCs = roiUnits == 2 & root.info.uType == true & root.info.lyrID == 1 & root.info.fr > 0.1 & root.goodind & ~rmInds;
     % 
     % ca1SpkMat = binarizeUnits(root,root.info.cluster_id(ca1CCs),sess);
     % subSpkMat = binarizeUnits(root,root.info.cluster_id(subCCs),sess);
     % 
     % root.regionID = roiUnits;
-    % root.ca1CCs   = ca1CCs;
-    % root.subCCs   = subCCs;
+    % root.ca1CCs   = root.info.cluster_id(ca1CCs);
+    % root.subCCs   = root.info.cluster_id(subCCs);
     % root.rzloc    = [datT.rzloc1(i) datT.rzloc2(i)];
     % 
     % % Save to Z drive
@@ -147,11 +149,7 @@ for i = ct:height(datT)
     end
     bsDat = [bsDat; frstHalf.burstIndex',frstHalf.burstISI',frstHalf.burstLen', ...
         lastHalf.burstIndex',lastHalf.burstISI',lastHalf.burstLen'];
-    % % Make a burst metric figure
-    % bstFig = plot_burstMetrics(root,sess,useUnits,roiUnits);
-    % if ct == 1; legend('CA1','Sub'); end
-    % fsave(bstFig,[root.name '_burstMetrics'],1,1);
-    % close all
+    bstFig = plot_burstMetrics(root,sess,useUnits,roiUnits);
 
     % % === Concatenate Velocity-FR data ===
     velStats = [];
@@ -185,7 +183,7 @@ for i = ct:height(datT)
         lcDat = [lcDat; frstHalf.sig, frstHalf.trueSI, frstHalf.truePk, frstHalf.trueLc, ...
             lastHalf.sig, lastHalf.trueSI, lastHalf.truePk, lastHalf.trueLc];
     end
-    lcMap = [lcMap; frstHalf.posfr, lastHalf.posfr];
+    lcMap = [lcMap; frstHalf.posfr, lastHalf.posfr];    
 
     % === Concatenate SPWR Modulation data ===
     if ~isfield(lastHalf,'uRipDur')
@@ -249,8 +247,11 @@ for i = ct:height(datT)
     if size(frstHalf.swrz) ~= 50
         frstHalf.swrz = nan(length(root.good),50);
     end
-    rpMapZ = [rpMapZ; frstHalf.swrz lastHalf.swrz];
+    % rpMapZ = [rpMapZ; frstHalf.swrz lastHalf.swrz];
     % rpMod = [rpMod; frstHalf.ripModBins lastHalf.ripModBins];
+
+    % Spatial SPWRs
+    rpMapZ = [rpMapZ; get_spatialSPWRs(rootFrst,sessFrst,frstHalf,datT.rzloc1(i)), get_spatialSPWRs(rootLast,sessLast,lastHalf,datT.rzloc2(i))];
 
     % % === Concatenate PV data ===
     useCA1SI = useCA1 & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
@@ -267,6 +268,16 @@ for i = ct:height(datT)
         useSubSI = useSubSI & abs(velStats(:,2)) < splitVSI;
         snameSub = [rootFrst.name '_pvc_vello'];
     end
+
+    % Plot individual waterfall
+    try [wflSubF, ~, sortF] = plot_unitWaterfall(frstHalf.posfr(useSubSI,:),frstHalf.binedges,0,1,0,1); end
+    try [wflSubN] = plot_unitWaterfall(lastHalf.posfr(useSubSI,:),lastHalf.binedges,sortF,1,0,1); end
+    try [wflCA1F, ~, sortF] = plot_unitWaterfall(frstHalf.posfr(useCA1SI,:),frstHalf.binedges,0,1,0,1); end
+    try [wflCA1N] = plot_unitWaterfall(lastHalf.posfr(useCA1SI,:),lastHalf.binedges,sortF,1,0,1); end
+    try fsave(wflSubF,[rootFrst.name '_wflSubF'],1,1); end
+    try fsave(wflSubN,[rootFrst.name '_wflSubN'],1,1); end
+    try fsave(wflCA1F,[rootFrst.name '_wflCA1F'],1,1); end
+    try fsave(wflCA1N,[rootFrst.name '_wflCA1N'],1,1); end
 
     % try
     %     bothSIUnits = useUnits & (lastHalf.sigSI <= 0.05 & frstHalf.sigSI <= 0.05);
@@ -372,12 +383,18 @@ for i = ct:height(datT)
         decodefile = dir([snameSub '.mat']);
         load(decodefile.name)
         [errLocsSub, errMeansSub] = plot_bayesErrHisto(0:0.05:0.95,fxfDecode,nxnDecode,nxfDecode);
+        [fxfSubShufErr, fxfSubShufLoc] = shufDecodeErr(fxfDecode,1000,sess.maxPos);
+        [nxnSubShufErr, nxnSubShufLoc] = shufDecodeErr(nxnDecode,1000,sess.maxPos);
+        [nxfSubShufErr, nxfSubShufLoc] = shufDecodeErr(nxfDecode,1000,sess.maxPos);
     catch
         try
             disp('Decoding in sub)')
             [errLocsSub, errMeansSub] = decodeRZPlot(useSub,snameSub,rootFrst,rootLast,sessFrst,sessLast,frstHalf,lastHalf);
         catch
             errLocsSub = nan(1,3); errMeansSub = nan(1,3);
+            fxfSubShufErr = nan(2,1); fxfSubShufLoc = nan(2,1);
+            nxnSubShufErr = nan(2,1); nxnSubShufLoc = nan(2,1);
+            nxfSubShufErr = nan(2,1); nxfSubShufLoc = nan(2,1);
         end
     end
 
@@ -385,12 +402,18 @@ for i = ct:height(datT)
         decodefile = dir([snameCA1 '.mat']);
         load(decodefile.name)
         [errLocsCA1, errMeansCA1] = plot_bayesErrHisto(0:0.05:0.95,fxfDecode,nxnDecode,nxfDecode);
+        [fxfCA1ShufErr, fxfCA1ShufLoc] = shufDecodeErr(fxfDecode,1000,sess.maxPos);
+        [nxnCA1ShufErr, nxnCA1ShufLoc] = shufDecodeErr(nxnDecode,1000,sess.maxPos);
+        [nxfCA1ShufErr, nxfCA1ShufLoc] = shufDecodeErr(nxfDecode,1000,sess.maxPos);
     catch
         try
             disp('Decoding in ca1)')
             [errLocsCA1, errMeansCA1] = decodeRZPlot(useCA1,snameCA1,rootFrst,rootLast,sessFrst,sessLast,frstHalf,lastHalf);
         catch
             errLocsCA1 = nan(1,3); errMeansCA1 = nan(1,3);
+            fxfCA1ShufErr = nan(2,1); fxfCA1ShufLoc = nan(2,1);
+            nxnCA1ShufErr = nan(2,1); nxnCA1ShufLoc = nan(2,1);
+            nxfCA1ShufErr = nan(2,1); nxfCA1ShufLoc = nan(2,1);
         end
     end
 
@@ -452,6 +475,10 @@ for i = ct:height(datT)
     dcDat(ct).errMeansCA1 = errMeansCA1;
     dcDat(ct).errLocsSub = errLocsSub;
     dcDat(ct).errMeansSub = errMeansSub;
+    dcDat(ct).errMeansCA1shuf = mean([fxfCA1ShufErr nxnCA1ShufErr nxfCA1ShufErr]);
+    dcDat(ct).errLocsCA1shuf = mean([fxfCA1ShufLoc nxnCA1ShufLoc nxfCA1ShufLoc]);
+    dcDat(ct).errMeansSubshuf = mean([fxfSubShufErr nxnSubShufErr nxfSubShufErr]);
+    dcDat(ct).errLocsSubshuf = mean([fxfSubShufLoc nxnSubShufLoc nxfSubShufLoc]);
 
     ct = ct + 1;
 

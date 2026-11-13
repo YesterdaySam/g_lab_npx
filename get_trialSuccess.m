@@ -1,4 +1,4 @@
-function [lapScore] = get_trialSuccess(sess)
+function [lapScore] = get_trialSuccess(sess,useLaps)
 %% Calculate 
 % Inputs
 %   sess    = struct from importBhvr.m
@@ -11,10 +11,16 @@ function [lapScore] = get_trialSuccess(sess)
 
 arguments
     sess
+    useLaps = []
 end
 
-for i = 1:length(sess.valTrials)
-    lapScore(i) = ~isempty(find(sess.rwdTrials == sess.valTrials(i), 1));
+if isempty(useLaps)
+    useLaps = sess.valTrials;
+end
+nlap = length(useLaps);
+
+for i = 1:nlap
+    lapScore(i) = ~isempty(find(sess.rwdTrials == useLaps(i), 1));
 end
 
 end

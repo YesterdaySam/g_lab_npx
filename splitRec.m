@@ -38,8 +38,16 @@ if isempty(useLap)
 else
     valF = sess.valTrials(sess.valTrials <= splitLap);
     valN = sess.valTrials(sess.valTrials > splitLap);
-    lapThreshF = sess.lapstt(valF(end-useLap+1));
-    lapThreshN = sess.lapend(valN(useLap));
+    try
+        lapThreshF = sess.lapstt(valF(end-useLap+1));
+    catch
+        lapThreshF = sess.lapstt(sess.valTrials(1));
+    end
+    try
+        lapThreshN = sess.lapend(valN(useLap));
+    catch
+        lapThreshN = sess.lapend(sess.valTrials(end));
+    end
 end
 
 frstHalfInds       = [lapThreshF sess.lapend(splitLap)];

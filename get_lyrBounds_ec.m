@@ -1,4 +1,4 @@
-function [root,datStruc] = get_lyrBounds_ec(root,sess)
+function [root,datStruc] = get_lyrBounds_ec(root,sess,ec5stt,ec3stt)
 %% Assigns ec units based on peak on theta phase preference and/or opto tag
 %
 % Inputs:
@@ -12,8 +12,15 @@ function [root,datStruc] = get_lyrBounds_ec(root,sess)
 % Created 5/21/26 LKW; Grienberger Lab; Brandeis University
 %--------------------------------------------------------------------------
 
+arguments
+    root
+    sess
+    ec5stt = []
+    ec3stt = []
+end
 
 tmpD = root.info.depth(root.goodind);
+% lfpind = root.uPSDMax(2);
 
 for i = 1:length(root.good)
     [datStruc.thetastats(i),datStruc.thFR(i,:)] = plot_thetaMod(root,root.good(i),1,2*pi/36,0);
@@ -33,8 +40,12 @@ dBins = 0:50:max(root.info.depth);
 lyrct = histcounts(tmpD,dBins); % All good by depth bin
 lyrsg = histcounts(tmpD(datStruc.thSig),dBins); % Significantly theta by depth
 lyrtr2 = histcounts(tmpD(ec2inds),dBins); % Theta tuning by depth
-ec5stt = dBins(find(smooth(lyrsg./lyrct) <= 0.1,1)); % Estimate L5 start using cutoff of ratio of significant / all
-ec3stt = dBins(find(smooth(lyrtr2./lyrct) <= 0.4,1)); % Estimate L3 start using cutoff of ratio of L2 theta / all
+if isempty(ec5stt)
+    ec5stt = dBins(find(smooth(lyrsg./lyrct) <= 0.1,1)); % Estimate L5 start using cutoff of ratio of significant / all
+end
+if isempty(ec3stt)
+    ec3stt = dBins(find(smooth(lyrtr2./lyrct) <= 0.4,1)); % Estimate L3 start using cutoff of ratio of L2 theta / all
+end
 
 ec5inds = tmpD' > ec5stt & ~datStruc.thSig;
 ec2inds = ec2inds & tmpD' < ec3stt + 300;

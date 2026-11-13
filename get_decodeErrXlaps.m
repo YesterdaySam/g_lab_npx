@@ -31,6 +31,9 @@ errLapLoc  = nan(nLaps,1);
 for i = 1:nLaps
     indstt = find(dcI.newT >= sess.ts(sess.lapstt(i)),1);
     indend = find(dcI.newT >= sess.ts(sess.lapend(i)),1) - 1;
+    if isempty(indend)  % In case sess.ts overruns dcI.newT
+        [~,indend] = min(abs(sess.ts(sess.lapend(i)) - dcI.newT));
+    end
 
     uLapAbsErr(i) = mean(abs(dcI.dErr(indstt:indend)),'omitnan');
     uLapPost(i)   = mean(maxPost(indstt:indend),'omitnan');

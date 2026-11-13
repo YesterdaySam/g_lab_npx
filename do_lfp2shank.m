@@ -21,5 +21,7 @@ if isempty(newInd)
 end
 
 root.uPSDMax(2,sh) = newInd;
+thetaLFPSh = bandpass(root.lfp(root.uPSDMax(2,sh),:),root.bands(1,:), root.fs_lfp);
+root.thEnv(sh,:) = hilbert(thetaLFPSh);  % Operates along rows
 
 end

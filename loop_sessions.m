@@ -1,11 +1,10 @@
-function [] = loop_sessions(datT)
+function [output] = loop_sessions(datT)
 
 for i = 1:height(datT)
 
     % === Load data ===
     cd(datT.fpath{i})
     [root,sess] = get_rootSessDat(datT.fpath{i},1,1,0);
-
     epochfile = dir("*_dat.mat");
     load(epochfile.name)
 
@@ -14,8 +13,10 @@ for i = 1:height(datT)
     % plotPhysCompact(root,sess,datT.fpath{i},'goodLyrPyrs',0,root.info.cluster_id(useCC));
 
     % === Test get_trialSuccessVshuffle ===
-    % lapScoreF(i) = get_trialSuccessVshuffle(sessFrst,datT.rzloc1(i));
-    % lapScoreN(i) = get_trialSuccessVshuffle(sessLast,datT.rzloc2(i));
+    % useF = sessFrst.valTrials(end-49:end);
+    % useN = sessLast.valTrials(1:50);
+    % lapScoreF(i) = get_trialSuccessVshuffle(sessFrst,datT.rzloc1(i),useF,500);
+    % lapScoreN(i) = get_trialSuccessVshuffle(sessLast,datT.rzloc2(i),useN,500);
 
     % === Export data to binarized spike matrices for aanchal ===
     % handT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","data_curation.xlsx");
@@ -67,5 +68,26 @@ for i = 1:height(datT)
     % saveRoot(root);
     % save([root.name '_spkMat_ca1_pyrs'],'ca1SpkMat')
     % save([root.name '_spkMat_sub_pyrs'],'subSpkMat')
+
+    % === Plot burst metrics and layer units ===
+    useCCs = root.good(rootFrst.ca1CCs | rootFrst.subCCs);
+    useUnits = rootFrst.ca1CCs | rootFrst.subCCs;
+    roiUnits = zeros(size(root.good));
+    roiUnits(rootFrst.ca1CCs) = 1;
+    roiUnits(rootFrst.subCCs) = 2;
+    
+    layerUnitF = plot_layerUnits(root,useCCs); legend('off')
+
+    bstFig = plot_burstMetrics(root,sess,useUnits,roiUnits);
+    if i == 1; legend('CA1','Sub'); end
+
+    fsave(layerUnitF,[root.name '_useUnitsXlayer'],1,1);
+    fsave(bstFig,[root.name '_burstMetrics'],1,1);
+    close all
+
 end
+
+% === Test get_trialSuccessVshuffle ===
+% output.lapScoreF = lapScoreF;
+% output.lapScoreN = lapScoreN;
 end

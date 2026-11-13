@@ -34,8 +34,11 @@ spktsb = root.tsb(root.cl == unit);
 
 % Get phase of analytic signal in theta range
 % Originally, Theta peaks = 0/360 and troughs = 180/540
-thetaLFP = bandpass(root.lfp(lfpInd,:),root.bands(1,:), root.fs_lfp);
-th_env = abs(hilbert(thetaLFP));
+if ~isfield(root,'thEnv')
+    thetaLFP = bandpass(root.lfp(lfpInd,:),root.bands(1,:), root.fs_lfp);
+    th_env = abs(hilbert(thetaLFP));
+    root.thEnv = th_env;
+end
 
 % Offset theta by pi, for ease of calculations 0 to 2*pi
 th_phase = angle(root.thEnv(lfpInd,:))+pi;

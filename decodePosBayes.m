@@ -90,11 +90,7 @@ end
 rPos = newpos(useInds);
 
 % Circularly calculate error
-wrap = sess.maxPos/2;
-rawErr = rPos - dPos;
-dErr = rawErr;
-dErr(rawErr > wrap) = dErr(rawErr > wrap) - sess.maxPos;
-dErr(rawErr < -wrap) = dErr(rawErr < -wrap) + sess.maxPos;
+dErr = get_circDecodeErr(rPos,dPos,sess.maxPos);
 
 % Remove unused preallocated rows and assign to output variable
 validFrames  = 1:(ct-1);
@@ -103,6 +99,11 @@ decodeI.dPos = dPos(validFrames);
 decodeI.dMat = dMat(:,validFrames);
 decodeI.dErr = dErr(validFrames);
 decodeI.newT = newts(useInds(validFrames))';
+
+% Calculate shuffled error and error location
+[shufErr, shufLoc] = shufDecodeErr(decodeI,1000,sess.maxPos,0);
+decodeI.shufErr = mean(shufErr);
+decodeI.shufLoc = mean(shufLoc);
 
 % figure; plot(rPos)
 % hold on; plot(decodeI.dPos,'r*')

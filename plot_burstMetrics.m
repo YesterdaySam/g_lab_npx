@@ -3,8 +3,8 @@ function [fhandle] = plot_burstMetrics(root,sess,useCC,rgdat,rgncols)
 arguments
     root
     sess
-    useCC
-    rgdat
+    useCC   % Logical of size root.good
+    rgdat   % Array of size root.good, 0 = other, 1 = CA1, 2 = Sub
     rgncols = [0.9961 0.7305 0.4336; 0.3672 0.2969 0.3711; 0 0 0]; % Sub gold vs CA1 dull purple
 end
 
@@ -19,7 +19,7 @@ fhandle = figure; hold on;
 set(gcf,'units','normalized','position',[0.4 0.35 0.20 0.39])
 fhandle = fixRatio(fhandle);
 for i = 1:length(nrgns)
-    rgn = rgdat(root.goodind) == nrgns(i);
+    rgn = rgdat == nrgns(i);
     if nrgns(i) == 1    % CA1
         linespec = rgncols(1,:);
     elseif nrgns(i) == 2    % Sub

@@ -1,4 +1,4 @@
-function [rmap] = get_rmap(root,sess,useUnits,useInds)
+function [rmap,pkloc] = get_rmap(root,sess,useUnits,useInds)
 
 arguments
     root
@@ -16,7 +16,7 @@ nCCs = length(useUnits);
 rmap = nan(nCCs,round(185/5));
 
 for i = 1:length(useUnits)
-    [~,~,~,~,~,~,rmap(i,:),~] = get_SI(root,useUnits(i),sess,useInds);
+    [~,~,~,pkloc(i),~,~,rmap(i,:),~] = get_SI(root,useUnits(i),sess,useInds);
 end
 
 end

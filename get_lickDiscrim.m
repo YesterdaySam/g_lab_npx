@@ -1,9 +1,10 @@
-function [lckRate, lickDI] = get_lickDiscrim(sess,rzPos,rzLen)
+function [lckRate, lickDI] = get_lickDiscrim(sess,rzPos,rzLen,nan0)
 %% Calculate Discrimiation Index of licks in rzPos(1,:) vs rzPos(2,:)
 % Inputs
 %   sess    = struct from importBhvr.m
 %   rzPos   = [1x2] in cm of [RZ position, comparison position]
-%   rzLen   = double of peri-RZ length in cm
+%   rzLen   = 30; double of peri-RZ length in cm
+%   nan0    = 1; flag to turn nans to 0 in output of lickDI
 %
 % Outputs
 %   lckmap  = lick counts by trial
@@ -16,6 +17,7 @@ arguments
     sess
     rzPos           % in cm, [1x2] of rZ positions
     rzLen = 30      % in cm
+    nan0 = 1        % flag to turn nans to 0 in output of lickDI
 end
 
 rzPos = rzPos ./ 100;
@@ -93,6 +95,10 @@ end
 lckmap = [lckmap1Combine, lckmap2Combine];
 lckRate = lckmap ./ [occmap1Combine, occmap2Combine];
 lickDI = (lckRate(:,1) - lckRate(:,2)) ./ (lckRate(:,1) + lckRate(:,2));
-nanDI  = isnan(lickDI);
-lickDI(nanDI) = 0;
+
+if nan0
+    nanDI  = isnan(lickDI);
+    lickDI(nanDI) = 0;
+end
+
 end

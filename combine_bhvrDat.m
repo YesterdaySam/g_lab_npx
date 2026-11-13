@@ -15,7 +15,6 @@ bhvID = [];     % [mouseID, recDay]
 bvDat = [];     % [frstHalf.lckDI, frstHalf.preRZV, lastHalf.lckDI, lastHalf.preRZV
 
 ct    = 1;
-% rzPos = [0.9 1.8];
 
 for i = 1:height(datT)
 
@@ -23,9 +22,6 @@ for i = 1:height(datT)
     cd(datT.fpath{i})
 
     [~,sess] = get_rootSessDat(datT.fpath{i},0,1,0);
-    % sessfile = dir("*_session.mat");
-    % load(sessfile.name)
-    % disp(sess.name)
 
     if ~isfield(sess,'rwdTrials')
         sess = importBhvr(datT.fpath{i});
@@ -65,6 +61,8 @@ for i = 1:height(datT)
 
         [~,bvDat(ct).preLckPsv] = get_lickDiscrim(sessFrst, [datT.rzloc1(i) datT.rzloc2(i)+0.3]*100); % Lick perseveration in actual non rewarded zone
         [~,bvDat(ct).pstLckPsv] = get_lickDiscrim(sessLast, [datT.rzloc1(i)+0.3 datT.rzloc2(i)]*100);
+        [~,bvDat(ct).preNanPsv] = get_lickDiscrim(sessFrst, [datT.rzloc1(i) datT.rzloc2(i)+0.3]*100,30,0); % Keep nans for no lick trials
+        [~,bvDat(ct).pstNanPsv] = get_lickDiscrim(sessLast, [datT.rzloc1(i)+0.3 datT.rzloc2(i)]*100,30,0);
 
         bvDat(ct).uPreLckPsv = mean(bvDat(ct).preLckPsv,'omitnan');
         bvDat(ct).uPstLckPsv = mean(bvDat(ct).pstLckPsv,'omitnan');
@@ -78,6 +76,10 @@ for i = 1:height(datT)
         bvDat(ct).uPstLapRwd = mean(bvDat(ct).pstLapRwd,'omitnan');
         bvDat(ct).preLapScore = get_trialSuccessVshuffle(sessFrst,datT.rzloc1(i));
         bvDat(ct).pstLapScore = get_trialSuccessVshuffle(sessLast,datT.rzloc2(i));
+        % useF = sessFrst.valTrials(end-49:end);
+        % useN = sessLast.valTrials(1:50);
+        % bvDat(ct).preLapScore = get_trialSuccessVshuffle(sessFrst,datT.rzloc1(i),useF,500);
+        % bvDat(ct).pstLapScore = get_trialSuccessVshuffle(sessLast,datT.rzloc2(i),useN,500);
 
         bvDat(ct).preSpVelMap = plot_lap_velCCorr(sessFrst,0.03,0.002,0);
         bvDat(ct).pstSpVelMap = plot_lap_velCCorr(sessLast,0.03,0.002,0);

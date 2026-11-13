@@ -9,7 +9,7 @@ datT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_DCZ","dat_
 groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_DCZ\analysis';
 cd(groupSDir) 
 
-mInclude = {'ZM040','ZM042'};
+mInclude = {'ZM040','ZM042','ZM046','ZM047','ZM049','ZM050','ZM051','ZM052'};
 
 sessType = 2;
 for i = 1:height(datT)
@@ -34,6 +34,13 @@ lnlcols = [0.0508 0.4883 0.5273; 0.7852 0.6055 0.2188]; % A teal vs B brown
 
 clear ps stats
 
+%% Generate folder names quickly
+
+tmpdir = dir;
+for i = 1:length(tmpdir)
+    fullfile(tmpdir(i).folder,tmpdir(i).name)
+end
+
 %% Combine Sub RZ Shift Behavior data
 combine_bhvrDat(datT,bvName,groupSDir,2);
 
@@ -43,8 +50,8 @@ load(bvName)
 nMice = length(unique(bhvID(:,1)));
 mID = unique(bhvID(:,1),'stable');
 
-mA = [42];
-mB = [40];
+mA = [42 47 49 51];
+mB = [40 46 50 52];
 
 aInd = [];
 bInd = [];
@@ -69,9 +76,9 @@ bvgrp(2).n = length(bvgrp(2).bvInd);
 %% Behavior comparisons
 % Learners: P(Nov Rwd) > 0.55
 
-for i = 1:nMice
-    uLapRwd50(i,:) = [mean(bvDat(i).preLapRwd(end-49:end)) mean(bvDat(i).pstLapRwd(1:50))];
-end
+% for i = 1:nMice
+%     uLapRwd50(i,:) = [mean(bvDat(i).preLapRwd(end-49:end)) mean(bvDat(i).pstLapRwd(1:50))];
+% end
 % uLDI = [vertcat(bvDat.uPreLckDI), vertcat(bvDat.uPstLckDI)];
 uPsv = [vertcat(bvDat.uPreLckPsv), vertcat(bvDat.uPstLckPsv)];
 uLapRwd = [vertcat(bvDat.uPreLapRwd), vertcat(bvDat.uPstLapRwd)];
@@ -91,6 +98,12 @@ legend({'A','B'}, 'Location','sw')
 lapSplitF = plot_2d_bhvr(nLaps,bvgrp(1).bvInd,bvgrp(2).bvInd,lnlcols);
 xlabel('# Laps F'); xlim([0 140])
 ylabel('# Laps N'); ylim([0 140])
+
+lapScoreF = plot_2d_bhvr(lapScore,bvgrp(1).bvInd,bvgrp(2).bvInd,lnlcols);
+plot([-1 1],[learnCutoff learnCutoff],'k--')
+xlabel('F P(Rwd) - P(chance)'); xlim([-1 1])
+ylabel('N P(Rwd) - P(chance)'); ylim([-1 1])
+legend({'Strong adapter','Weak adapter'}, 'Location','nw')
 
 if saveFlag
     fsave(psvSplitF,[sbase 'bhv_psvPrePst'],1,1);

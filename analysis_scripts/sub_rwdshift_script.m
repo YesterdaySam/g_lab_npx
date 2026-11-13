@@ -38,6 +38,7 @@
 % spath = 'D:\Data\Kelton\analyses\KW101\KW101_05262026_rec_D1_RLat1'; % 15m rest
 % spath = 'D:\Data\Kelton\analyses\KW109\KW109_07222026_rec_D2_RLat1'; % 15m rest, EC3 archT inhib
 % spath = 'D:\Data\Kelton\analyses\ZM035\ZM035_06112026_rec_D1_LLat1';
+spath = 'D:\Data\Kelton\analyses\KW097\KW097_05052026_rec_D4_LLat1';
 
 % Operant Sub RZ Randomization
 % spath = 'D:\Data\Kelton\analyses\KW073\KW073_10172025_rec_D4_LLat2'; % 20m rest
@@ -56,7 +57,7 @@
 % spath = 'D:\Data\Kelton\analyses\ZM020\ZM020_02232026_rec_D1_RLat1'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW087\KW087_02082026_rec_D2_RLat2'; % 20m rest
 % spath = 'D:\Data\Kelton\analyses\KW080\KW080_11252025_rec_D1_RLat1'; % 20m rest
-spath = 'D:\Data\Kelton\analyses\KW091\KW091_03192026_rec_D4_LLat2';
+% spath = 'D:\Data\Kelton\analyses\KW091\KW091_03192026_rec_D4_LLat2';
 % spath = 'D:\Data\Kelton\analyses\KW102\KW102_05222026_rec_D4_RLat2';
 
 % Operant EC RZ Shift
@@ -258,7 +259,7 @@ if saveFlag
 end
 
 %% Plot 1 unit's heatmap, burst raster and combined average traces
-cc = 495;
+cc = 561;
 % sess.valTrials = sess.rwdTrials;
 % sessFrst.valTrials = sessFrst.rwdTrials;
 % sessLast.valTrials = sessLast.rwdTrials;
@@ -268,6 +269,7 @@ hmFig = plot_trialHeatmap(root,cc,sess,dbnsz); hold on;
 plot([1 length(binpos)],[rwdShift rwdShift],'w--','LineWidth',2);
 set(gcf,'units','normalized','position',[0.4 0.35 0.2 0.35])
 fixRatio(hmFig);
+colorbar off
 set(gca,'FontSize',16,'FontName','Arial')
 
 % [rasFig] = plot_burstSpkRaster(root,cc,sess);
@@ -322,8 +324,6 @@ if saveFlag
     % fsave(rasFig,[sbase 'raster'])
     % fsave(bsFig,[sbase 'burstXpos'])
 end
-
-sess = getErrorTrials(sess);
 
 %% Plot good units relative to ripples and bursts
 
