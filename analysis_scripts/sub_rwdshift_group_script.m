@@ -5,10 +5,10 @@
 % ========================================================================%
 % ========================================================================%
 
-datT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","dat_include_clean_RZShift.xlsx");
-groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\finalcohort_50lap';
+datT = import_xldat("C:\Users\cornu\Documents\Data\Kelton\clean_final_cohort","dat_include_clean_RZShift.xlsx");
+groupSDir = 'C:\Users\cornu\Documents\Data\Kelton\finalcohort_50lap';
 % groupSDir = 'D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\finalcohort_100826';
-hndT = import_xldat("D:\Data\Kelton\analyses\group_analyses\Subiculum_RZ_Shift\clean_final_cohort","data_curation.xlsx");
+hndT = import_xldat("C:\Users\cornu\Documents\Data\Kelton\clean_final_cohort","data_curation.xlsx");
 % datT = import_xldat("D:\Data\Kelton\analyses\group_analyses","dat_include.xlsx");
 cd(groupSDir)
 
@@ -683,7 +683,7 @@ end
 
 %% Waterfall by group RZ at 0
 
-unitgrp = siNOnlID; % Inclusion mask based on SI
+unitgrp = 0; % Inclusion mask based on SI
 
 if unitgrp == siBothID
     grptag = 'both';
@@ -693,6 +693,10 @@ elseif unitgrp == siFOnlID
     grptag = 'fonly';
 elseif unitgrp == siNOnlID
     grptag = 'nonly';
+elseif unitgrp == 0
+    grptag = 'both_velhi';
+elseif unitgrp == 1
+    grptag = 'both_vello';
 end
 
 mBin = round(length(binpos)/2);
@@ -705,14 +709,54 @@ nBins = length(binedges) - 1;
 xcoords = (binedges2(1:end-1) + 0.5*diff(binedges2(1:2)))*100;
 rShiftUnit = zeros(length(useCC),1);
 
+% Align all spatial maps to RZ center, then later subsample
+clear mousePkPreSum mousePkPstSum
+for i = 1:nMice
+    preRZBin = find(binpos > bvDat(i).rzPos(1),1);
+    pstRZBin = find(binpos > bvDat(i).rzPos(2),1);
+
+    allMouseUnits = mInds(i).logisub | mInds(i).logica1;
+    alnMouseMap(i).pre = circshift(lcMap(allMouseUnits,1:length(binpos)),     mBin - preRZBin, 2);
+    alnMouseMap(i).pst = circshift(lcMap(allMouseUnits,length(binpos)+1:end), mBin - pstRZBin, 2);
+    
+    splitVSI = prctile(abs(vlDat(mInds(i).logi & siBothID,2)),50);
+
+    if unitgrp == siBothID
+        tmpUnits = siBothID(allMouseUnits) & mInds(i).logi(allMouseUnits);
+    elseif unitgrp == siFOnlID
+        tmpUnits = siFOnlID(allMouseUnits) & mInds(i).logi(allMouseUnits);
+    elseif unitgrp == siNOnlID
+        tmpUnits = siNOnlID(allMouseUnits) & mInds(i).logi(allMouseUnits);
+    elseif unitgrp == 0
+        tmpUnits = siBothID(allMouseUnits) & mInds(i).logi(allMouseUnits) & abs(vlDat(allMouseUnits,2)) >= splitVSI;
+        tmp = siBothID & mInds(i).logisub & abs(vlDat(:,2)) >= splitVSI;
+    elseif unitgrp == 1
+        tmpUnits = siBothID(allMouseUnits) & mInds(i).logi(allMouseUnits) & abs(vlDat(allMouseUnits,2)) < splitVSI;
+    end
+    alnMouseMap(i).preActive = alnMouseMap(i).pre(tmpUnits,:);
+    alnMouseMap(i).pstActive = alnMouseMap(i).pst(tmpUnits,:);
+
+    try subGrp  = [subGrp; ones(sum(tmpUnits),1)*mInds(i).grpsub(1)]; catch; end
+
+    [~,~,mousePkPre(i,:)] = plot_unitPkHisto(alnMouseMap(i).preActive,binedges2*100,1,0);
+    [~,~,mousePkPst(i,:)] = plot_unitPkHisto(alnMouseMap(i).pstActive,binedges2*100,1,0);
+    mousePkPreSum(i,:) = arrayfun(@(x) sum(mousePkPre(i,x:x+nvals-1)),1:nvals:size(mousePkPre,2)-nvals+1); % Combine bins for cleaner counts
+    mousePkPstSum(i,:) = arrayfun(@(x) sum(mousePkPst(i,x:x+nvals-1)),1:nvals:size(mousePkPst,2)-nvals+1);
+end
+alnSpMapPre = vertcat(alnMouseMap.preActive);
+alnSpMapPst = vertcat(alnMouseMap.pstActive);
+
+%% Original
 % Align spatial maps to RZ at center
 clear mousePkPreSum mousePkPstSum
 for i = 1:nMice
     preRZBin = find(binpos > bvDat(i).rzPos(1),1);
     pstRZBin = find(binpos > bvDat(i).rzPos(2),1);
+
     tmpUnits = unitgrp & mInds(i).logisub; % Only pyrs in region & SI unit group
     try subGrp  = [subGrp; ones(sum(tmpUnits),1)*mInds(i).grpsub(1)]; catch; end
     rShiftUnit(tmpUnits) = mBin - pstRZBin;
+
     alnMouseMap(i).pre = circshift(lcMap(tmpUnits,1:length(binpos)),     mBin - preRZBin, 2);
     alnMouseMap(i).pst = circshift(lcMap(tmpUnits,length(binpos)+1:end), mBin - pstRZBin, 2);
     [~,~,mousePkPre(i,:)] = plot_unitPkHisto(alnMouseMap(i).pre,binedges2*100,1,0);
@@ -730,16 +774,16 @@ alnSpMapPst = vertcat(alnMouseMap.pst);
 
 alnSpMapPreca1 = vertcat(alnMouseMap.preca1);
 alnSpMapPstca1 = vertcat(alnMouseMap.pstca1);
-
+%%
 for i = 1:2
     alnSpMap(i).pre = alnSpMapPre(subGrp == i,:);
     alnSpMap(i).pst = alnSpMapPst(subGrp == i,:);
-    alnSpMap(i).preca1 = alnSpMapPreca1(subGrpca1 == i,:);
-    alnSpMap(i).pstca1 = alnSpMapPstca1(subGrpca1 == i,:);
+    % alnSpMap(i).preca1 = alnSpMapPreca1(subGrpca1 == i,:);
+    % alnSpMap(i).pstca1 = alnSpMapPstca1(subGrpca1 == i,:);
 
     [fnames(i).spBothPreSortPreFig,tmpMap,mSort(i).sortPre] = plot_unitWaterfall(alnSpMap(i).pre,binedges,0,1,0);
     % xticks([1, round(nBins)/2, nBins]); xticklabels([-90, 0, 90])
-    plot([mBin mBin],[0 sum(unitgrp)],'k--','LineWidth',2); title('Familiar RZ, sort Familiar'); xlabel('Track Position (cm)')
+    plot([mBin mBin],[0 size(alnSpMap(i).pre,1)],'k--','LineWidth',2); title('Familiar RZ, sort Familiar'); xlabel('Track Position (cm)')
 
     % [fnames(i).spBothPreSortPreHisto,pkMapPre] = plot_unitPkHisto(tmpMap,binedges*100,1,0);
     % xticks([binedges(1),binedges(round(nBins/2)),binedges(end)]*100); xticklabels([-90, 0, 90])
@@ -748,7 +792,7 @@ for i = 1:2
     % text2bar(fnames(i).spBothPreSortPreHisto,'',ps(i).lc_bothPrePkUniformity,0.9)
 
     [fnames(i).spBothPstSortPstFig,tmpMap] = plot_unitWaterfall(alnSpMap(i).pst,binedges,0,1,0);
-    plot([mBin mBin],[0 sum(unitgrp)],'r--','LineWidth',2); title('Novel RZ, sort Novel'); xlabel('Track Position (cm)')
+    plot([mBin mBin],[0 size(alnSpMap(i).pre,1)],'r--','LineWidth',2); title('Novel RZ, sort Novel'); xlabel('Track Position (cm)')
 
     % [fnames(i).spBothPstSortPstHisto,pkMapPst] = plot_unitPkHisto(tmpMap,binedges*100,1,0);
     % plot([0 0],[0 0.11],'r--','LineWidth',2); xlabel('Track Position (cm)'); xlim([-90 95]); ylim([0 0.1])
@@ -756,7 +800,7 @@ for i = 1:2
     % text2bar(fnames(i).spBothPstSortPstHisto,'',ps(i).lc_bothPstPkUniformity,0.9)
 
     [fnames(i).spBothPstSortPreFig] = plot_unitWaterfall(alnSpMap(i).pst,binedges,mSort(i).sortPre,1,0);
-    plot([mBin mBin],[0 sum(unitgrp)],'r--','LineWidth',2); title('Novel RZ, sort Familiar'); xlabel('Track Position (cm)')
+    plot([mBin mBin],[0 size(alnSpMap(i).pre,1)],'r--','LineWidth',2); title('Novel RZ, sort Familiar'); xlabel('Track Position (cm)')
 
     [~,ps(i).pk_distro] = kstest2(nanmean(mousePkPreSum(bvgrp(i).bvInd,:)),nanmean(mousePkPstSum(bvgrp(i).bvInd,:)));
     fnames(i).siBothPkDistroHisto = figure; hold on
@@ -1055,11 +1099,8 @@ end
 %% Population Vector analysis
 
 for i = 1:2
-    activeUnits = siFOnlID & grp(i).logi;     % siBothID (allSICells); trCells; rrCells;
-    nBins = length(binpos);
-
     % Pre post PVC
-    posNormPre = alnSpMap(i).pre ./ max(alnSpMap(i).pre,[],2);  % RR rate maps, make sure to build them with siBothID in the block above
+    posNormPre = alnSpMap(i).pre ./ max(alnSpMap(i).pre,[],2);  % RR rate maps, make sure to build them with siBothID above
     posNormPst = alnSpMap(i).pst ./ max(alnSpMap(i).pst,[],2);  % RR rate maps
 
     pvPrePst = corr(posNormPst,posNormPre);
@@ -1077,9 +1118,9 @@ for i = 1:2
     fnames(i).pvPstOddEvnF = plot_pvcorr(pvPstOddEvn,[0 185]); ylabel(''); xlabel('');
 
     if saveFlag
-        fsave(fnames(i).pvPrePstF,[sbase 'lc_pv_corr_allSICells_prepost_align' grp(i).sname])
-        fsave(fnames(i).pvPreOddEvnF,[sbase 'lc_pv_corr_allSICells_preOddEvn' grp(i).sname])
-        fsave(fnames(i).pvPstOddEvnF,[sbase 'lc_pv_corr_allSICells_pstOddEvn' grp(i).sname])
+        fsave(fnames(i).pvPrePstF,[sbase 'lc_pv_corr_' grptag '_prepost_align' grp(i).sname])
+        fsave(fnames(i).pvPreOddEvnF,[sbase 'lc_pv_corr_' grptag '_preOddEvn' grp(i).sname])
+        fsave(fnames(i).pvPstOddEvnF,[sbase 'lc_pv_corr_' grptag '_pstOddEvn' grp(i).sname])
         close all
     end
 end
@@ -1092,6 +1133,7 @@ nSamps = sum(siBothID & grp(1).logica1); % Match # CA1
 nAllca1 = sum(useCC & grp(1).logica1);
 dth = 0.3;  % Distance from peak threshold (m)
 drz = datT.rzloc2(1) - datT.rzloc1(1);
+nBins = length(binpos);
 
 dsPVCID_units = nan(nshufs_u,1);
 dsPVCID_spike = nan(nshufs_s,1);
@@ -1283,13 +1325,13 @@ if saveFlag
     fsave(dsRatioF,[sbase 'subVca1_rr_ratio_histo'],1,1)
 end
 
-%% LME version of diagonal / off diagonal comparison
+%% LME diagonal / off diagonal comparison
 idMat = logical(eye(size(pvPrePst)));
 dgMat = logical(spdiags([1 1],[-round(nBins/2) round(nBins/2)],nBins,nBins));
 
 for i = 1:nMice
-    posNormPre = alnMouseMap(i).pre ./ max(alnMouseMap(i).pre,[],2);
-    posNormPst = alnMouseMap(i).pst ./ max(alnMouseMap(i).pst,[],2);
+    posNormPre = alnMouseMap(i).preActive ./ max(alnMouseMap(i).preActive,[],2);
+    posNormPst = alnMouseMap(i).pstActive ./ max(alnMouseMap(i).pstActive,[],2);
     try
         pvPrePst = corr(posNormPst,posNormPre);
     catch
@@ -1346,9 +1388,9 @@ pv_NOE_lmeF = plot_2wayLME(uPVCPstOddEvnID,uPVCPstOddEvnDG,bvgrp,lnlcols);
 xticklabels({'ID','Off-ID','ID','Off-ID'})
 
 if saveFlag
-    fsave(pv_FN_lmeF,[sbase 'lc_pv_comp_allSICells_prepost_align_lme'])
-    fsave(pv_FOE_lmeF,[sbase 'lc_pv_comp_allSICells_preoddeven_lme'])
-    fsave(pv_NOE_lmeF,[sbase 'lc_pv_comp_allSICells_pstoddeven_lme'])
+    fsave(pv_FN_lmeF,[sbase 'lc_pv_comp_' grptag '_prepost_align_lme'])
+    fsave(pv_FOE_lmeF,[sbase 'lc_pv_comp_' grptag '_preoddeven_lme'])
+    fsave(pv_NOE_lmeF,[sbase 'lc_pv_comp_' grptag '_pstoddeven_lme'])
 end
 
 %% PV across laps
